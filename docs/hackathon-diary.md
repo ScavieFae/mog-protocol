@@ -29,6 +29,38 @@ Each entry is timestamped. Tag the source.
 
 **[blocker]** Need two Nevermined API keys (builder + subscriber) from https://nevermined.app before any code can transact. Mattie getting these at the venue.
 
+### ~10:00 — Keys Coming In
+
+**[mattie]** Exa API key obtained.
+
+**[blocker]** Still need NVM_API_KEY (builder) and NVM_SUBSCRIBER_API_KEY (subscriber) from Nevermined. These gate setup.py and first transaction.
+
+### ~12:30 — Keys Acquired
+
+**[mattie]** NVM builder key obtained (all 4 permissions: register, purchase, issue, redeem). Will try self-buy with single key before creating a second account.
+
+**[decision]** Exa key + NVM builder key in hand. **ScavieFae unblocked on Phase 1.** Start Brief 1: set up project, implement Exa search tool, register agent+plan, self-test.
+
+### ~12:45 — Director Review + Strategy Check
+
+**[scav]** Reviewed ScavieFae's Brief 001 output — clean, merged. She's now on Brief 002 (summarizer + catalog). Brief 003 (gateway) queued.
+
+**[mattie]** Key observations:
+- Need to think about the *agent experience* — what buyers actually see/feel
+- Need one transaction ASAP: register on spreadsheet, register on Nevermined app, complete flow for one service
+- Distinction between creating NEW MCP servers vs reselling toolcalls from EXISTING ones — we do both, track which is which
+- Moonshot: get agents paying us TODAY for high-value API calls
+
+**[decision]** Parallel workstreams:
+1. ScavieFae continues building (Brief 002 → 003)
+2. Research ZeroClick integration — how to get a fleet of agents reaching other devs/agents to drive real transactions
+3. Mattie handles meatspace: spreadsheet registration, Nevermined app registration, networking for buyers
+
+**[scav]** Clarification on new vs reselling:
+- **New MCP server (what we've built):** `src/server.py` is a PaymentsMCP server that wraps Exa's REST API as MCP tools. We own the server, we call Exa directly, buyers pay us per tool call. This is our inventory.
+- **Reselling existing MCP servers (Phase 2 gateway):** `src/gateway.py` will sit in front of *any* service (ours or other teams') and expose them via `find_service` + `buy_and_call`. When we proxy to another team's PaymentsMCP server, we're reselling their tools through our marketplace.
+- Right now: only new. Gateway (reselling layer) is Brief 003.
+
 ---
 
 ### ~10:00 — Exa Setup & Strategy
