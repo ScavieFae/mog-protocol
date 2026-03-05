@@ -81,4 +81,6 @@ Each entry is timestamped. Tag the source.
 
 **[scaviefae]** Created `src/txlog.py`: in-memory `TransactionLog` singleton with `log()`, `count_calls(service_id, window_minutes=15)` (rolling-window via ISO 8601 timestamp), and `get_recent(n=50)`. Foundation for surge pricing — next task: `src/pricing.py`.
 
+**[scaviefae]** Brief 004 iter 2: created `src/pricing.py` — `get_current_price(service_id, base_price)` returns (price, surge_multiplier) using 15-min rolling txlog window; 1.0x baseline, 1.5x at ≥10 calls, 2.0x at ≥20 calls. Thresholds configurable via SURGE_THRESHOLD_HIGH/MEDIUM env vars. Next: wire txlog+pricing into server.py.
+
 <!-- New entries go above this line -->

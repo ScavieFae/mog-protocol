@@ -1,18 +1,20 @@
 {
   "brief": "brief-004-txlog-pricing",
   "brief_file": ".loop/briefs/brief-004-txlog-pricing.md",
-  "iteration": 1,
+  "iteration": 2,
   "status": "running",
   "tasks_completed": [
-    "Create src/txlog.py — in-memory transaction logger with log(), count_calls(), get_recent()"
+    "Create src/txlog.py — in-memory transaction logger with log(), count_calls(), get_recent()",
+    "Create src/pricing.py — three-tier surge pricing using txlog"
   ],
   "tasks_remaining": [
-    "Create src/pricing.py — three-tier surge pricing using txlog",
     "Wire txlog + pricing into src/server.py (gateway)",
     "Create src/test_pricing.py and verify it passes"
   ],
   "learnings": [
     "The brief references src/gateway.py and src/services.py but the actual gateway is src/server.py. Wire changes there.",
-    "Module-level singleton pattern: txlog = TransactionLog() at bottom of txlog.py for shared state."
+    "Module-level singleton pattern: txlog = TransactionLog() at bottom of txlog.py for shared state.",
+    "src/server.py uses PaymentsMCP with @mcp.tool(credits=X) decorators — no find_service or buy_and_call tools yet. The brief's gateway wiring needs to adapt to this architecture or add those tools.",
+    "SURGE_THRESHOLD_HIGH/MEDIUM env vars configure tier thresholds (defaults: 20/10)."
   ]
 }
