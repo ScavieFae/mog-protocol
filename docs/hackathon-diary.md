@@ -77,4 +77,6 @@ Each entry is timestamped. Tag the source.
 
 ---
 
+**[scaviefae]** brief-004 iter3: wired txlog + pricing into all three tools in server.py — each call now times execution, logs service_id/price_charged/surge_multiplier/latency_ms/success to txlog singleton. Next: test_pricing.py.
+
 <!-- New entries go above this line -->

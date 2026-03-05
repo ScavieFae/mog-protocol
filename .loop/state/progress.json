@@ -1,20 +1,21 @@
 {
-  "brief": "brief-003-gateway",
-  "brief_file": ".loop/briefs/brief-003-gateway.md",
+  "brief": "brief-004-txlog-pricing",
+  "brief_file": ".loop/briefs/brief-004-txlog-pricing.md",
   "iteration": 3,
-  "status": "complete",
+  "status": "running",
   "tasks_completed": [
-    "Create src/catalog.py with handler field and get() method + Create src/services.py with 3 registered service handlers",
-    "Create src/gateway.py with find_service (0 credits) and buy_and_call (dynamic credits)",
-    "Create src/test_gateway.py with end-to-end tests"
+    "Create src/txlog.py — in-memory transaction logger with log(), count_calls(), get_recent()",
+    "Create src/pricing.py — three-tier surge pricing using txlog",
+    "Wire txlog + pricing into src/server.py (gateway)"
   ],
-  "tasks_remaining": [],
+  "tasks_remaining": [
+    "Create src/test_pricing.py and verify it passes"
+  ],
   "learnings": [
-    "Must use .venv/bin/activate to run python3 — system python3 lacks project deps",
-    "services.py defines handlers directly (not importing from server.py) to avoid NVM key sys.exit at import time",
-    "catalog.search() returns 'price' key (not 'price_credits') to match gateway API contract in spec",
-    "PaymentsMCP dynamic credits callable receives ctx={'args': {...}, 'result': ..., 'request': {...}} — use ctx['args']['service_id'] to look up price",
-    "NVM_GATEWAY_AGENT_ID takes precedence over NVM_AGENT_ID for the gateway; both are checked at startup",
-    "test_gateway.py imports from services (not gateway) so tests run without NVM keys; EXA live call works via .env"
+    "The brief references src/gateway.py and src/services.py but the actual gateway is src/server.py. Wire changes there.",
+    "Module-level singleton pattern: txlog = TransactionLog() at bottom of txlog.py for shared state.",
+    "src/server.py uses PaymentsMCP with @mcp.tool(credits=X) decorators — credits are fixed at decoration time, so surge pricing is tracked in txlog but billing stays at base rate.",
+    "SURGE_THRESHOLD_HIGH/MEDIUM env vars configure tier thresholds (defaults: 20/10).",
+    "Each tool wraps execution in try/except, logs to txlog with timing + surge_multiplier after every call."
   ]
 }
