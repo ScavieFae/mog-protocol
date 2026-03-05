@@ -1,12 +1,13 @@
 {
-  "active": [
+  "active": [],
+  "completed_pending_eval": [
     {
       "brief": "backoffice-001-initial-scout",
       "branch": "bo/001-initial-scout",
       "brief_file": ".loop-backoffice/briefs/backoffice-001-initial-scout.md",
-      "dispatched_at": "2026-03-05T22:51:16Z"
+      "dispatched_at": "2026-03-05T22:51:16Z",
+      "completed_at": "2026-03-05T22:56:59Z"
     }
   ],
-  "completed_pending_eval": [],
   "history": []
 }
