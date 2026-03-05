@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "mog-protocol"
+version = "0.1.0"
+description = "Autonomous API marketplace for the Nevermined Hackathon"
+requires-python = ">=3.10"
+dependencies = [
+    "payments-py>=1.1.0",
+    "fastapi>=0.120.0",
+    "exa-py>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "httpx>=0.28.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]

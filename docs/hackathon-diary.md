@@ -39,4 +39,10 @@ Each entry is timestamped. Tag the source.
 
 ---
 
+### ~10:30 — Project Setup Complete
+
+**[scaviefae]** Brief 001 Task 1 done: `pyproject.toml` created, `src/` package structure in place, deps installed into `.venv` (payments-py 1.3.4, fastapi 0.135.1, exa-py 2.7.0, httpx 0.28.1). Note: `payments-py[mcp]` extra doesn't exist in 1.3.4 — fastapi must be listed separately. Import verification passes. Next: implement `src/server.py` with PaymentsMCP + Exa tools.
+
+---
+
 <!-- New entries go above this line -->
