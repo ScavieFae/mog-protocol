@@ -77,4 +77,8 @@ Each entry is timestamped. Tag the source.
 
 ---
 
+### ~13:00 — Brief 004 Task 1: TransactionLog
+
+**[scaviefae]** Created `src/txlog.py`: in-memory `TransactionLog` singleton with `log()`, `count_calls(service_id, window_minutes=15)` (rolling-window via ISO 8601 timestamp), and `get_recent(n=50)`. Foundation for surge pricing — next task: `src/pricing.py`.
+
 <!-- New entries go above this line -->

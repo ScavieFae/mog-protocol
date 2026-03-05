@@ -1,9 +1,18 @@
 {
   "brief": "brief-004-txlog-pricing",
   "brief_file": ".loop/briefs/brief-004-txlog-pricing.md",
-  "iteration": 0,
+  "iteration": 1,
   "status": "running",
-  "tasks_completed": [],
-  "tasks_remaining": [],
-  "learnings": []
+  "tasks_completed": [
+    "Create src/txlog.py — in-memory transaction logger with log(), count_calls(), get_recent()"
+  ],
+  "tasks_remaining": [
+    "Create src/pricing.py — three-tier surge pricing using txlog",
+    "Wire txlog + pricing into src/server.py (gateway)",
+    "Create src/test_pricing.py and verify it passes"
+  ],
+  "learnings": [
+    "The brief references src/gateway.py and src/services.py but the actual gateway is src/server.py. Wire changes there.",
+    "Module-level singleton pattern: txlog = TransactionLog() at bottom of txlog.py for shared state."
+  ]
 }
