@@ -1,13 +1,14 @@
 {
-  "active": [
+  "active": [],
+  "completed_pending_eval": [
     {
       "brief": "brief-005-gateway-surge-deploy",
       "branch": "brief-005-gateway-surge-deploy",
       "brief_file": ".loop/briefs/brief-005-gateway-surge-deploy.md",
-      "dispatched_at": "2026-03-05T22:42:43Z"
+      "dispatched_at": "2026-03-05T22:42:43Z",
+      "completed_at": "2026-03-05T22:47:00Z"
     }
   ],
-  "completed_pending_eval": [],
   "history": [
     {
       "brief": "brief-001-phase1-seller",
