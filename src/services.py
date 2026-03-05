@@ -6,6 +6,7 @@ to avoid server.py's NVM key exit at import time.
 
 import json
 import os
+import urllib.parse
 import urllib.request
 
 from dotenv import load_dotenv
@@ -16,6 +17,7 @@ load_dotenv()
 
 EXA_API_KEY = os.getenv("EXA_API_KEY")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+NVM_API_KEY = os.getenv("NVM_API_KEY")
 
 # --- Handler functions ---
 
@@ -83,6 +85,45 @@ def _open_meteo_weather(latitude: float, longitude: float, forecast_days: int = 
     return json.dumps(data)
 
 
+def _hackathon_discover(side: str = "all", category: str = "") -> str:
+    """Query the Nevermined hackathon marketplace Discovery API."""
+    if not NVM_API_KEY:
+        return json.dumps({"error": "NVM_API_KEY not set"})
+    params = []
+    if side in ("sell", "buy"):
+        params.append(f"side={side}")
+    if category:
+        params.append(f"category={urllib.parse.quote(category)}")
+    query_string = f"?{'&'.join(params)}" if params else ""
+    url = f"https://nevermined.ai/hackathon/register/api/discover{query_string}"
+    req = urllib.request.Request(url, headers={"x-nvm-api-key": NVM_API_KEY})
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        data = json.loads(resp.read().decode())
+    # Flatten to the useful bits
+    results = []
+    for s in data.get("sellers", []):
+        results.append({
+            "side": "sell",
+            "name": s["name"],
+            "team": s["teamName"],
+            "category": s["category"],
+            "description": s["description"],
+            "pricing": s.get("pricing", {}).get("perRequest", "unknown"),
+            "endpoint": s.get("endpointUrl", ""),
+            "agent_id": s.get("nvmAgentId", ""),
+            "plan_ids": s.get("planIds", []),
+        })
+    for b in data.get("buyers", []):
+        results.append({
+            "side": "buy",
+            "name": b["name"],
+            "team": b["teamName"],
+            "category": b.get("category", ""),
+            "description": b.get("description", ""),
+        })
+    return json.dumps({"total": data["meta"]["total"], "agents": results})
+
+
 # --- Catalog registration ---
 
 catalog = ServiceCatalog()
@@ -115,6 +156,16 @@ catalog.register(
     example_params={"text": "Long article text...", "format": "bullets"},
     provider="mog-protocol",
     handler=_claude_summarize,
+)
+
+catalog.register(
+    service_id="hackathon_discover",
+    name="Hackathon Agent Discovery",
+    description="Discover all agents registered at the Nevermined hackathon. Find sellers offering APIs, buyers looking for services, with pricing and endpoints. Filter by side (sell/buy) and category (AI/ML, DeFi, Research, etc).",
+    price_credits=1,
+    example_params={"side": "sell", "category": "Research"},
+    provider="mog-protocol",
+    handler=_hackathon_discover,
 )
 
 catalog.register(
