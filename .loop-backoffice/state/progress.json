@@ -1,9 +1,20 @@
 {
   "brief": "backoffice-002-wrap-open-meteo",
   "brief_file": ".loop-backoffice/briefs/backoffice-002-wrap-open-meteo.md",
-  "iteration": 0,
-  "status": "running",
-  "tasks_completed": [],
+  "iteration": 1,
+  "status": "complete",
+  "tasks_completed": [
+    "read api-eval-open-meteo.md",
+    "add _open_meteo_weather handler to src/services.py",
+    "add catalog.register for open_meteo_weather",
+    "self-test: handler returns current weather JSON (19.7C, SF)",
+    "update portfolio.json with new service entry and budget",
+    "commit changes"
+  ],
   "tasks_remaining": [],
-  "learnings": []
+  "learnings": [
+    "Open-Meteo API works perfectly — no key, returns current conditions + hourly forecast in one call",
+    "urllib.request.urlopen is sufficient for simple GET APIs — no new deps needed",
+    "Catalog now has 4 services. open_meteo_weather is 100% margin (upstream cost $0)"
+  ]
 }
