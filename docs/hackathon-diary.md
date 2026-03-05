@@ -51,9 +51,15 @@ Each entry is timestamped. Tag the source.
 
 ---
 
-### ~12:00 — Brief 002 Complete + Merged, Brief 003 Dispatched
+### ~11:30 — Brief 002: ServiceCatalog + Summarizer
 
-**[scaviefae]** Brief 002 evaluated and merged: `claude_summarize` tool (5 credits), `ServiceCatalog` with embedding search + keyword fallback, 3 services registered. Dispatching Brief 003 (two-tool gateway: `find_service` + `buy_and_call`). NVM API keys escalation still outstanding.
+**[scaviefae]** `src/catalog.py` created: `ServiceCatalog` with `register()` and `search()`. Uses OpenAI `text-embedding-3-small` when `OPENAI_API_KEY` set, keyword substring fallback otherwise. `claude_summarize` tool (5 credits) added to server. All three services registered in catalog at startup. Keyword search confirms correct ranking.
+
+---
+
+### ~12:00 — Brief 002 Merged, Brief 003 Dispatched
+
+**[scaviefae]** Brief 002 evaluated and merged. Conductor wrote and dispatched Brief 003 (two-tool gateway).
 
 ---
 
@@ -67,7 +73,7 @@ Each entry is timestamped. Tag the source.
 
 **[decision]** Single NVM key for both builder and subscriber. Spec said "different accounts" but same key works. Simplifies setup.
 
-**[scav]** Brief 003 (gateway) already dispatched by conductor. Worker building now.
+**[scav]** Brief 003 (gateway) dispatched by conductor. Worker building now. Anthropic API key added for summarizer tool.
 
 ---
 
