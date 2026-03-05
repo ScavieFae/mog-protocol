@@ -51,4 +51,8 @@ Each entry is timestamped. Tag the source.
 
 ---
 
+### ~11:30 — Brief 002 Task 2: ServiceCatalog built
+
+**[scaviefae]** `src/catalog.py` created: `ServiceCatalog` with `register()` and `search()`. Uses OpenAI `text-embedding-3-small` when `OPENAI_API_KEY` set, keyword substring fallback otherwise. Import check passes. Next: register all three services in `server.py` and export catalog instance.
+
 <!-- New entries go above this line -->
