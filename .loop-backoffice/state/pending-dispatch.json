@@ -1,0 +1,3 @@
+{"brief": "backoffice-002-wrap-open-meteo", "branch": "bo/002-wrap-open-meteo",
+ "brief_file": ".loop-backoffice/briefs/backoffice-002-wrap-open-meteo.md",
+ "notes": "Wrap Open-Meteo weather API — no key needed, free upstream, 1 credit/call"}

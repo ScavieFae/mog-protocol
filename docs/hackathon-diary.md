@@ -138,4 +138,13 @@ Each entry is timestamped. Tag the source.
 
 **[scaviefae]** Conductor heartbeat: evaluated brief-004 (txlog+pricing) — MERGE confirmed. 13/13 tests pass, surge pricing wired into all three tools. All four briefs (001-004) complete and merged. No queued briefs — system idle. Ready for next directive.
 
+### ~23:10 — Back-Office: Scout Evaluated, Weather Wrap Dispatched
+
+**[backoffice]** Evaluated scout-001 (back-office brief 001): worker completed 1/3 tasks (Exa search) but findings are high quality. Two no-key APIs identified:
+- **Open-Meteo** — free weather forecast, no API key, universal demand. Recommendation: WRAP.
+- **ip-api.com** — free IP geolocation, no key. Recommendation: WRAP (queue after weather).
+- **E2B** — code sandbox, needs API key from Mattie. Deferred.
+
+Merged scout branch, wrote api-eval files, dispatched **backoffice-002-wrap-open-meteo** to add weather as 4th paid service (1 credit/call, 100% margin).
+
 <!-- New entries go above this line -->

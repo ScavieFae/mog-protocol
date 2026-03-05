@@ -1,13 +1,16 @@
 {
   "active": [],
-  "completed_pending_eval": [
+  "completed_pending_eval": [],
+  "history": [
     {
       "brief": "backoffice-001-initial-scout",
       "branch": "bo/001-initial-scout",
       "brief_file": ".loop-backoffice/briefs/backoffice-001-initial-scout.md",
       "dispatched_at": "2026-03-05T22:51:16Z",
-      "completed_at": "2026-03-05T22:56:59Z"
+      "completed_at": "2026-03-05T22:56:59Z",
+      "evaluated_at": "2026-03-05T23:10:00Z",
+      "verdict": "accepted",
+      "eval_file": ".loop-backoffice/evaluations/eval-001-initial-scout.md"
     }
-  ],
-  "history": []
+  ]
 }
