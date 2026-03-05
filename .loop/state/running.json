@@ -1,21 +1,13 @@
 {
   "active": [
     {
-      "brief": "brief-005-gateway-surge-deploy",
-      "branch": "brief-005-gateway-surge-deploy",
-      "brief_file": ".loop/briefs/brief-005-gateway-surge-deploy.md",
-      "dispatched_at": "2026-03-05T23:06:35Z"
+      "brief": "brief-006-surge-health",
+      "branch": "brief-006-surge-health",
+      "brief_file": ".loop/briefs/brief-006-surge-health.md",
+      "dispatched_at": "2026-03-05T23:40:55Z"
     }
   ],
-  "completed_pending_eval": [
-    {
-      "brief": "brief-005-gateway-surge-deploy",
-      "branch": "brief-005-gateway-surge-deploy",
-      "brief_file": ".loop/briefs/brief-005-gateway-surge-deploy.md",
-      "dispatched_at": "2026-03-05T22:42:43Z",
-      "completed_at": "2026-03-05T22:47:00Z"
-    }
-  ],
+  "completed_pending_eval": [],
   "history": [
     {
       "brief": "brief-001-phase1-seller",
@@ -46,6 +38,12 @@
       "branch": "brief-004-txlog-pricing",
       "merged_at": "2026-03-05T21:50:00Z",
       "evaluation": "MERGE \u2014 13/13 tests pass, txlog+pricing wired into all tools, surge-adjusted _meta in responses"
+    },
+    {
+      "brief": "brief-005-gateway-surge-deploy",
+      "branch": "brief-005-gateway-surge-deploy",
+      "closed_at": "2026-03-05T23:37:00Z",
+      "evaluation": "STALLED \u2014 1/3 tasks done (surge pricing only), branch diverged from main, no worker running. Replaced by brief-006."
     }
   ]
 }
