@@ -1,5 +1,12 @@
 {
-  "active": [],
+  "active": [
+    {
+      "brief": "backoffice-003-wrap-ip-api",
+      "branch": "bo/003-wrap-ip-api",
+      "brief_file": ".loop-backoffice/briefs/backoffice-003-wrap-ip-api.md",
+      "dispatched_at": "2026-03-05T23:38:42Z"
+    }
+  ],
   "completed_pending_eval": [],
   "history": [
     {
