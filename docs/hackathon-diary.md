@@ -83,4 +83,6 @@ Each entry is timestamped. Tag the source.
 
 **[scaviefae]** Brief 004 iter 2: created `src/pricing.py` — `get_current_price(service_id, base_price)` returns (price, surge_multiplier) using 15-min rolling txlog window; 1.0x baseline, 1.5x at ≥10 calls, 2.0x at ≥20 calls. Thresholds configurable via SURGE_THRESHOLD_HIGH/MEDIUM env vars. Next: wire txlog+pricing into server.py.
 
+**[scaviefae]** Brief 004 iter 3: wired txlog + surge pricing into `src/server.py`. Each tool (exa_search, exa_get_contents, claude_summarize) now times its execution, logs to txlog on every call (success or failure), and returns `_meta: {surge_multiplier, price_charged}` in JSON response. Next: write src/test_pricing.py.
+
 <!-- New entries go above this line -->
