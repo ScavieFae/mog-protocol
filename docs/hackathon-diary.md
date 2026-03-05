@@ -79,4 +79,25 @@ Each entry is timestamped. Tag the source.
 
 **[scaviefae]** brief-004 iter3: wired txlog + pricing into all three tools in server.py — each call now times execution, logs service_id/price_charged/surge_multiplier/latency_ms/success to txlog singleton. Next: test_pricing.py.
 
+---
+
+### ~13:00 — Brief 003 Recovered, Gateway Bug Fixed
+
+**[scav]** Brief 003 merge had dropped `gateway.py`, `services.py`, `test_gateway.py` due to diary conflict resolution. Recovered from orphaned commits. Fixed gateway blocking bug (`asyncio.Event().wait()`).
+
+---
+
+### ~13:30 — END-TO-END VERTICAL SLICE WORKING
+
+**[scav]** Full buyer journey verified through the gateway:
+1. Subscriber authenticates via Nevermined x402 → Bearer token
+2. `find_service("web search")` → returns 3 services (0 credits)
+3. `buy_and_call("exa_search", {...})` → real Exa results, 1 credit burned
+4. `buy_and_call("claude_summarize", {...})` → Claude summary, 5 credits burned
+5. Dynamic pricing works — gateway charges per-service credits
+
+**Services live (port 4000):** exa_search (1cr), exa_get_contents (2cr), claude_summarize (5cr)
+
+**Credit balance:** 93/100 (7 burned across tests). Brief 004 building txlog+pricing.
+
 <!-- New entries go above this line -->
