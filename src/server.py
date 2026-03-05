@@ -76,7 +76,14 @@ def exa_get_contents(urls: list[str]) -> str:
 async def main():
     port = int(os.getenv("MCP_PORT", "3000"))
     print(f"Starting Mog Exa MCP server on port {port}")
-    await mcp.start(port=port)
+    result = await mcp.start(port=port)
+    # start() returns immediately — block until interrupted
+    stop = result.get("stop")
+    try:
+        await asyncio.Event().wait()
+    except (KeyboardInterrupt, asyncio.CancelledError):
+        if stop:
+            await stop()
 
 
 if __name__ == "__main__":

@@ -51,4 +51,24 @@ Each entry is timestamped. Tag the source.
 
 ---
 
+### ~12:00 — Brief 002 Complete + Merged, Brief 003 Dispatched
+
+**[scaviefae]** Brief 002 evaluated and merged: `claude_summarize` tool (5 credits), `ServiceCatalog` with embedding search + keyword fallback, 3 services registered. Dispatching Brief 003 (two-tool gateway: `find_service` + `buy_and_call`). NVM API keys escalation still outstanding.
+
+---
+
+### ~12:36 — FIRST PAID TRANSACTION
+
+**[scav]** NVM key added. Agent+plan registered on Nevermined sandbox. Server started, self-buy succeeded:
+- Exa search returned 3 results for "Nevermined autonomous AI agents"
+- 1 credit burned, tx hash `0xe5a5d1bc...`
+- Same API key works for both builder and subscriber roles
+- Bug fixed: `PaymentsMCP.start()` returns immediately, needed `asyncio.Event().wait()` to keep server alive
+
+**[decision]** Single NVM key for both builder and subscriber. Spec said "different accounts" but same key works. Simplifies setup.
+
+**[scav]** Brief 003 (gateway) already dispatched by conductor. Worker building now.
+
+---
+
 <!-- New entries go above this line -->
