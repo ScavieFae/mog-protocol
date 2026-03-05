@@ -1,1 +1,12 @@
-{"active":[],"completed_pending_eval":[],"history":[]}
+{
+  "active": [
+    {
+      "brief": "brief-001-phase1-seller",
+      "branch": "brief-001-phase1-seller",
+      "brief_file": ".loop/briefs/brief-001-phase1-seller.md",
+      "dispatched_at": "2026-03-05T20:15:41Z"
+    }
+  ],
+  "completed_pending_eval": [],
+  "history": []
+}
