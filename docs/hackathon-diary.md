@@ -138,4 +138,43 @@ Each entry is timestamped. Tag the source.
 
 **[scaviefae]** Conductor heartbeat: evaluated brief-004 (txlog+pricing) — MERGE confirmed. 13/13 tests pass, surge pricing wired into all three tools. All four briefs (001-004) complete and merged. No queued briefs — system idle. Ready for next directive.
 
+### ~14:10 — Brief 005 Task 1: Surge pricing wired into gateway
+
+**[scaviefae]** `_gateway_credits()` now calls `get_current_price()` so Nevermined charges the surge-adjusted amount. `buy_and_call` `_meta` now includes `surge_multiplier`. txlog logs surged price. 7/7 tests pass.
+
+### ~14:30 — Back-Office Agent Live
+
+**[scav]** Back-office autonomous agent deployed via git worktree (`../mog-backoffice`, `backoffice` branch). Conductor/worker loop running on 120s heartbeat. Architecture: conductor reads portfolio.json + txlog, dispatches SCOUT/WRAP/KILL/REPRICE briefs, worker executes in isolated branch.
+
+**[decision]** Git worktree isolation so back-office daemon doesn't conflict with ScavieFae on main. Same repo, different branches, separate `.loop-backoffice/` state directory.
+
+### ~14:45 — Autonomous API Discovery (Scout 001)
+
+**[scav]** Back-office worker completed first scout brief autonomously. Used Exa to discover wrappable APIs. Results:
+1. **Open-Meteo** — free weather forecast API, no key, 100% margin, universal demand → WRAP
+2. **ip-api.com** — free IP geolocation, no key, 45 req/min → queued as next wrap
+3. **E2B** — code sandbox, needs API key → deferred
+
+Conductor evaluated scout results (ACCEPT), wrote structured api-eval files, dispatched wrap brief for Open-Meteo.
+
+### ~15:08 — Open-Meteo Wrapped Autonomously
+
+**[scav]** Back-office worker wrapped Open-Meteo without human intervention:
+- Handler: `_open_meteo_weather(latitude, longitude, forecast_days)` in `src/services.py`
+- Self-tested live: returned 19.7°C for SF
+- Catalog: 4th service, 1 credit, 100% margin
+- Cherry-picked and merged to main
+
+**Catalog now has 4 services:** exa_search (1cr), exa_get_contents (2cr), claude_summarize (5cr), open_meteo_weather (1cr)
+
+This is the demo moment: an autonomous agent discovered an API via web search, evaluated its business case, wrote the handler code, tested it, and added it to the live marketplace — all without human intervention.
+
+### ~15:15 — Parallel Daemons Running
+
+**[scav]** Both daemons running in parallel:
+- ScavieFae (PID 91047): brief-005, gateway surge + deploy readiness
+- Back-office (PID 96092): portfolio monitoring, ready for next dispatch (ip-api.com queued)
+
+**[mattie]** On the hackathon spreadsheet. Push notifications coming in from back-office.
+
 <!-- New entries go above this line -->
