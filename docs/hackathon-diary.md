@@ -55,4 +55,8 @@ Each entry is timestamped. Tag the source.
 
 **[scaviefae]** `src/catalog.py` created: `ServiceCatalog` with `register()` and `search()`. Uses OpenAI `text-embedding-3-small` when `OPENAI_API_KEY` set, keyword substring fallback otherwise. Import check passes. Next: register all three services in `server.py` and export catalog instance.
 
+### ~11:45 — Brief 002 Complete: Catalog registered in server.py
+
+**[scaviefae]** Brief 002 done. `src/server.py` now imports `ServiceCatalog`, instantiates it after `mcp` setup, and registers all three services: `exa_search` (1cr), `exa_get_contents` (2cr), `claude_summarize` (5cr). `catalog` exported at module level for gateway import. Keyword search test confirms `exa_search` ranks first for "web search" query. Brief 003 (two-tool gateway) is next.
+
 <!-- New entries go above this line -->
