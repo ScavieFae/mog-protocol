@@ -31,6 +31,8 @@ from payments_py import Payments, PaymentOptions
 from payments_py.mcp import PaymentsMCP
 import exa_py
 
+from src.catalog import ServiceCatalog
+
 exa_client = exa_py.Exa(api_key=EXA_API_KEY)
 
 payments = Payments.get_instance(
@@ -46,6 +48,32 @@ mcp = PaymentsMCP(
     agent_id=NVM_AGENT_ID,
     version="1.0.0",
     description="Semantic web search via Exa. Fast, relevant results with source URLs.",
+)
+
+catalog = ServiceCatalog()
+catalog.register(
+    service_id="exa_search",
+    name="Exa Search",
+    description="Semantic web search. Returns relevant snippets with source URLs.",
+    price_credits=1,
+    example_params={"query": "latest AI research", "max_results": 5},
+    provider="mog-exa",
+)
+catalog.register(
+    service_id="exa_get_contents",
+    name="Exa Get Contents",
+    description="Fetch full text content from URLs.",
+    price_credits=2,
+    example_params={"urls": ["https://example.com"]},
+    provider="mog-exa",
+)
+catalog.register(
+    service_id="claude_summarize",
+    name="Claude Summarize",
+    description="Summarize text using Claude. Supports bullets, paragraph, or structured format.",
+    price_credits=5,
+    example_params={"text": "Long article text...", "format": "bullets"},
+    provider="mog-exa",
 )
 
 
