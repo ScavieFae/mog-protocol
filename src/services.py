@@ -6,6 +6,7 @@ to avoid server.py's NVM key exit at import time.
 
 import json
 import os
+import urllib.request
 
 from dotenv import load_dotenv
 
@@ -69,6 +70,19 @@ def _claude_summarize(text: str, format: str = "bullets") -> str:
     return message.content[0].text
 
 
+def _open_meteo_weather(latitude: float, longitude: float, forecast_days: int = 1) -> str:
+    url = (
+        f"https://api.open-meteo.com/v1/forecast"
+        f"?latitude={latitude}&longitude={longitude}"
+        f"&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code"
+        f"&hourly=temperature_2m"
+        f"&forecast_days={forecast_days}"
+    )
+    with urllib.request.urlopen(url, timeout=10) as resp:
+        data = json.loads(resp.read().decode())
+    return json.dumps(data)
+
+
 # --- Catalog registration ---
 
 catalog = ServiceCatalog()
@@ -101,4 +115,14 @@ catalog.register(
     example_params={"text": "Long article text...", "format": "bullets"},
     provider="mog-protocol",
     handler=_claude_summarize,
+)
+
+catalog.register(
+    service_id="open_meteo_weather",
+    name="Weather Forecast",
+    description="Current weather conditions and hourly temperature forecast for any location. Returns temperature, humidity, wind speed, and weather code. No API key needed — free and open source.",
+    price_credits=1,
+    example_params={"latitude": 37.77, "longitude": -122.42, "forecast_days": 1},
+    provider="mog-protocol",
+    handler=_open_meteo_weather,
 )
