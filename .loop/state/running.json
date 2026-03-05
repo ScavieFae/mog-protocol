@@ -1,13 +1,14 @@
 {
-  "active": [
+  "active": [],
+  "completed_pending_eval": [
     {
       "brief": "brief-002-second-service-catalog",
       "branch": "brief-002-second-service-catalog",
       "brief_file": ".loop/briefs/brief-002-second-service-catalog.md",
-      "dispatched_at": "2026-03-05T20:28:00Z"
+      "dispatched_at": "2026-03-05T20:28:00Z",
+      "completed_at": "2026-03-05T20:37:00Z"
     }
   ],
-  "completed_pending_eval": [],
   "history": [
     {
       "brief": "brief-001-phase1-seller",
