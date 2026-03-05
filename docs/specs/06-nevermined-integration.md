@@ -4,92 +4,189 @@
 
 ## Overview
 
-All transactions flow through Nevermined. This is non-negotiable — it's the hackathon requirement and the payment rail.
+All transactions flow through Nevermined. The SDK is `payments-py` (Python). Payment uses x402 protocol — HTTP Bearer tokens, credit-based billing, no wallet popups per request.
 
-## Two Modes
+Reference implementation: `nevermined-io/hackathons` repo, specifically `agents/mcp-server-agent/`.
 
-Nevermined supports two server modes. We use **x402** for simplicity:
+## SDK Patterns (Actual, From Hackathon Repo)
 
-### x402 Mode (our choice)
-- HTTP 402-based payment flow
-- Gateway generates access tokens for buyers
-- Simpler, fewer dependencies
-- Works with Privy USDC wallets
-
-### A2A Mode (alternative)
-- Agent-to-agent protocol with agent cards
-- More complex but richer coordination
-- Probably overkill for hackathon scope
-
-## Seller Setup (Our Services)
+### Initialization
 
 ```python
-from payments_py import Payments, Environment
-from payments_py.utils import require_payment
+from payments_py import Payments, PaymentOptions
 
-payments = Payments(
-    app_id="mog-protocol",
-    nvm_api_key=os.getenv("NVM_API_KEY"),
-    environment=Environment.appTesting,  # switch to appArbitrum for real money
-    ai_protocol=True
+payments = Payments.get_instance(
+    PaymentOptions(
+        nvm_api_key=os.getenv("NVM_API_KEY"),  # "sandbox:..." or "live:..."
+        environment=os.getenv("NVM_ENVIRONMENT", "sandbox"),
+    )
+)
+```
+
+Environments: `sandbox` (Base Sepolia testnet), `staging`, `live` (Base mainnet).
+
+### One-Shot Agent + Plan Registration
+
+The `setup.py` pattern from the hackathon repo — registers agent and payment plan in one call, writes IDs to `.env`:
+
+```python
+from payments_py.common.types import AgentMetadata, AgentAPIAttributes, Endpoint, PlanMetadata
+from payments_py.plans import get_free_price_config, get_dynamic_credits_config
+
+result = payments.agents.register_agent_and_plan(
+    agent_metadata=AgentMetadata(
+        name="Mog Protocol",
+        description="API marketplace with search and paid tool access",
+        tags=["marketplace", "mcp", "search"],
+    ),
+    agent_api=AgentAPIAttributes(
+        endpoints=[
+            Endpoint(verb="POST", url="mcp://mog-gateway/tools/find_service"),
+            Endpoint(verb="POST", url="mcp://mog-gateway/tools/buy_and_call"),
+        ],
+        agent_definition_url="mcp://mog-gateway/tools/*",
+    ),
+    plan_metadata=PlanMetadata(
+        name="Mog Marketplace Credits",
+        description="Credits for searching and buying API access",
+    ),
+    price_config=get_free_price_config(),  # free for hackathon testing
+    credits_config=get_dynamic_credits_config(
+        credits_granted=100,
+        min_credits_per_request=0,  # find_service is free
+        max_credits_per_request=20,
+    ),
+    access_limit="credits",
 )
 
-# Create a payment plan for a service
-plan = payments.create_plan(
-    name="exa-search",
-    description="Semantic web search via Exa",
-    price=2,  # credits
-    token_type="credits"
+agent_id = result["agentId"]
+plan_id = result["planId"]
+```
+
+MCP logical URIs (`mcp://mog-gateway/tools/...`) decouple registration from physical server location.
+
+### PaymentsMCP Server (For Individual Services)
+
+```python
+from payments_py.mcp import PaymentsMCP
+
+mcp = PaymentsMCP(
+    payments,
+    name="exa-search-server",
+    agent_id=NVM_AGENT_ID,
+    version="1.0.0",
+    description="Exa semantic web search",
 )
 
-# Decorate the tool
-@requires_payment(payments=payments, plan_id=plan.id, credits=1, agent_id=AGENT_ID)
-def exa_search(query: str, max_results: int = 5) -> dict:
-    # actual Exa API call
+@mcp.tool(credits=1)
+def exa_search(query: str, max_results: int = 5) -> str:
+    """Semantic web search via Exa. Returns relevant snippets with URLs."""
+    result = exa_client.search(query, num_results=max_results)
+    return json.dumps(result)
+
+# Dynamic pricing: credits calculated after execution
+def research_credits(ctx: dict) -> int:
+    result = ctx.get("result") or {}
+    content = result.get("content", [])
+    text = content[0].get("text", "") if content else ""
+    return min(10, max(2, 2 + len(text) // 500))
+
+@mcp.tool(credits=research_credits)
+def deep_research(query: str, paywall_context=None) -> str:
+    """Deep research combining search + AI synthesis. 2-10 credits based on output."""
     ...
+
+# Start server
+async def main():
+    result = await mcp.start(port=3000)
+    # Endpoints: /mcp (JSON-RPC), /health
 ```
 
-## Buyer Setup (Our Agent Buying Upstream)
+### Client Side — Subscribing and Calling
 
 ```python
-# When our wrapper agent needs to buy from another team
-token = payments.x402.get_x402_access_token(
-    plan_id=their_plan_id,
-    credits=1
+# Subscriber uses a DIFFERENT API key than the builder
+subscriber_payments = Payments.get_instance(
+    PaymentOptions(nvm_api_key=os.getenv("NVM_SUBSCRIBER_API_KEY"), environment="sandbox")
 )
-# Include token in request headers
-response = requests.post(their_endpoint, headers={"Authorization": f"Bearer {token}"}, json=params)
+
+# Check balance, order if needed
+balance = subscriber_payments.plans.get_plan_balance(PLAN_ID)
+if not balance.is_subscriber:
+    subscriber_payments.plans.order_plan(PLAN_ID)
+
+# Get x402 access token (reusable across multiple requests)
+token_result = subscriber_payments.x402.get_x402_access_token(PLAN_ID)
+access_token = token_result["accessToken"]
+
+# Call MCP tool via JSON-RPC
+response = httpx.post(f"{SERVER_URL}/mcp", headers={
+    "Authorization": f"Bearer {access_token}",
+    "Content-Type": "application/json",
+    "Accept": "application/json, text/event-stream",
+}, json={
+    "jsonrpc": "2.0",
+    "method": "tools/call",
+    "params": {"name": "exa_search", "arguments": {"query": "AI trends"}},
+    "id": 1,
+})
+
+# Response includes _meta with payment receipt
+result = response.json()["result"]
+content = result["content"]       # tool output
+meta = result.get("_meta", {})    # credits_redeemed, success, etc.
 ```
 
-## Gateway Payment Proxy
+## Two API Keys Required
 
-The gateway's `buy_and_call` handles payment on behalf of buyer agents:
+| Key | Role | Starts with |
+|-----|------|-------------|
+| **Builder** (`NVM_API_KEY`) | Creates agents, plans. Used by our servers. | `sandbox:...` |
+| **Subscriber** (`NVM_SUBSCRIBER_API_KEY`) | Orders plans, gets tokens. Used by buyer agents / test client. | `sandbox:...` |
 
-1. Buyer calls `buy_and_call("exa-search-v1", {"query": "..."})`
-2. Gateway has buyer's Nevermined context (established on connect or via API key)
-3. Gateway generates x402 token for the specific service
-4. Gateway calls the underlying service with token
-5. Returns result to buyer
+These must be different Nevermined accounts. Both obtained from https://nevermined.app.
 
-**Key question:** How does the buyer agent's Nevermined identity flow through our gateway? Options:
-- Buyer passes their NVM API key on connect → we generate tokens on their behalf
-- Buyer pre-purchases credits from us → we spend from our own pool
-- We act as a reseller with our own Nevermined account → simplest, buyer just pays us
+## Payment Architecture for the Gateway
 
-**Recommended for hackathon:** Reseller model. Buyer pays us credits, we pay upstream. Simplest integration, buyer agents don't need Nevermined SDKs.
+Two payment relationships:
 
-## Environment
+```
+Other Teams' Agents
+    | pay us (via our plan)
+    v
+Mog Gateway (reseller)
+    | pays upstream (via their plans, or direct API calls)
+    v
+Upstream Services (Exa, other teams' APIs)
+```
 
-- **Testing:** `Environment.appTesting` — use this Thursday morning
-- **Production:** `Environment.appArbitrum` — switch if we want real USDC transactions
-- **Marketplace listing:** Register services in the hackathon spreadsheet
+**Reseller model:** Buyer pays us credits. We call upstream services using our own API keys or our own x402 tokens. Buyer never touches Nevermined directly — they just call `buy_and_call` and get results.
 
-## Setup Steps
+This is the simplest integration. Buyer agents don't need the Nevermined SDK or their own accounts. They get an x402 token for our plan and call our gateway.
 
-1. Get NVM API key from Nevermined team (they're on-site)
-2. Create agent ID via Nevermined dashboard
-3. Set up payment plans for each service we list
-4. Test with a self-buy before opening to other teams
+## Dependencies
+
+```toml
+payments-py = {version = ">=1.1.0", extras = ["mcp"]}
+fastapi = "^0.120.0"
+uvicorn = ">=0.34.2"
+httpx = "^0.28.0"
+python-dotenv = "^1.0.0"
+```
+
+The `extras = ["mcp"]` is critical — it pulls in PaymentsMCP support.
+
+## Setup Steps (Day-Of)
+
+1. Sign up at https://nevermined.app — create TWO accounts (builder + subscriber)
+2. Each account: API Keys > Global NVM API Keys > + New API Key
+3. Builder account: set `NVM_API_KEY` in `.env`
+4. Run `setup.py` — registers agent + plan, writes `NVM_AGENT_ID` and `NVM_PLAN_ID` to `.env`
+5. Start server with `python -m src.server`
+6. Subscriber account: set `NVM_SUBSCRIBER_API_KEY` in `.env`
+7. Run `client.py` — subscribes to plan, gets token, calls a tool
+8. Verify credits were burned in the Nevermined dashboard
+9. List in hackathon marketplace spreadsheet
 
 ## Credits / Coupons
 

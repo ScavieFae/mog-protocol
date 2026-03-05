@@ -4,7 +4,7 @@
 
 ## What This Is
 
-An autonomous agent marketplace that discovers APIs, evaluates ROI of wrapping them as MCP servers, generates the servers, prices them dynamically, and sells access to other agents — all via Nevermined payment rails.
+An autonomous agent marketplace that wraps APIs as paid MCP tools, prices them dynamically, and sells access to other agents — all via Nevermined payment rails. Buyer agents connect to one MCP server, get two tools, search for what they need, pay and get results.
 
 ## Core Thesis
 
@@ -12,60 +12,82 @@ API providers ship 600 endpoints. Agents need 12. We sit at the transaction laye
 
 ## Architecture
 
+Two layers: individual paid services, and a gateway that fronts them all.
+
 ```
-┌─────────────────────────────────────────────────┐
-│                  Mog Protocol                    │
-│                                                  │
-│  ┌──────────┐  ┌──────────┐  ┌───────────────┐  │
-│  │ Discovery │  │ Evaluator│  │   Generator   │  │
-│  │  (Exa /   │→ │  (ROI    │→ │  (OpenAPI →   │  │
-│  │  Apify)   │  │  logic)  │  │  MCP server)  │  │
-│  └──────────┘  └──────────┘  └───────┬───────┘  │
-│                                      │          │
-│  ┌───────────────────────────────────┴────────┐  │
-│  │              Gateway Server                │  │
-│  │  find_service(query, budget) → matches     │  │
-│  │  buy_and_call(service_id, params) → result │  │
-│  │  [Nevermined @requires_payment inside]     │  │
-│  └────────────────────────────────────────────┘  │
-│                                                  │
-│  ┌──────────┐  ┌──────────┐  ┌───────────────┐  │
-│  │  Pricing  │  │ Catalog  │  │   Metrics /   │  │
-│  │  Engine   │  │  Index   │  │   Analytics   │  │
-│  └──────────┘  └──────────┘  └───────────────┘  │
-└─────────────────────────────────────────────────┘
+Buyer Agent
+    | MCP (Streamable HTTP, 2 tools always)
+    v
+Mog Gateway
+    find_service(query, budget) -> matches with prices
+    buy_and_call(service_id, params) -> result + cost
+    [PaymentsMCP handles x402 auth]
+    |
+    +---> Catalog Index (in-memory embeddings, numpy)
+    +---> Pricing Engine (surge tiers, demand tracking)
+    +---> Transaction Log (feeds pricing + demo feed)
+    |
+    v
+Individual Services (behind the gateway)
+    - Exa search wrapper (PaymentsMCP)
+    - Other wrapped APIs
+    - Other teams' services (proxied)
 ```
+
+## Build Phases
+
+### Phase 1: First Transaction (Thursday, by 8PM)
+
+Fork `nevermined-io/hackathons/agents/mcp-server-agent/`. Swap DuckDuckGo for Exa. Register with Nevermined. Get a self-buy working, then open to other teams.
+
+**Deliverables:**
+- PaymentsMCP server with Exa search tool (1 credit) + a second tool
+- Registered agent + plan on Nevermined sandbox
+- Self-test: subscriber account orders plan, gets token, calls tool, credits burn
+- Listed in hackathon marketplace spreadsheet
+
+**This is a standalone MCP server, not the gateway yet.** The gateway wraps this in Phase 2.
+
+### Phase 2: Two-Tool Gateway (Thursday night / Friday morning)
+
+Build the gateway that fronts all services with `find_service` + `buy_and_call`.
+
+**Deliverables:**
+- Gateway MCP server on separate port
+- Catalog index with embeddings (in-memory, numpy)
+- `find_service` returns top-k matches with prices
+- `buy_and_call` proxies to upstream services, returns result + cost
+- Transaction logging (every buy_and_call logged)
+
+### Phase 3: Demo Polish (Friday, by 4PM code freeze)
+
+**Deliverables:**
+- Dynamic pricing (three-tier surge, 15-min rolling window)
+- Marketplace feed (WebSocket, scrolling events)
+- More services in catalog (from walking around + autonomous wrapping)
+- The zing — whichever direction has gravity by Friday
 
 ## Components
 
-| Component | Purpose | Priority |
-|-----------|---------|----------|
-| **Gateway Server** | Two-tool MCP interface for buyers | P0 — this IS the product |
-| **Wrapper/Generator** | OpenAPI spec → MCP server with billing | P0 — no inventory without it |
-| **Nevermined Integration** | `@requires_payment` on all tools | P0 — mandatory for hackathon |
-| **Catalog Index** | Embeddings over tool descriptions for `find_service` | P0 — gateway needs search |
-| **Pricing Engine** | Dynamic/surge pricing based on demand | P1 — differentiator |
-| **Discovery Agent** | Find APIs, evaluate ROI, decide whether to wrap | P1 — autonomous loop |
-| **Metrics/Analytics** | Track revenue, usage, demand signals | P1 — feeds pricing + demo |
-| **Zing Layer** | Missed connections feed, spot market, etc. | P2 — demo polish |
-
-## Timeline
-
-**Thursday by 8PM:** Manual wrap of 1-2 APIs → listed via Nevermined → first transaction. Gateway with `find_service` + `buy_and_call` working.
-
-**Friday by 4PM (code freeze):** Autonomous discovery loop running. Dynamic pricing active. Enough transactions to show economic behavior. Demo-ready.
+| Component | Purpose | Phase |
+|-----------|---------|-------|
+| **Exa MCP Server** | First paid service, proves the flow | P1 |
+| **Nevermined Registration** | Agent + plan + self-test | P1 |
+| **Gateway Server** | Two-tool MCP interface for buyers | P2 |
+| **Catalog Index** | Embeddings over tool descriptions for `find_service` | P2 |
+| **Transaction Log** | Every buy_and_call logged with buyer, service, price, timestamp | P2 |
+| **Pricing Engine** | Surge pricing based on demand | P3 |
+| **Marketplace Feed** | WebSocket live feed for demo | P3 |
+| **Wrapper Agent** | Autonomous discovery + wrapping via simple-loop | P3 |
 
 ## Tech Stack
 
 - **Language:** Python 3.10+
-- **Server:** FastAPI
-- **MCP generation:** FastMCP (`from_openapi()`)
-- **Payments:** Nevermined `payments-py`, `@requires_payment`
-- **Search/Discovery:** Exa API
-- **Scraping:** Apify
+- **MCP + Payments:** `payments-py[mcp]` (PaymentsMCP wraps FastMCP + Nevermined billing)
+- **HTTP:** FastAPI + uvicorn (for any non-MCP endpoints), httpx (client)
 - **Embeddings:** OpenAI `text-embedding-3-small` (for catalog search)
-- **Agent framework:** Strands SDK or direct Claude
-- **Harness:** simple-loop (for autonomous wrapper agent)
+- **Search:** Exa API (first wrapped service)
+- **Agent harness:** simple-loop (for autonomous wrapper agent on ScavieFae)
 
 ## Success Criteria
 

@@ -4,84 +4,114 @@
 
 ## What It Does
 
-Discovers APIs, evaluates whether wrapping them is ROI-positive, generates the MCP server, lists it in the marketplace. Runs autonomously via simple-loop while Mattie does in-person sales.
+Discovers APIs, evaluates whether wrapping them is ROI-positive, generates the MCP server, lists it in the marketplace. Runs autonomously via simple-loop on ScavieFae while Mattie does in-person sales.
 
-## Pipeline Stages
+## Starting Point
 
-### Stage 1: Discovery
+Fork `nevermined-io/hackathons/agents/mcp-server-agent/`. It provides:
+- PaymentsMCP server with `@mcp.tool(credits=N)` decorators
+- `setup.py` for one-shot agent + plan registration
+- `client.py` for self-testing
+- Dynamic credit pricing via context functions
 
-Input sources:
-- Manual: "wrap Exa search" (Thursday morning, fast path to first transaction)
-- Walk-around: "Team 7 uses Weatherstack API, here's their key"
-- Autonomous: Exa search for OpenAPI specs, API directories
-- Demand-driven: `find_service` queries with 0 results → gaps to fill
+We swap the example tools (DuckDuckGo search, summarize, research) for real tools backed by real APIs.
 
-### Stage 2: Evaluation (the novel part)
+## Phase 1 Services (Manual, Thursday Morning)
+
+### Exa Search (we have keys + $50 coupon)
+
+```python
+@mcp.tool(credits=1)
+def exa_search(query: str, max_results: int = 5) -> str:
+    """Semantic web search. Returns relevant snippets with source URLs.
+    Use when you need current information, research, or web content."""
+    result = exa_client.search_and_contents(
+        query, num_results=max_results, text=True
+    )
+    return json.dumps([{
+        "title": r.title,
+        "url": r.url,
+        "snippet": r.text[:500],
+    } for r in result.results])
+```
+
+### Second tool — pick based on what's useful at the hackathon
+
+Options (in order of likely value):
+1. **Claude summarizer** — takes text, returns structured summary. We have Anthropic keys. 5 credits (uses LLM).
+2. **Web scrape** — takes URL, returns clean text. Uses httpx + basic extraction. 2 credits.
+3. **Whatever teams are asking for** — listen at the venue, wrap what's in demand.
+
+## Phase 2 Services (Walk-Around, Thursday Afternoon)
+
+Input from Mattie walking the venue:
+- "Team 7 needs weather data" → wrap Weatherstack
+- "Everyone's using the same OpenAI wrapper" → undercut or differentiate
+- "Nobody has PDF extraction" → find an API, wrap it
+
+Each new service follows the same pattern:
+1. Get API key (ours or team gives us theirs)
+2. Write the tool function with `@mcp.tool(credits=N)`
+3. Add to catalog index
+4. Test with self-buy
+5. List in marketplace spreadsheet
+
+## Evaluation Logic (What Makes This Autonomous)
 
 ```python
 def should_wrap(api_info: dict) -> dict:
-    """
-    Returns { wrap: bool, reasoning: str, suggested_price: int }
+    """LLM call with structured output. Returns {wrap: bool, reasoning: str, suggested_price: int}
 
     Factors:
     - upstream_cost: What does each API call cost us?
-    - spec_quality: Does a clean OpenAPI spec exist, or do we need to scrape?
     - estimated_demand: How many agents at this hackathon need this?
     - competition: Did someone else already list this?
-    - generation_effort: How complex is the API? (endpoint count, auth model)
+    - generation_effort: Simple API call? Complex multi-step?
     - margin: Can we price above cost and below alternatives?
     """
 ```
 
-At hackathon scale, this is an LLM call with structured output, not a model. Feed it the factors, get a decision. The judgment is the point — it's what makes this an autonomous business, not an autonomous wrapper.
-
-### Stage 3: Generation
-
-```python
-# Happy path: clean OpenAPI spec
-from fastmcp import FastMCP
-server = FastMCP.from_openapi(spec_url, name="weatherstack-mcp")
-
-# Sad path: no spec, just docs
-# Use Apify to scrape docs → LLM to generate tool definitions → manual FastMCP
-```
-
-**Quality step:** Don't wrap all 600 endpoints. The LLM selects the 5-15 most useful based on likely agent needs. Write good descriptions that tell agents *when* and *why* to use each tool, not just *what* it does.
-
-### Stage 4: Billing Integration
-
-```python
-from payments_py import Payments
-from payments_py.utils import require_payment
-
-@mog.tool()
-@requires_payment(payments=payments, plan_id=PLAN_ID, credits=price, agent_id=AGENT_ID)
-def weatherstack_current(location: str) -> dict:
-    return requests.get(f"https://api.weatherstack.com/current?query={location}").json()
-```
-
-### Stage 5: Listing
-
-Register in our catalog index (embeddings + metadata). Announce via marketplace spreadsheet. Optionally push to ZeroClick for agent-facing ads.
+At hackathon scale, this is a Claude/GPT call with structured output, not an ML model. The judgment is the point — it's what makes this an autonomous business, not an autonomous wrapper.
 
 ## Simple-Loop Integration
 
+ScavieFae runs the daemon. Briefs scoped to 2-3 tasks for fast turnaround.
+
+### Brief 1: Phase 1 Seller
 ```
-Brief: "Discover and wrap APIs for the Mog Protocol marketplace"
-Goal: List 5+ services by Friday noon
+Goal: Get first paid MCP service running on Nevermined
 Tasks:
-  1. Wrap Exa search (we have keys)
-  2. Wrap Anthropic Claude (we have keys)
-  3. Check marketplace spreadsheet for gaps
-  4. Evaluate and wrap 3 more based on demand signals
-Verification: Each listed service responds to a test buy_and_call
-Max iterations: 15
+  1. Set up project: pyproject.toml, .env, install payments-py[mcp]
+  2. Implement Exa search tool with PaymentsMCP, run setup.py to register
+  3. Implement self-test client, verify credits burn
+Completion: Server running, self-buy succeeds, credits deducted in Nevermined dashboard
 ```
 
-The conductor evaluates each iteration: did the wrapper successfully list a service? Is it responding to test calls? Are there demand signals to chase?
+### Brief 2: Second Service + Catalog
+```
+Goal: Add a second paid service and the catalog index
+Tasks:
+  1. Add Claude summarizer (or chosen second tool)
+  2. Build catalog module: register services, embed descriptions, search
+  3. Test both services via catalog search
+Completion: Two services registered, catalog search returns correct results
+```
+
+### Brief 3: Gateway (Phase 2)
+```
+Goal: Build the two-tool gateway that fronts all services
+Tasks:
+  1. Gateway MCP server with find_service and buy_and_call
+  2. Wire find_service to catalog search, buy_and_call to service proxy
+  3. End-to-end test: subscriber finds exa search, buys and calls it through gateway
+Completion: Gateway running, full find->buy->result flow works
+```
+
+## Deployment
+
+All services run as a single process for hackathon simplicity. The gateway and individual service handlers share a Python process. If performance demands it (unlikely at hackathon scale), split into separate processes.
 
 ## Open Questions
 
-- **API key management:** When other teams give us their keys to wrap, where do we store them? .env per service? Vault? At hackathon scale, .env is fine.
-- **Deployment:** Do wrapped MCP servers run as separate processes, or all inside the gateway? Single process is simpler. Separate processes scale better. Start single, split if needed.
-- **ToS reality:** We're wrapping and reselling API access. At hackathon scale, nobody cares. Worth acknowledging in the demo with a wink.
+- **API key management:** `.env` file per service. Fine for hackathon.
+- **ToS:** We're wrapping and reselling API access. Worth a wink in the demo. Not a real concern at hackathon scale.
