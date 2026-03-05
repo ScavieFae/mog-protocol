@@ -1,12 +1,5 @@
 {
-  "active": [
-    {
-      "brief": "backoffice-002-wrap-open-meteo",
-      "branch": "bo/002-wrap-open-meteo",
-      "brief_file": ".loop-backoffice/briefs/backoffice-002-wrap-open-meteo.md",
-      "dispatched_at": "2026-03-05T23:06:25Z"
-    }
-  ],
+  "active": [],
   "completed_pending_eval": [
     {
       "brief": "backoffice-002-wrap-open-meteo",
@@ -14,6 +7,13 @@
       "brief_file": ".loop-backoffice/briefs/backoffice-002-wrap-open-meteo.md",
       "dispatched_at": "2026-03-05T23:03:38Z",
       "completed_at": "2026-03-05T23:05:37Z"
+    },
+    {
+      "brief": "backoffice-002-wrap-open-meteo",
+      "branch": "bo/002-wrap-open-meteo",
+      "brief_file": ".loop-backoffice/briefs/backoffice-002-wrap-open-meteo.md",
+      "dispatched_at": "2026-03-05T23:06:25Z",
+      "completed_at": "2026-03-05T23:08:27Z"
     }
   ],
   "history": [
