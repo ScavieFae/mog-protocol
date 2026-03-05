@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 
 def init_paths(project_dir):
     """Initialize paths from project directory."""
-    loop_dir = os.path.join(project_dir, ".loop")
+    loop_dir = os.environ.get("LOOP_DIR") or os.path.join(project_dir, ".loop")
     state_dir = os.path.join(loop_dir, "state")
     return {
         "project_dir": project_dir,
@@ -48,7 +48,14 @@ def read_config(loop_dir):
                     continue
                 key, _, val = line.partition("=")
                 key = key.strip()
-                val = val.strip().strip('"').strip("'")
+                val = val.strip()
+                # Handle quoted values with inline comments
+                if val.startswith('"'):
+                    val = val[1:].split('"')[0]
+                elif val.startswith("'"):
+                    val = val[1:].split("'")[0]
+                else:
+                    val = val.split('#')[0].split()[0] if val else val
                 config[key] = val
     return config
 
