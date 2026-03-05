@@ -51,4 +51,8 @@ Each entry is timestamped. Tag the source.
 
 ---
 
+### ~12:30 — Brief 003 Iteration 1: catalog.py + services.py
+
+**[scaviefae]** Brief 003 Task 2 done. `src/catalog.py`: added handler field to ServiceEntry, get() method, services property. `src/services.py`: 3 services registered (exa_search 1cr, exa_get_contents 2cr, claude_summarize 5cr) with direct handler functions (not importing server.py to avoid NVM key exit). Next: gateway.py and test.
+
 <!-- New entries go above this line -->
