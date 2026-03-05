@@ -1,9 +1,17 @@
 {
   "brief": "brief-006-surge-health",
   "brief_file": ".loop/briefs/brief-006-surge-health.md",
-  "iteration": 0,
+  "iteration": 1,
   "status": "running",
-  "tasks_completed": [],
-  "tasks_remaining": [],
-  "learnings": []
+  "tasks_completed": [
+    "Wire surge pricing into gateway (_gateway_credits + buy_and_call)"
+  ],
+  "tasks_remaining": [
+    "Add /health endpoint to gateway"
+  ],
+  "learnings": [
+    "PaymentsMCP already registers a /health route via oauth_router (returns generic {status,service,timestamp}). To add custom /health, manipulate mcp._manager._fastapi_app.router.routes after mcp.start() — remove existing /health then add_api_route. Or insert before it using route list manipulation.",
+    "mcp._manager._fastapi_app is the FastAPI app instance, available after mcp.start() returns",
+    "tests at 0 call volume still pass after surge pricing because get_current_price returns base_price at low volume"
+  ]
 }
