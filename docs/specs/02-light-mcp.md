@@ -101,3 +101,4 @@ def buy_and_call(service_id: str, params: dict) -> dict:
 - **Auth model:** How does the buyer agent authenticate with us? Nevermined agent ID? API key on connect? Need to match whatever other teams' agents can handle easily.
 - **Error handling:** If the underlying service fails after payment, do we refund? At hackathon scale, probably just return the error and eat it.
 - **Rate limiting:** Do we rate-limit per buyer? Probably not for hackathon, but the pricing engine handles this via surge pricing instead.
+- **mcpc:** Apify recommends `mcpc`, a lightweight MCP implementation. Need to evaluate whether it's a better fit than FastMCP for the gateway. Neutral — flagged by sponsor, worth a look before committing to FastMCP.

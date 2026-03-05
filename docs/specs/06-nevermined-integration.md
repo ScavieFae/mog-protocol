@@ -90,3 +90,7 @@ The gateway's `buy_and_call` handles payment on behalf of buyer agents:
 2. Create agent ID via Nevermined dashboard
 3. Set up payment plans for each service we list
 4. Test with a self-buy before opening to other teams
+
+## Credits / Coupons
+
+- **Exa:** `EXA50NEVERMINED` — $50 in credits
