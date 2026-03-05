@@ -11,3 +11,4 @@
 - **Bug fixed:** `lib/actions.py` `read_config()` didn't handle inline comments in config.sh. Line `GIT_MAIN_BRANCH="backoffice"  # comment` parsed as full string including comment. Fixed with proper quoted-value parsing.
 - **Bug fixed:** Branch naming `backoffice/NNN-slug` conflicts with existing `backoffice` branch (git ref namespace). Changed to `bo/NNN-slug` prefix.
 - **Infrastructure note:** Daemon must be restarted manually after these fixes. PID file may be stale.
+- **State verified (tick 4):** Dispatch of brief-001 confirmed successful. Branch `bo/001-initial-scout` exists with progress.json (status=running, iteration=0). assess.py correctly returns WORKER target. Ready for worker once daemon restarts.
