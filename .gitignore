@@ -8,7 +8,11 @@ node_modules/
 *.egg-info/
 dist/
 build/
-.loop/state/
+.loop/state/signals/
+.loop/state/metrics.jsonl
+.loop/state/daemon.pid
+.loop/state/pending-dispatch.json
+.loop/state/pending-merge.json
 
 # Simple Loop logs
 .loop/logs/
