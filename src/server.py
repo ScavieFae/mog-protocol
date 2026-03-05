@@ -12,6 +12,7 @@ load_dotenv()
 NVM_API_KEY = os.getenv("NVM_API_KEY")
 NVM_AGENT_ID = os.getenv("NVM_AGENT_ID")
 EXA_API_KEY = os.getenv("EXA_API_KEY")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
 if not NVM_API_KEY or not NVM_AGENT_ID:
     print("Waiting for Nevermined API keys. Set NVM_API_KEY and NVM_AGENT_ID in .env")
@@ -21,6 +22,11 @@ if not EXA_API_KEY:
     print("Missing EXA_API_KEY in .env")
     sys.exit(1)
 
+if not ANTHROPIC_API_KEY:
+    print("Missing ANTHROPIC_API_KEY in .env")
+    sys.exit(1)
+
+import anthropic
 from payments_py import Payments, PaymentOptions
 from payments_py.mcp import PaymentsMCP
 import exa_py
@@ -71,6 +77,25 @@ def exa_get_contents(urls: list[str]) -> str:
         }
         for r in result.results
     ])
+
+
+@mcp.tool(credits=5)
+def claude_summarize(text: str, format: str = "bullets") -> str:
+    """Summarize text using Claude. Supports bullets, paragraph, or structured format.
+    Use when you need to condense long content into key points."""
+    format_instructions = {
+        "bullets": "Summarize the following text as concise bullet points.",
+        "paragraph": "Summarize the following text as a single coherent paragraph.",
+        "structured": "Summarize the following text with section headers and bullet points.",
+    }
+    instruction = format_instructions.get(format, format_instructions["bullets"])
+    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    message = client.messages.create(
+        model="claude-sonnet-4-20250514",
+        max_tokens=1024,
+        messages=[{"role": "user", "content": f"{instruction}\n\n{text}"}],
+    )
+    return message.content[0].text
 
 
 async def main():
