@@ -24,6 +24,7 @@ if not NVM_API_KEY or not NVM_AGENT_ID:
 from payments_py import Payments, PaymentOptions
 from payments_py.mcp import PaymentsMCP
 
+from src.pricing import get_current_price
 from src.services import catalog
 from src.txlog import txlog
 
@@ -44,11 +45,12 @@ mcp = PaymentsMCP(
 
 
 def _gateway_credits(ctx: dict) -> int:
-    """Dynamic credits for buy_and_call — look up service price from catalog."""
+    """Dynamic credits for buy_and_call — surge pricing based on recent demand."""
     service_id = (ctx.get("args") or {}).get("service_id", "")
     service = catalog.get(service_id)
     if service:
-        return service.price_credits
+        price, _ = get_current_price(service_id, service.price_credits)
+        return price
     return 1
 
 
@@ -93,6 +95,7 @@ def buy_and_call(service_id: str, params: dict) -> str:
             "error": f"Service '{service_id}' has no handler registered.",
             "_meta": {"service_id": service_id, "credits_charged": 0},
         })
+    price, surge_multiplier = get_current_price(service_id, service.price_credits)
     t0 = time.monotonic()
     try:
         result = service.handler(**(params or {}))
@@ -112,7 +115,7 @@ def buy_and_call(service_id: str, params: dict) -> str:
     txlog.log({
         "type": "buy_and_call",
         "service_id": service_id,
-        "credits_charged": service.price_credits,
+        "credits_charged": price,
         "success": True,
         "latency_ms": int((time.monotonic() - t0) * 1000),
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -120,8 +123,9 @@ def buy_and_call(service_id: str, params: dict) -> str:
     return json.dumps({
         "result": result,
         "_meta": {
-            "credits_charged": service.price_credits,
+            "credits_charged": price,
             "service_id": service_id,
+            "surge_multiplier": surge_multiplier,
         },
     })
 
