@@ -11,6 +11,9 @@
 
 set -uo pipefail
 
+# Allow nested Claude Code sessions (daemon spawns workers)
+unset CLAUDECODE 2>/dev/null || true
+
 PROJECT_DIR="${1:?Usage: daemon.sh <project_dir> [heartbeat_seconds]}"
 PROJECT_DIR="$(cd "$PROJECT_DIR" && pwd)"
 LOOP_DIR="$PROJECT_DIR/.loop"
