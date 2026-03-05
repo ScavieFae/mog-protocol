@@ -1,5 +1,12 @@
 {
-  "active": [],
+  "active": [
+    {
+      "brief": "brief-005-gateway-surge-deploy",
+      "branch": "brief-005-gateway-surge-deploy",
+      "brief_file": ".loop/briefs/brief-005-gateway-surge-deploy.md",
+      "dispatched_at": "2026-03-05T22:42:43Z"
+    }
+  ],
   "completed_pending_eval": [],
   "history": [
     {
@@ -30,7 +37,7 @@
       "brief": "brief-004-txlog-pricing",
       "branch": "brief-004-txlog-pricing",
       "merged_at": "2026-03-05T21:50:00Z",
-      "evaluation": "MERGE — 13/13 tests pass, txlog+pricing wired into all tools, surge-adjusted _meta in responses"
+      "evaluation": "MERGE \u2014 13/13 tests pass, txlog+pricing wired into all tools, surge-adjusted _meta in responses"
     }
   ]
 }
