@@ -1,0 +1,19 @@
+{
+  "brief": "backoffice-001-initial-scout",
+  "brief_file": ".loop-backoffice/briefs/backoffice-001-initial-scout.md",
+  "iteration": 1,
+  "status": "running",
+  "tasks_completed": [
+    "task-1: Exa search for free APIs useful to AI agents, write scout-001-results.md"
+  ],
+  "tasks_remaining": [
+    "task-2: Evaluate top 3 APIs, write api-eval files",
+    "task-3: Update portfolio.json demand_signals"
+  ],
+  "learnings": [
+    "Open-Meteo: no API key required, free weather forecast, strong wrap candidate",
+    "ip-api.com: no API key required, free geolocation, strong wrap candidate",
+    "E2B: code sandbox, free tier but needs API key from Mattie — defer",
+    "Results written to .loop-backoffice/knowledge/scout-001-results.md"
+  ]
+}
