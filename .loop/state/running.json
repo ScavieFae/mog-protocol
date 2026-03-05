@@ -1,5 +1,12 @@
 {
-  "active": [],
+  "active": [
+    {
+      "brief": "brief-004-txlog-pricing",
+      "branch": "brief-004-txlog-pricing",
+      "brief_file": ".loop/briefs/brief-004-txlog-pricing.md",
+      "dispatched_at": "2026-03-05T20:59:46Z"
+    }
+  ],
   "completed_pending_eval": [
     {
       "brief": "brief-003-gateway",
