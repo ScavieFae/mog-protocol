@@ -31,4 +31,12 @@ Each entry is timestamped. Tag the source.
 
 ---
 
+### ~10:00 — Exa Setup & Strategy
+
+**[scav]** Exa API key verified and working. Researcher agent template updated with Exa integration (search, find_similar, get_contents, answer), structured API evaluation output format, diary write access, demand/competitive scouting playbook, and blocker escalation guidance.
+
+**[decision]** Exa serves dual purpose: **(1) wrap and sell it** — fastest path to first paid transaction, every agent needs search; **(2) use it internally** for researcher agent's API discovery pipeline. We're our own first customer. Wrapping Exa for sale is P0 (8PM deadline). Internal research use follows.
+
+---
+
 <!-- New entries go above this line -->
