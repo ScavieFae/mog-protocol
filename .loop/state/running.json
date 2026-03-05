@@ -1,26 +1,36 @@
 {
   "active": [
     {
-      "brief": "brief-003-gateway",
-      "branch": "brief-003-gateway",
-      "brief_file": ".loop/briefs/brief-003-gateway.md",
-      "dispatched_at": "2026-03-05T20:37:01Z"
+      "brief": "brief-004-txlog-pricing",
+      "branch": "brief-004-txlog-pricing",
+      "brief_file": ".loop/briefs/brief-004-txlog-pricing.md",
+      "dispatched_at": "2026-03-05T20:59:46Z"
     }
   ],
-  "completed_pending_eval": [
-    {
-      "brief": "brief-002-second-service-catalog",
-      "branch": "brief-002-second-service-catalog",
-      "brief_file": ".loop/briefs/brief-002-second-service-catalog.md",
-      "dispatched_at": "2026-03-05T20:28:00Z",
-      "completed_at": "2026-03-05T20:37:00Z"
-    }
-  ],
+  "completed_pending_eval": [],
   "history": [
     {
       "brief": "brief-001-phase1-seller",
       "branch": "brief-001-phase1-seller",
       "merged_at": "2026-03-05T20:25:26Z",
+      "evaluation": ""
+    },
+    {
+      "brief": "brief-002-second-service-catalog",
+      "branch": "brief-002-second-service-catalog",
+      "merged_at": "2026-03-05T20:51:17Z",
+      "evaluation": ""
+    },
+    {
+      "brief": "brief-003-gateway",
+      "branch": "brief-003-gateway",
+      "merged_at": "2026-03-05T21:30:00Z",
+      "evaluation": "Manually merged after conflict resolution"
+    },
+    {
+      "brief": "brief-003-gateway",
+      "branch": "brief-003-gateway",
+      "merged_at": "2026-03-05T21:29:54Z",
       "evaluation": ""
     }
   ]

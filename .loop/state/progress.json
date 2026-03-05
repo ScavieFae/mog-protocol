@@ -1,19 +1,20 @@
 {
-  "brief": "brief-002-second-service-catalog",
-  "brief_file": ".loop/briefs/brief-002-second-service-catalog.md",
-  "iteration": 2,
+  "brief": "brief-003-gateway",
+  "brief_file": ".loop/briefs/brief-003-gateway.md",
+  "iteration": 3,
   "status": "complete",
   "tasks_completed": [
-    "Task 1: claude_summarize tool added to server.py (done in prior commit)",
-    "Task 2: src/catalog.py created with ServiceCatalog class (register + search, embedding + keyword fallback)",
-    "Task 3: Register all three services in catalog at server startup and export catalog instance"
+    "Create src/catalog.py with handler field and get() method + Create src/services.py with 3 registered service handlers",
+    "Create src/gateway.py with find_service (0 credits) and buy_and_call (dynamic credits)",
+    "Create src/test_gateway.py with end-to-end tests"
   ],
   "tasks_remaining": [],
   "learnings": [
-    "payments-py[mcp] extra doesn't exist in 1.3.4 — fastapi must be listed separately",
-    "catalog.py uses openai embeddings when OPENAI_API_KEY set, substring keyword fallback otherwise",
-    "server.py already has claude_summarize and anthropic dep from prior iteration",
-    "catalog keyword fallback correctly ranks exa_search first for 'web search' query",
-    "daemon leaves you on main branch — must checkout brief branch manually before committing"
+    "Must use .venv/bin/activate to run python3 — system python3 lacks project deps",
+    "services.py defines handlers directly (not importing from server.py) to avoid NVM key sys.exit at import time",
+    "catalog.search() returns 'price' key (not 'price_credits') to match gateway API contract in spec",
+    "PaymentsMCP dynamic credits callable receives ctx={'args': {...}, 'result': ..., 'request': {...}} — use ctx['args']['service_id'] to look up price",
+    "NVM_GATEWAY_AGENT_ID takes precedence over NVM_AGENT_ID for the gateway; both are checked at startup",
+    "test_gateway.py imports from services (not gateway) so tests run without NVM keys; EXA live call works via .env"
   ]
 }

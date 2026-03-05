@@ -2,7 +2,7 @@
 
 import os
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Callable, Optional
 
 
 @dataclass
@@ -14,6 +14,7 @@ class ServiceEntry:
     example_params: dict
     provider: str
     embedding: list[float] = field(default_factory=list)
+    handler: Optional[Callable] = field(default=None)
 
 
 class ServiceCatalog:
@@ -27,6 +28,10 @@ class ServiceCatalog:
                 self._openai_client = openai.OpenAI(api_key=api_key)
             except ImportError:
                 pass
+
+    @property
+    def services(self) -> list[ServiceEntry]:
+        return list(self._services.values())
 
     def _embed(self, text: str) -> list[float]:
         if self._openai_client is None:
@@ -45,6 +50,7 @@ class ServiceCatalog:
         price_credits: int,
         example_params: dict[str, Any],
         provider: str,
+        handler: Optional[Callable] = None,
     ) -> None:
         embedding = self._embed(description)
         self._services[service_id] = ServiceEntry(
@@ -55,9 +61,13 @@ class ServiceCatalog:
             example_params=example_params,
             provider=provider,
             embedding=embedding,
+            handler=handler,
         )
 
-    def search(self, query: str, budget: int | None = None, top_k: int = 3) -> list[dict]:
+    def get(self, service_id: str) -> Optional[ServiceEntry]:
+        return self._services.get(service_id)
+
+    def search(self, query: str, budget: int | None = None, top_k: int = 5) -> list[dict]:
         candidates = list(self._services.values())
         if budget is not None:
             candidates = [s for s in candidates if s.price_credits <= budget]
@@ -81,10 +91,9 @@ class ServiceCatalog:
                 "service_id": s.service_id,
                 "name": s.name,
                 "description": s.description,
-                "price_credits": s.price_credits,
+                "price": s.price_credits,
                 "example_params": s.example_params,
                 "provider": s.provider,
-                "score": score,
             }
             for score, s in scored[:top_k]
         ]
