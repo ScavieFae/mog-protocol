@@ -4,6 +4,8 @@ import asyncio
 import json
 import os
 import sys
+import time
+from datetime import datetime, timezone
 
 from dotenv import load_dotenv
 
@@ -23,6 +25,7 @@ from payments_py import Payments, PaymentOptions
 from payments_py.mcp import PaymentsMCP
 
 from src.services import catalog
+from src.txlog import txlog
 
 payments = Payments.get_instance(
     PaymentOptions(
@@ -58,6 +61,14 @@ def find_service(query: str, budget: int = None) -> str:
     Pass service_id to buy_and_call to execute the service.
     """
     matches = catalog.search(query, budget=budget, top_k=5)
+    if not matches:
+        txlog.log({
+            "type": "unmet_demand",
+            "query": query,
+            "budget": budget,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "matches_returned": 0,
+        })
     return json.dumps(matches)
 
 
@@ -82,13 +93,30 @@ def buy_and_call(service_id: str, params: dict) -> str:
             "error": f"Service '{service_id}' has no handler registered.",
             "_meta": {"service_id": service_id, "credits_charged": 0},
         })
+    t0 = time.monotonic()
     try:
         result = service.handler(**(params or {}))
     except Exception as exc:
+        txlog.log({
+            "type": "buy_and_call",
+            "service_id": service_id,
+            "credits_charged": 0,
+            "success": False,
+            "latency_ms": int((time.monotonic() - t0) * 1000),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        })
         return json.dumps({
             "error": str(exc),
             "_meta": {"service_id": service_id, "credits_charged": 0},
         })
+    txlog.log({
+        "type": "buy_and_call",
+        "service_id": service_id,
+        "credits_charged": service.price_credits,
+        "success": True,
+        "latency_ms": int((time.monotonic() - t0) * 1000),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    })
     return json.dumps({
         "result": result,
         "_meta": {
@@ -102,7 +130,6 @@ async def main():
     port = int(os.getenv("GATEWAY_PORT", "4000"))
     print(f"Starting Mog Gateway MCP server on port {port}")
     result = await mcp.start(port=port)
-    # start() returns immediately — block until interrupted
     stop = result.get("stop")
     try:
         await asyncio.Event().wait()

@@ -18,10 +18,12 @@ import time
 
 def main():
     project_dir = sys.argv[1] if len(sys.argv) > 1 else os.getcwd()
-    loop_dir = os.path.join(project_dir, ".loop")
+    loop_dir = os.environ.get("LOOP_DIR") or os.path.join(project_dir, ".loop")
     state_dir = os.path.join(loop_dir, "state")
     signals_dir = os.path.join(state_dir, "signals")
     running_file = os.path.join(state_dir, "running.json")
+
+    loop_rel = os.path.relpath(loop_dir, project_dir)
 
     conductor = "NONE"
     worker = "NONE"
@@ -31,7 +33,6 @@ def main():
         print("NONE")
         return
 
-    # If queue files exist (and not stale), let daemon process them first
     for qf in ["pending-dispatch.json", "pending-merge.json"]:
         qpath = os.path.join(state_dir, qf)
         if os.path.exists(qpath):
@@ -44,7 +45,6 @@ def main():
     with open(running_file) as f:
         rc = json.load(f)
 
-    # Read config for git remote
     config_file = os.path.join(loop_dir, "config.sh")
     remote = "origin"
     if os.path.exists(config_file):
@@ -54,14 +54,10 @@ def main():
                     remote = line.strip().split("=", 1)[1].strip('"').strip("'")
                     break
 
-    # --- Conductor triggers ---
-
-    # Pending evaluation
     pending = rc.get("completed_pending_eval", [])
     if pending:
         conductor = "CONDUCTOR:pending_eval"
 
-    # Active escalation signal
     if conductor == "NONE":
         esc_file = os.path.join(signals_dir, "escalate.json")
         if os.path.exists(esc_file):
@@ -73,12 +69,10 @@ def main():
             except (json.JSONDecodeError, KeyError):
                 pass
 
-    # No active briefs
     active = rc.get("active", [])
     if not active and conductor == "NONE":
         conductor = "CONDUCTOR:no_active"
 
-    # --- Check active briefs for both conductor triggers and worker targets ---
     for brief_entry in active:
         brief_id = brief_entry.get("brief", "")
         branch = brief_entry.get("branch", "")
@@ -90,7 +84,7 @@ def main():
         for ref in [branch, f"{remote}/{branch}"]:
             try:
                 result = subprocess.run(
-                    ["git", "-C", project_dir, "show", f"{ref}:.loop/state/progress.json"],
+                    ["git", "-C", project_dir, "show", f"{ref}:{loop_rel}/state/progress.json"],
                     capture_output=True, text=True, timeout=10,
                 )
                 if result.returncode == 0:
