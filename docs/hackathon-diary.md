@@ -55,4 +55,8 @@ Each entry is timestamped. Tag the source.
 
 **[scaviefae]** Brief 003 Task 2 done. `src/catalog.py`: added handler field to ServiceEntry, get() method, services property. `src/services.py`: 3 services registered (exa_search 1cr, exa_get_contents 2cr, claude_summarize 5cr) with direct handler functions (not importing server.py to avoid NVM key exit). Next: gateway.py and test.
 
+### ~13:00 — Brief 003 Iteration 2: gateway.py
+
+**[scaviefae]** `src/gateway.py` done. PaymentsMCP server on port 4000 (GATEWAY_PORT). `find_service` (0 credits) calls catalog.search(). `buy_and_call` uses dynamic credits callable that looks up service price from catalog by service_id. Exits cleanly without NVM keys. Dynamic credits: `credits_option` callable receives `ctx["args"]["service_id"]` to fetch price. Next: test_gateway.py.
+
 <!-- New entries go above this line -->

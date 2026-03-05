@@ -1,18 +1,20 @@
 {
   "brief": "brief-003-gateway",
   "brief_file": ".loop/briefs/brief-003-gateway.md",
-  "iteration": 1,
+  "iteration": 2,
   "status": "running",
   "tasks_completed": [
-    "Create src/catalog.py with handler field and get() method + Create src/services.py with 3 registered service handlers"
+    "Create src/catalog.py with handler field and get() method + Create src/services.py with 3 registered service handlers",
+    "Create src/gateway.py with find_service (0 credits) and buy_and_call (dynamic credits)"
   ],
   "tasks_remaining": [
-    "Create src/gateway.py with find_service (0 credits) and buy_and_call (dynamic credits)",
     "Create src/test_gateway.py with end-to-end tests"
   ],
   "learnings": [
     "Must use .venv/bin/activate to run python3 — system python3 lacks project deps",
     "services.py defines handlers directly (not importing from server.py) to avoid NVM key sys.exit at import time",
-    "catalog.search() returns 'price' key (not 'price_credits') to match gateway API contract in spec"
+    "catalog.search() returns 'price' key (not 'price_credits') to match gateway API contract in spec",
+    "PaymentsMCP dynamic credits callable receives ctx={'args': {...}, 'result': ..., 'request': {...}} — use ctx['args']['service_id'] to look up price",
+    "NVM_GATEWAY_AGENT_ID takes precedence over NVM_AGENT_ID for the gateway; both are checked at startup"
   ]
 }
