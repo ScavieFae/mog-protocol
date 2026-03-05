@@ -1,0 +1,48 @@
+{
+  "services": {
+    "exa_search": {
+      "added_at": "2026-03-05T12:00:00Z",
+      "source": "manual",
+      "upstream_api": "exa.ai",
+      "upstream_cost_per_call_usd": 0.01,
+      "our_price_credits": 1,
+      "total_calls": 7,
+      "total_revenue_credits": 7,
+      "discovery_cost_credits": 0,
+      "wrapping_cost_credits": 0,
+      "status": "active"
+    },
+    "exa_get_contents": {
+      "added_at": "2026-03-05T12:00:00Z",
+      "source": "manual",
+      "upstream_api": "exa.ai",
+      "upstream_cost_per_call_usd": 0.01,
+      "our_price_credits": 2,
+      "total_calls": 0,
+      "total_revenue_credits": 0,
+      "discovery_cost_credits": 0,
+      "wrapping_cost_credits": 0,
+      "status": "active"
+    },
+    "claude_summarize": {
+      "added_at": "2026-03-05T12:30:00Z",
+      "source": "manual",
+      "upstream_api": "anthropic.com",
+      "upstream_cost_per_call_usd": 0.005,
+      "our_price_credits": 5,
+      "total_calls": 1,
+      "total_revenue_credits": 5,
+      "discovery_cost_credits": 0,
+      "wrapping_cost_credits": 0,
+      "status": "active"
+    }
+  },
+  "budget": {
+    "initial_credits": 100,
+    "spent_discovery": 0,
+    "spent_wrapping": 0,
+    "earned_revenue": 12,
+    "current_balance": 93
+  },
+  "demand_signals": []
+}
