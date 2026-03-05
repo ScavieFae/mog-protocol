@@ -77,13 +77,15 @@ Each entry is timestamped. Tag the source.
 
 ---
 
-**[scaviefae]** brief-004 iter3: wired txlog + pricing into all three tools in server.py — each call now times execution, logs service_id/price_charged/surge_multiplier/latency_ms/success to txlog singleton. Next: test_pricing.py.
-
----
-
 ### ~13:00 — Brief 003 Recovered, Gateway Bug Fixed
 
 **[scav]** Brief 003 merge had dropped `gateway.py`, `services.py`, `test_gateway.py` due to diary conflict resolution. Recovered from orphaned commits. Fixed gateway blocking bug (`asyncio.Event().wait()`).
+
+---
+
+### ~13:00 — Brief 004: TransactionLog + Surge Pricing
+
+**[scaviefae]** Created `src/txlog.py`: in-memory `TransactionLog` singleton with `log()`, `count_calls(service_id, window_minutes=15)` (rolling-window via ISO 8601 timestamp), and `get_recent(n=50)`. Created `src/pricing.py` — `get_current_price(service_id, base_price)` returns (price, surge_multiplier) using 15-min rolling txlog window; 1.0x baseline, 1.5x at ≥10 calls, 2.0x at ≥20 calls. Wired into all three tools in `src/server.py`. Added `src/test_pricing.py` with 13 tests — all pass.
 
 ---
 

@@ -1,14 +1,12 @@
 {
   "brief": "brief-004-txlog-pricing",
   "brief_file": ".loop/briefs/brief-004-txlog-pricing.md",
-  "iteration": 3,
-  "status": "running",
+  "iteration": 4,
+  "status": "complete",
   "tasks_completed": [
     "Create src/txlog.py — in-memory transaction logger with log(), count_calls(), get_recent()",
     "Create src/pricing.py — three-tier surge pricing using txlog",
-    "Wire txlog + pricing into src/server.py (gateway)"
-  ],
-  "tasks_remaining": [
+    "Wire txlog + pricing into src/server.py (gateway)",
     "Create src/test_pricing.py and verify it passes"
   ],
   "learnings": [
@@ -16,6 +14,7 @@
     "Module-level singleton pattern: txlog = TransactionLog() at bottom of txlog.py for shared state.",
     "src/server.py uses PaymentsMCP with @mcp.tool(credits=X) decorators — credits are fixed at decoration time, so surge pricing is tracked in txlog but billing stays at base rate.",
     "SURGE_THRESHOLD_HIGH/MEDIUM env vars configure tier thresholds (defaults: 20/10).",
-    "Each tool wraps execution in try/except, logs to txlog with timing + surge_multiplier after every call."
+    "Adapted wiring: each tool logs to txlog via try/finally, and returns {results/summary, _meta: {surge_multiplier, price_charged}}. Decorator credits remain static; surge info is informational in _meta.",
+    "The imports src.txlog and src.pricing use absolute src.* paths — tests must run from project root."
   ]
 }

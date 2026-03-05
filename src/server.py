@@ -85,75 +85,64 @@ catalog.register(
 def exa_search(query: str, max_results: int = 5) -> str:
     """Semantic web search. Returns relevant snippets with source URLs.
     Use when you need current information, research, or web content."""
-    _start = time.monotonic()
-    _success = False
-    _output = json.dumps({"error": "unknown"})
+    price, surge = get_current_price("exa_search", 1)
+    t0 = time.monotonic()
+    success = True
     try:
         result = exa_client.search_and_contents(query, num_results=max_results, text=True)
-        _output = json.dumps([
-            {
-                "title": r.title,
-                "url": r.url,
-                "snippet": (r.text or "")[:500],
-            }
+        data = [
+            {"title": r.title, "url": r.url, "snippet": (r.text or "")[:500]}
             for r in result.results
-        ])
-        _success = True
-    except Exception as e:
-        _output = json.dumps({"error": str(e)})
-    _latency_ms = int((time.monotonic() - _start) * 1000)
-    _price, _surge = get_current_price("exa_search", 1)
-    txlog.log({
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "service_id": "exa_search",
-        "price_charged": _price,
-        "surge_multiplier": _surge,
-        "latency_ms": _latency_ms,
-        "success": _success,
-    })
-    return _output
+        ]
+        return json.dumps({"results": data, "_meta": {"surge_multiplier": surge, "price_charged": price}})
+    except Exception:
+        success = False
+        raise
+    finally:
+        latency_ms = int((time.monotonic() - t0) * 1000)
+        txlog.log({
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "service_id": "exa_search",
+            "price_charged": price,
+            "surge_multiplier": surge,
+            "latency_ms": latency_ms,
+            "success": success,
+        })
 
 
 @mcp.tool(credits=2)
 def exa_get_contents(urls: list[str]) -> str:
     """Fetch full text content from a list of URLs via Exa.
     Use when you need the complete text of specific pages found via exa_search."""
-    _start = time.monotonic()
-    _success = False
-    _output = json.dumps({"error": "unknown"})
+    price, surge = get_current_price("exa_get_contents", 2)
+    t0 = time.monotonic()
+    success = True
     try:
         result = exa_client.get_contents(urls, text=True)
-        _output = json.dumps([
-            {
-                "url": r.url,
-                "title": r.title,
-                "text": r.text or "",
-            }
-            for r in result.results
-        ])
-        _success = True
-    except Exception as e:
-        _output = json.dumps({"error": str(e)})
-    _latency_ms = int((time.monotonic() - _start) * 1000)
-    _price, _surge = get_current_price("exa_get_contents", 2)
-    txlog.log({
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "service_id": "exa_get_contents",
-        "price_charged": _price,
-        "surge_multiplier": _surge,
-        "latency_ms": _latency_ms,
-        "success": _success,
-    })
-    return _output
+        data = [{"url": r.url, "title": r.title, "text": r.text or ""} for r in result.results]
+        return json.dumps({"results": data, "_meta": {"surge_multiplier": surge, "price_charged": price}})
+    except Exception:
+        success = False
+        raise
+    finally:
+        latency_ms = int((time.monotonic() - t0) * 1000)
+        txlog.log({
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "service_id": "exa_get_contents",
+            "price_charged": price,
+            "surge_multiplier": surge,
+            "latency_ms": latency_ms,
+            "success": success,
+        })
 
 
 @mcp.tool(credits=5)
 def claude_summarize(text: str, format: str = "bullets") -> str:
     """Summarize text using Claude. Supports bullets, paragraph, or structured format.
     Use when you need to condense long content into key points."""
-    _start = time.monotonic()
-    _success = False
-    _output = json.dumps({"error": "unknown"})
+    price, surge = get_current_price("claude_summarize", 5)
+    t0 = time.monotonic()
+    success = True
     try:
         format_instructions = {
             "bullets": "Summarize the following text as concise bullet points.",
@@ -167,21 +156,21 @@ def claude_summarize(text: str, format: str = "bullets") -> str:
             max_tokens=1024,
             messages=[{"role": "user", "content": f"{instruction}\n\n{text}"}],
         )
-        _output = message.content[0].text
-        _success = True
-    except Exception as e:
-        _output = json.dumps({"error": str(e)})
-    _latency_ms = int((time.monotonic() - _start) * 1000)
-    _price, _surge = get_current_price("claude_summarize", 5)
-    txlog.log({
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "service_id": "claude_summarize",
-        "price_charged": _price,
-        "surge_multiplier": _surge,
-        "latency_ms": _latency_ms,
-        "success": _success,
-    })
-    return _output
+        summary = message.content[0].text
+        return json.dumps({"summary": summary, "_meta": {"surge_multiplier": surge, "price_charged": price}})
+    except Exception:
+        success = False
+        raise
+    finally:
+        latency_ms = int((time.monotonic() - t0) * 1000)
+        txlog.log({
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "service_id": "claude_summarize",
+            "price_charged": price,
+            "surge_multiplier": surge,
+            "latency_ms": latency_ms,
+            "success": success,
+        })
 
 
 async def main():
