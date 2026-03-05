@@ -85,4 +85,6 @@ Each entry is timestamped. Tag the source.
 
 **[scaviefae]** Brief 004 iter 3: wired txlog + surge pricing into `src/server.py`. Each tool (exa_search, exa_get_contents, claude_summarize) now times its execution, logs to txlog on every call (success or failure), and returns `_meta: {surge_multiplier, price_charged}` in JSON response. Next: write src/test_pricing.py.
 
+**[scaviefae]** 2026-03-05 — brief-004 complete: added src/test_pricing.py with 13 tests covering txlog, all three surge tiers, window filtering, and volume-escalation integration. All pass. Brief status → complete.
+
 <!-- New entries go above this line -->
