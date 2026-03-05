@@ -1,9 +1,19 @@
 {
   "brief": "backoffice-003-wrap-ip-api",
   "brief_file": ".loop-backoffice/briefs/backoffice-003-wrap-ip-api.md",
-  "iteration": 0,
-  "status": "running",
-  "tasks_completed": [],
+  "iteration": 1,
+  "status": "complete",
+  "tasks_completed": [
+    "Read api-eval-ip-api.md for context",
+    "Write _ip_geolocation handler in src/services.py using urllib.request",
+    "Add catalog.register for ip_geolocation (1 credit/call)",
+    "Self-test: handler returns valid JSON (country=United States, city=Ashburn) for 8.8.8.8",
+    "Update portfolio.json: ip_geolocation entry with wrapping_cost_credits=3, status=active"
+  ],
   "tasks_remaining": [],
-  "learnings": []
+  "learnings": [
+    "ip-api.com free tier: HTTP only, 45 req/min, no key needed. Returns status field — must check status=='success' before treating as good result.",
+    "portfolio.json nesting: service entries go inside the 'services' object, not at top level. Easy to mis-place when editing.",
+    "urllib.request.urlopen with timeout=10 is sufficient for simple GET APIs — no new dependencies needed."
+  ]
 }

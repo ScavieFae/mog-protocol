@@ -6,6 +6,7 @@ to avoid server.py's NVM key exit at import time.
 
 import json
 import os
+import urllib.request
 
 from dotenv import load_dotenv
 
@@ -69,6 +70,18 @@ def _claude_summarize(text: str, format: str = "bullets") -> str:
     return message.content[0].text
 
 
+def _ip_geolocation(ip: str) -> str:
+    url = f"http://ip-api.com/json/{ip}?fields=status,message,country,regionName,city,lat,lon,isp,org,query"
+    try:
+        with urllib.request.urlopen(url, timeout=10) as response:
+            data = json.loads(response.read().decode())
+    except Exception as e:
+        return json.dumps({"error": str(e)})
+    if data.get("status") != "success":
+        return json.dumps({"error": data.get("message", "Unknown error"), "query": ip})
+    return json.dumps(data)
+
+
 # --- Catalog registration ---
 
 catalog = ServiceCatalog()
@@ -101,4 +114,14 @@ catalog.register(
     example_params={"text": "Long article text...", "format": "bullets"},
     provider="mog-protocol",
     handler=_claude_summarize,
+)
+
+catalog.register(
+    service_id="ip_geolocation",
+    name="IP Geolocation",
+    description="Look up geographic location, ISP, and organization for any IP address. Returns country, city, coordinates. Use for location context, security analysis, or data enrichment.",
+    price_credits=1,
+    example_params={"ip": "8.8.8.8"},
+    provider="mog-protocol",
+    handler=_ip_geolocation,
 )
