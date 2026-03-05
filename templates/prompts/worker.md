@@ -9,6 +9,7 @@ You are one iteration of a multi-pass loop. You will do ONE task, verify it, com
    - The brief file referenced in `brief_file` field of progress.json. **This is your assignment. If the file does not exist, set status to "blocked" and exit.**
    - `CLAUDE.md` if it exists — project conventions
    - `.loop/knowledge/learnings.md` — accumulated project knowledge
+   - `docs/hackathon-diary.md` — tail recent entries for context on decisions and current priorities
 
 2. **Pick ONE task.** Choose the first incomplete task from `tasks_remaining` in progress.json. If `tasks_remaining` is empty but the brief has more work, add tasks.
 
@@ -26,7 +27,9 @@ You are one iteration of a multi-pass loop. You will do ONE task, verify it, com
    - If you're blocked on something, set `status` to `"blocked"` and explain in learnings
    - Otherwise keep `status` as `"running"`
 
-7. **Exit.** You're done. The daemon will spawn a fresh instance for the next task.
+7. **Update hackathon diary.** Append a short timestamped `[scaviefae]` entry to `docs/hackathon-diary.md` summarizing what you built or what's blocking you. One line is fine. Insert above the `<!-- New entries go above this line -->` marker.
+
+8. **Exit.** You're done. The daemon will spawn a fresh instance for the next task.
 
 ## Rules
 

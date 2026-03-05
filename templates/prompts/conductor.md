@@ -10,6 +10,7 @@ Read these files now:
 - `.loop/state/signals/` — check for escalate.json, pause.json, resume.json
 - `.loop/state/log.jsonl` — tail the last 20 lines for recent decisions
 - `.loop/knowledge/learnings.md` — accumulated knowledge
+- `docs/hackathon-diary.md` — tail recent entries for director decisions and venue updates
 
 ## Step 2: Assess
 
@@ -44,7 +45,16 @@ If there's a brief file in `.loop/briefs/` ready to go:
 
 **Do NOT create branches or modify running.json directly.** The daemon processes queue files.
 
-## Step 5: Log and Exit
+## Step 5: Update Hackathon Diary
+
+Append a timestamped `[scaviefae]` entry to `docs/hackathon-diary.md` if anything noteworthy happened this tick:
+- Brief dispatched, completed, merged, or blocked
+- Escalations or errors
+- Key learnings from worker output
+
+Keep entries brief (1-3 lines). Don't log idle ticks. Insert new entries above the `<!-- New entries go above this line -->` marker.
+
+## Step 6: Log and Exit
 
 - Log every decision to `.loop/state/log.jsonl`
 - Be efficient — this costs money

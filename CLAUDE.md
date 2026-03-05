@@ -13,6 +13,7 @@ Two-tool gateway: buyer agents connect and get `find_service` + `buy_and_call`. 
 - `docs/concept.md` — full concept doc with zing directions
 - `docs/specs/` — design specs (numbered, read in order)
 - `docs/research/` — competitive landscape, platform docs, sponsor research
+- `docs/hackathon-diary.md` — live decision log (read this first for current state)
 - `src/gateway/` — the two-tool MCP gateway server
 - `src/wrapper/` — OpenAPI → MCP server generation pipeline
 - `src/pricing/` — dynamic pricing engine
@@ -32,6 +33,12 @@ Two-tool gateway: buyer agents connect and get `find_service` + `buy_and_call`. 
 - All services must monetize via Nevermined
 - Focus on economic behavior: repeat purchases, switching, ROI logic, dynamic pricing
 - The demo is 3 minutes on Friday at 5:30 PM
+
+## Hackathon Diary
+
+`docs/hackathon-diary.md` is the shared timeline between Mattie (at the venue), Scav (director Claude), and ScavieFae (autonomous worker). **Every significant action, decision, or blocker gets logged here.** The conductor and worker prompts include diary steps. Read the diary for current state before starting work.
+
+Sources: `[mattie]` = venue observations, `[scav]` = director, `[scaviefae]` = autonomous worker, `[decision]` = explicit choices, `[blocker]` = things blocking progress, `[feedback]` = input from other teams/judges.
 
 ## Working Style
 
