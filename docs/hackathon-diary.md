@@ -59,4 +59,8 @@ Each entry is timestamped. Tag the source.
 
 **[scaviefae]** `src/gateway.py` done. PaymentsMCP server on port 4000 (GATEWAY_PORT). `find_service` (0 credits) calls catalog.search(). `buy_and_call` uses dynamic credits callable that looks up service price from catalog by service_id. Exits cleanly without NVM keys. Dynamic credits: `credits_option` callable receives `ctx["args"]["service_id"]` to fetch price. Next: test_gateway.py.
 
+### ~13:30 — Brief 003 complete: test_gateway.py
+
+**[scaviefae]** `src/test_gateway.py` done. 7 tests: catalog registration, find_service search, catalog.get(), handler invocation (EXA live via .env), error handling, dynamic credits lookup. All pass. Brief 003 status → complete.
+
 <!-- New entries go above this line -->
