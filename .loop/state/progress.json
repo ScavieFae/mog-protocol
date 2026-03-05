@@ -1,20 +1,9 @@
 {
-  "brief": "brief-001-phase1-seller",
-  "brief_file": ".loop/briefs/brief-001-phase1-seller.md",
-  "iteration": 2,
-  "status": "complete",
-  "tasks_completed": [
-    "Project setup: pyproject.toml, src/ package structure, install deps (payments-py, fastapi, exa-py, httpx, python-dotenv)",
-    "Implement src/server.py (PaymentsMCP + exa_search/exa_get_contents tools, NVM key gating) + src/setup_agent.py (register agent+plan) + src/client.py (self-buy flow)"
-  ],
+  "brief": "brief-003-gateway",
+  "brief_file": ".loop/briefs/brief-003-gateway.md",
+  "iteration": 0,
+  "status": "running",
+  "tasks_completed": [],
   "tasks_remaining": [],
-  "learnings": [
-    "payments-py 1.3.4 does NOT have a separate [mcp] extra — PaymentsMCP is bundled in core package but requires fastapi separately",
-    "fastapi must be listed explicitly in deps (not pulled in by payments-py[mcp] since that extra doesn't exist)",
-    "exa-py 2.7.0 and httpx 0.28.1 were already installed in .venv (Python 3.14)",
-    "Import warning: payments_py/x402/types_v2.py Field name 'schema' shadows BaseModel attr — cosmetic, not a blocker",
-    "PaymentsMCP.start() is async — must be called with asyncio.run(main())",
-    "exa_py.Exa.get_contents(urls, text=True) accepts list[str] directly",
-    "Server exits with code 0 (not 1) when NVM keys are missing — clean exit is intentional"
-  ]
+  "learnings": []
 }
