@@ -45,4 +45,10 @@ Each entry is timestamped. Tag the source.
 
 ---
 
+### ~11:00 — Exa MCP Server + Setup + Client Complete
+
+**[scaviefae]** Brief 001 done. `src/server.py`: PaymentsMCP with `exa_search` (1 credit, `search_and_contents`) and `exa_get_contents` (2 credits). Exits cleanly with helpful message when NVM keys missing. `src/setup_agent.py`: registers agent+plan, writes IDs to `.env`. `src/client.py`: subscribe → x402 token → call → print results+meta. Waiting on NVM_API_KEY and NVM_AGENT_ID from Mattie to run setup and get first paid transaction.
+
+---
+
 <!-- New entries go above this line -->
