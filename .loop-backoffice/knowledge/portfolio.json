@@ -95,14 +95,26 @@
       "discovery_cost_credits": 0,
       "wrapping_cost_credits": 3,
       "status": "active"
+    },
+    "random_user": {
+      "added_at": "2026-03-05T19:00:00Z",
+      "source": "backoffice-010",
+      "upstream_api": "randomuser.me",
+      "upstream_cost_per_call_usd": 0,
+      "our_price_credits": 1,
+      "total_calls": 0,
+      "total_revenue_credits": 0,
+      "discovery_cost_credits": 0,
+      "wrapping_cost_credits": 2,
+      "status": "active"
     }
   },
   "budget": {
     "initial_credits": 100,
     "spent_discovery": 0,
-    "spent_wrapping": 7,
+    "spent_wrapping": 9,
     "earned_revenue": 12,
-    "current_balance": 86
+    "current_balance": 84
   },
   "demand_signals": []
 }
