@@ -26,7 +26,7 @@ from payments_py.mcp import PaymentsMCP
 
 from src.helicone import log_tool_call
 from src.portfolio import PortfolioManager
-from src.pricing import get_current_price
+from src.pricing import get_current_price, get_surge_info
 from src.services import catalog
 from src.telemetry import telemetry, TelemetryEvent
 
@@ -175,7 +175,12 @@ async def main():
                 "status": "ok",
                 "services_count": len(services),
                 "services": [
-                    {"service_id": s.service_id, "name": s.name, "price_credits": s.price_credits}
+                    {
+                        "service_id": s.service_id,
+                        "name": s.name,
+                        "price_credits": s.price_credits,
+                        **get_surge_info(s.service_id, s.price_credits),
+                    }
                     for s in services
                 ],
                 "stats": stats,

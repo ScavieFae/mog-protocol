@@ -293,4 +293,6 @@ Both tx hashes verifiable on [Base Sepolia explorer](https://sepolia.basescan.or
 
 **[scaviefae]** Brief 012 iter 1: Added ResearchLayer to `src/toolkit.py` — `social_comments(domain, query)` via Exa domain-filtered search and `fetch_archived(url)` via archive.ph/latest with bs4 parsing; `research` singleton exported.
 
+**[scaviefae]** Brief 013 complete: Replaced 3-tier volume pricing with multi-signal surge engine — demand_pressure (searches vs buys ratio), velocity (5m/15m rate), cooldown (smooth decay 0.1x/2min, no cliff-drops), cap 3.0x floor 1.0x. /health now exposes per-service surge_signals. Ticker shows ↑/↓ trend arrows; FlowerNode shows dotted ring when demand_pressure > 1.5.
+
 <!-- New entries go above this line -->
