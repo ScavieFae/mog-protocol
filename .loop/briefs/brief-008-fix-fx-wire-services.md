@@ -16,9 +16,19 @@ Read these before starting:
 
 ## Tasks
 
-1. **Convert `_frankfurter_fx_rates` from async to sync.** Replace `async with httpx.AsyncClient()` with sync `httpx.Client()` or just `httpx.get()`. Change return type from `dict` to `str` (JSON-encoded, matching all other handlers). Remove `async` keyword. Keep the same params and behavior.
+1. **CRITICAL: Create `src/telemetry.py` if it doesn't exist.** The gateway imports `from src.telemetry import telemetry, TelemetryEvent` but the file may be missing. Check if it exists. If not, create it as a thin wrapper around `src/txlog.py`:
+   - `TelemetryEvent` — a dataclass or dict-like class that holds event data (type, service_id, params, result, success, credits_charged, latency_ms, timestamp, etc.)
+   - `Telemetry` class with:
+     - `emit(event: TelemetryEvent)` — logs to the txlog (maps to txlog.log())
+     - `count_calls(service_id, window_minutes=15)` — delegates to txlog
+     - `get_recent(n, event_type=None)` — returns recent events, optionally filtered by type
+     - `get_stats()` — returns summary dict (total calls, revenue, success rate, per-service counts)
+   - Module-level singleton: `telemetry = Telemetry()`
+   Read `src/gateway.py` to see exactly how telemetry is used (emit, count_calls, get_stats, get_recent with event_type filter) and make sure the interface matches.
 
-2. **Verify all services by reading through each handler.** Check that:
+2. **Convert `_frankfurter_fx_rates` from async to sync.** Replace `async with httpx.AsyncClient()` with sync `httpx.Client()` or just `httpx.get()`. Change return type from `dict` to `str` (JSON-encoded, matching all other handlers). Remove `async` keyword. Keep the same params and behavior.
+
+3. **Verify all services by reading through each handler.** Check that:
    - Every handler is a sync function (not async)
    - Every handler returns `str` (JSON-encoded)
    - Every handler has a matching `catalog.register()` call
@@ -33,6 +43,7 @@ Read these before starting:
 
 ## Completion Criteria
 
+- [ ] `src/telemetry.py` exists and gateway can import it
 - [ ] `_frankfurter_fx_rates` is sync, returns JSON string
 - [ ] All handlers are sync, return JSON strings
 - [ ] All handlers have matching catalog.register() calls

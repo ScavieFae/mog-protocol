@@ -22,15 +22,25 @@ What's the situation?
 - **No active brief?** → Check goals.md for what to do next. If there are queued briefs in `.loop/briefs/` that haven't been dispatched, dispatch the highest priority one.
 - **Nothing to do?** → Idle. That's fine.
 
-## Step 3: Evaluate (if brief complete)
+## Step 3: Review + Evaluate (if brief complete)
 
-1. Read the diff: `git diff <main_branch>...<branch> --stat` for overview, spot-check key files
+**Always run the reviewer before deciding to merge.** The reviewer is a separate perspective that catches things you'll miss as the builder-evaluator.
+
+1. Read the diff: `git diff main...<branch> --stat` for overview, then `git diff main...<branch>` for full changes
 2. Read progress.json learnings on the branch
-3. Write evaluation to `.loop/evaluations/<brief-name>.md`
-4. Decide:
-   - **Merge:** write `.loop/state/pending-merge.json` with `{"brief": "brief-NNN-slug", "branch": "brief-NNN-slug", "title": "Short description"}`. The daemon handles the merge.
-   - **Fix:** generate a follow-up brief to fix issues
+3. **Run the reviewer.** Read `.loop/agents/reviewer.md` and apply its checklist against the diff:
+   - Does the code accomplish what the brief asked? Check each completion criterion.
+   - Code quality: readable, follows existing patterns, no obvious bugs?
+   - Scope creep: did the worker add things the brief didn't ask for?
+   - Verification: did the worker run the verify command? Did tests pass?
+   - Side effects: any files changed that shouldn't have been?
+4. Write evaluation to `.loop/evaluations/<brief-name>.md` — include the review findings
+5. Decide:
+   - **Merge:** write `.loop/state/pending-merge.json` with `{"brief": "brief-NNN-slug", "branch": "brief-NNN-slug", "title": "Short description"}`. The daemon handles the merge. Only merge if the review found no blocking issues.
+   - **Fix:** if the review found issues, generate a follow-up fix brief targeting the specific problems. Do NOT merge code with known issues just to keep moving.
    - **Escalate:** write `signals/escalate.json` for the human
+
+**The human is asleep. You are the quality gate.** A bad merge to main breaks the gateway for everyone. A fix brief costs one more iteration. Always choose the fix brief over a risky merge.
 
 ## Step 4: Dispatch (if no active brief)
 
