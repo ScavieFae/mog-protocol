@@ -287,12 +287,22 @@ async def main():
 
             # Service graveyard
             graveyard_path = "data/graveyard.json"
-            if os.path.exists(graveyard_path):
-                try:
-                    with open(graveyard_path) as f:
-                        health["graveyard"] = json.load(f)
-                except (json.JSONDecodeError, OSError):
-                    pass
+            if not os.path.exists(graveyard_path):
+                # Seed with known killed services
+                os.makedirs("data", exist_ok=True)
+                with open(graveyard_path, "w") as f:
+                    json.dump([{
+                        "service_id": "circle_faucet",
+                        "name": "Circle USDC Faucet",
+                        "provider": "mog-protocol",
+                        "reason": "Anti-bot detection — Circle flagged automated requests. 0 successful calls, negative ROI.",
+                        "killed_at": "2026-03-06T01:30:00Z",
+                    }], f, indent=2)
+            try:
+                with open(graveyard_path) as f:
+                    health["graveyard"] = json.load(f)
+            except (json.JSONDecodeError, OSError):
+                pass
 
             # Agent colony state (live autonomous agents)
             try:
