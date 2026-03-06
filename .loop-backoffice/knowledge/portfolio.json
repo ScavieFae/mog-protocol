@@ -71,14 +71,26 @@
       "discovery_cost_credits": 0,
       "wrapping_cost_credits": 2,
       "status": "active"
+    },
+    "rest_countries": {
+      "added_at": "2026-03-05T17:00:00Z",
+      "source": "backoffice-007",
+      "upstream_api": "restcountries.com",
+      "upstream_cost_per_call_usd": 0,
+      "our_price_credits": 1,
+      "total_calls": 0,
+      "total_revenue_credits": 0,
+      "discovery_cost_credits": 0,
+      "wrapping_cost_credits": 2,
+      "status": "active"
     }
   },
   "budget": {
     "initial_credits": 100,
     "spent_discovery": 0,
-    "spent_wrapping": 5,
+    "spent_wrapping": 7,
     "earned_revenue": 12,
-    "current_balance": 88
+    "current_balance": 86
   },
   "demand_signals": []
 }
