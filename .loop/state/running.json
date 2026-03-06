@@ -62,6 +62,12 @@
       "branch": "brief-008-fix-fx-wire-services",
       "completed_at": "2026-03-06T10:44:07Z",
       "evaluation": "APPROVE \u2014 telemetry.py created, FX handler fixed, 12 services verified. Pending merge."
+    },
+    {
+      "brief": "brief-008-fix-fx-wire-services",
+      "branch": "brief-008-fix-fx-wire-services",
+      "merged_at": "2026-03-06T15:18:21Z",
+      "evaluation": ""
     }
   ]
 }
