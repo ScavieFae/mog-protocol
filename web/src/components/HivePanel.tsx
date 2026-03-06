@@ -2,15 +2,30 @@ import { useState, useMemo } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import { type ColonyData, type ActivityEntry } from "@/hooks/useHealth"
 
+// Favicon helper — Google's S2 proxy gives consistent 16px icons for any domain
+function favicon(domain: string, size = 16): string {
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=${size}`
+}
+
+// Known service domain → favicon mapping
+const SERVICE_ICONS: Record<string, string> = {
+  exa: favicon("exa.ai"),
+  apify: favicon("apify.com"),
+  zeroclick: favicon("zeroclick.ai"),
+  nevermined: favicon("nevermined.io"),
+  anthropic: favicon("anthropic.com"),
+  trustnet: favicon("github.com"),
+}
+
 // Tool → sponsor/category mapping for badges
-const TOOL_META: Record<string, { label: string; color: string; sponsor?: string; bright?: boolean }> = {
-  search_web: { label: "Exa", color: "#6B8DAE", sponsor: "exa" },
-  scout_exa: { label: "SCOUT:EXA", color: "#4A90D9", sponsor: "exa", bright: true },
-  scout_apify: { label: "SCOUT:APIFY", color: "#FF6B35", bright: true },
-  scout_trustnet: { label: "SCOUT:TRUST", color: "#E056A0", bright: true },
-  self_buy: { label: "NVM", color: "#87A878", sponsor: "nevermined" },
-  explore_seller: { label: "NVM", color: "#87A878", sponsor: "nevermined" },
-  discover_sellers: { label: "NVM", color: "#87A878", sponsor: "nevermined" },
+const TOOL_META: Record<string, { label: string; color: string; icon?: string; bright?: boolean }> = {
+  search_web: { label: "Exa", color: "#6B8DAE", icon: SERVICE_ICONS.exa },
+  scout_exa: { label: "SCOUT:EXA", color: "#4A90D9", icon: SERVICE_ICONS.exa, bright: true },
+  scout_apify: { label: "SCOUT:APIFY", color: "#FF6B35", icon: SERVICE_ICONS.apify, bright: true },
+  scout_trustnet: { label: "SCOUT:TRUST", color: "#E056A0", icon: SERVICE_ICONS.trustnet, bright: true },
+  self_buy: { label: "NVM", color: "#87A878", icon: SERVICE_ICONS.nevermined },
+  explore_seller: { label: "NVM", color: "#87A878", icon: SERVICE_ICONS.nevermined },
+  discover_sellers: { label: "NVM", color: "#87A878", icon: SERVICE_ICONS.nevermined },
   check_marketplace: { label: "MKT", color: "#78716C" },
   send_message: { label: "MSG", color: "#9B8EC2" },
   propose_service: { label: "NEW", color: "#C5A862" },
@@ -21,6 +36,15 @@ const TOOL_META: Record<string, { label: string; color: string; sponsor?: string
   check_errors: { label: "ERR", color: "#C47A7A" },
   inspect_service: { label: "INS", color: "#C47A7A" },
   patch_service: { label: "FIX", color: "#87A878" },
+}
+
+// Map service_id prefix → favicon for ServiceCard/Ticker use
+export function getServiceIcon(serviceId: string): string | null {
+  if (serviceId.includes("exa") || serviceId.includes("search")) return SERVICE_ICONS.exa
+  if (serviceId.includes("apify")) return SERVICE_ICONS.apify
+  if (serviceId.includes("zeroclick")) return SERVICE_ICONS.zeroclick
+  if (serviceId.includes("claude") || serviceId.includes("summarize")) return SERVICE_ICONS.anthropic
+  return null
 }
 
 const AGENT_COLORS: Record<string, string> = {
@@ -134,10 +158,24 @@ export function HivePanel({ colony, expanded, onToggle }: HivePanelProps) {
           )}
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex gap-2 text-[10px] font-mono text-stone/50">
-            {stats.nvmCount > 0 && <span className="text-sage">{stats.nvmCount} nvm</span>}
-            {stats.scoutCount > 0 && <span style={{ color: "#E056A0" }}>{stats.scoutCount} scout</span>}
-            {stats.exaCount > 0 && <span className="text-blue-muted">{stats.exaCount} exa</span>}
+          <div className="flex gap-2 text-[10px] font-mono text-stone/50 items-center">
+            {stats.nvmCount > 0 && (
+              <span className="inline-flex items-center gap-0.5 text-sage">
+                <img src={SERVICE_ICONS.nevermined} alt="" className="w-3 h-3" loading="lazy" />
+                {stats.nvmCount}
+              </span>
+            )}
+            {stats.scoutCount > 0 && (
+              <span className="inline-flex items-center gap-0.5" style={{ color: "#E056A0" }}>
+                {stats.scoutCount} scout
+              </span>
+            )}
+            {stats.exaCount > 0 && (
+              <span className="inline-flex items-center gap-0.5 text-blue-muted">
+                <img src={SERVICE_ICONS.exa} alt="" className="w-3 h-3" loading="lazy" />
+                {stats.exaCount}
+              </span>
+            )}
             {stats.msgCount > 0 && <span className="text-purple">{stats.msgCount} msg</span>}
           </div>
           <button
@@ -239,7 +277,7 @@ function ActivityRow({ activity }: { activity: ActivityEntry }) {
             {shortAgent}
           </span>
           <span
-            className={`text-[9px] font-mono px-1.5 py-0 rounded-full font-bold ${
+            className={`inline-flex items-center gap-1 text-[9px] font-mono px-1.5 py-0 rounded-full font-bold ${
               isScout ? "animate-pulse" : activity.is_nvm ? "animate-pulse-sage" : ""
             }`}
             style={{
@@ -248,6 +286,9 @@ function ActivityRow({ activity }: { activity: ActivityEntry }) {
               border: isScout ? `1px solid ${meta.color}50` : undefined,
             }}
           >
+            {meta.icon && (
+              <img src={meta.icon} alt="" className="w-3 h-3 rounded-sm" loading="lazy" />
+            )}
             {meta.label}
           </span>
           {activity.is_nvm && (

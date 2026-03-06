@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "motion/react"
 import { useState, useEffect } from "react"
 import { type Service, type SupervisorEvaluation } from "@/hooks/useHealth"
+import { getServiceIcon } from "@/components/HivePanel"
 
 const CATEGORY_COLORS: Record<string, string> = {
   search: "#6B8DAE",
@@ -101,7 +102,14 @@ export function ServiceCard({ service, evaluation, onClick }: ServiceCardProps) 
         {/* Header: name + badges */}
         <div className="flex items-start justify-between mb-1.5">
           <div className="flex items-center gap-2">
-            <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${totalCalls > 0 ? "animate-breathe" : ""}`} style={{ backgroundColor: color }} />
+            {(() => {
+              const icon = getServiceIcon(service.service_id)
+              return icon ? (
+                <img src={icon} alt="" className={`w-4 h-4 rounded-sm flex-shrink-0 ${totalCalls > 0 ? "animate-breathe" : "opacity-60"}`} loading="lazy" />
+              ) : (
+                <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${totalCalls > 0 ? "animate-breathe" : ""}`} style={{ backgroundColor: color }} />
+              )
+            })()}
             <span className="font-sans text-sm font-medium text-charcoal truncate max-w-[140px]">
               {service.name}
             </span>

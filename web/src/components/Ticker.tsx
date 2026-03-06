@@ -1,5 +1,6 @@
 import { type Service } from "@/hooks/useHealth"
 import { motion } from "motion/react"
+import { getServiceIcon } from "@/components/HivePanel"
 
 interface TickerProps {
   services: Service[]
@@ -34,6 +35,10 @@ export function Ticker({ services }: TickerProps) {
                 backgroundColor: hotSurge ? "#C47A7A12" : "#C5A86210",
               } : undefined}
             >
+              {(() => {
+                const icon = getServiceIcon(s.service_id)
+                return icon ? <img src={icon} alt="" className="w-4 h-4 rounded-sm" loading="lazy" /> : null
+              })()}
               <span className={`font-sans ${surging ? "text-charcoal font-medium" : "text-stone"}`}>{s.name}</span>
               <span className={`font-mono font-medium text-xl ${hotSurge ? "text-rose" : surging ? "text-gold" : "text-copper"}`}>
                 {s.current_price != null
