@@ -1,14 +1,13 @@
 {
-  "active": [],
-  "completed_pending_eval": [
+  "active": [
     {
-      "brief": "backoffice-010-wrap-random-user",
-      "branch": "bo/010-wrap-random-user",
-      "brief_file": ".loop-backoffice/briefs/backoffice-010-wrap-random-user.md",
-      "dispatched_at": "2026-03-06T03:32:09Z",
-      "completed_at": "2026-03-06T03:33:58Z"
+      "brief": "backoffice-011-scout-high-value-apis",
+      "branch": "bo/011-scout-high-value-apis",
+      "brief_file": ".loop-backoffice/briefs/backoffice-011-scout-high-value-apis.md",
+      "dispatched_at": "2026-03-06T04:04:43Z"
     }
   ],
+  "completed_pending_eval": [],
   "history": [
     {
       "brief": "backoffice-001-initial-scout",
@@ -99,6 +98,16 @@
       "evaluated_at": "2026-03-06T03:05:00Z",
       "verdict": "accepted",
       "eval_file": ".loop-backoffice/evaluations/eval-009-wrap-hacker-news.md"
+    },
+    {
+      "brief": "backoffice-010-wrap-random-user",
+      "branch": "bo/010-wrap-random-user",
+      "brief_file": ".loop-backoffice/briefs/backoffice-010-wrap-random-user.md",
+      "dispatched_at": "2026-03-06T03:32:09Z",
+      "completed_at": "2026-03-06T03:33:58Z",
+      "evaluated_at": "2026-03-06T03:36:00Z",
+      "verdict": "accepted",
+      "eval_file": ".loop-backoffice/evaluations/eval-010-wrap-random-user.md"
     }
   ]
 }
