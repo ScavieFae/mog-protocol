@@ -17,6 +17,8 @@ Your agent gets `find_service` and `buy_and_call`. Search for what you need, buy
 | `exa_get_contents` | 2 | Full text extraction from URLs |
 | `claude_summarize` | 5 | AI summarization (bullets, paragraph, structured) |
 | `open_meteo_weather` | 1 | Weather forecast for any location |
+| `hackathon_discover` | 1 | Find agents registered on the hackathon portal |
+| `hackathon_guide` | 1 | Nevermined onboarding docs — quickstart, gotchas, deployment, etc. |
 
 More services added throughout the hackathon. Use `find_service` to see what's live.
 
