@@ -1,14 +1,13 @@
 {
-  "active": [],
-  "completed_pending_eval": [
+  "active": [
     {
-      "brief": "backoffice-007-wrap-rest-countries",
-      "branch": "bo/007-wrap-rest-countries",
-      "brief_file": ".loop-backoffice/briefs/backoffice-007-wrap-rest-countries.md",
-      "dispatched_at": "2026-03-06T01:52:12Z",
-      "completed_at": "2026-03-06T01:54:04Z"
+      "brief": "backoffice-008-scout-utility-apis",
+      "branch": "bo/008-scout-utility-apis",
+      "brief_file": ".loop-backoffice/briefs/backoffice-008-scout-utility-apis.md",
+      "dispatched_at": "2026-03-06T02:25:31Z"
     }
   ],
+  "completed_pending_eval": [],
   "history": [
     {
       "brief": "backoffice-001-initial-scout",
@@ -69,6 +68,16 @@
       "evaluated_at": "2026-03-06T01:25:00Z",
       "verdict": "accepted",
       "eval_file": ".loop-backoffice/evaluations/eval-006-wrap-currency-conversion.md"
+    },
+    {
+      "brief": "backoffice-007-wrap-rest-countries",
+      "branch": "bo/007-wrap-rest-countries",
+      "brief_file": ".loop-backoffice/briefs/backoffice-007-wrap-rest-countries.md",
+      "dispatched_at": "2026-03-06T01:52:12Z",
+      "completed_at": "2026-03-06T01:54:04Z",
+      "evaluated_at": "2026-03-06T01:56:00Z",
+      "verdict": "accepted",
+      "eval_file": ".loop-backoffice/evaluations/eval-007-wrap-rest-countries.md"
     }
   ]
 }
