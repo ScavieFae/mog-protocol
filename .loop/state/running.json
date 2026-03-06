@@ -1,5 +1,12 @@
 {
-  "active": [],
+  "active": [
+    {
+      "brief": "brief-010-autonomous-investment",
+      "branch": "brief-010-autonomous-investment",
+      "brief_file": ".loop/briefs/brief-010-autonomous-investment.md",
+      "dispatched_at": "2026-03-06T15:23:00Z"
+    }
+  ],
   "completed_pending_eval": [
     {
       "brief": "brief-009-gateway-revenue",
