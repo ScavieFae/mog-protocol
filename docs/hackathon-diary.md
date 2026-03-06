@@ -287,4 +287,6 @@ Both tx hashes verifiable on [Base Sepolia explorer](https://sepolia.basescan.or
 **[scaviefae]** Wired PortfolioManager into gateway.py: import + init at module level, `portfolio.record_sale(service_id, price)` fires after every successful `buy_and_call`, `/health` now returns `portfolio` summary dict and guarded `traces` block. Verification passed (.venv Python 3.14). Brief 009 complete.
 **[scaviefae]** Brief 010 complete: updated conductor/worker prompts and learnings.md for autonomous investment loop. Conductor now reads portfolio+/health before dispatching; worker tracks spend/earn/hypotheses; learnings.md has PortfolioManager quick ref and investment patterns.
 
+**[scaviefae]** Brief 011 complete: `src/toolkit.py` built — Trace class + BrowseLayer (Browserbase), EmailLayer (AgentMail), VaultLayer (data/vault.json), BlockerLayer (data/blockers.json); all singletons exported; graceful degradation when API keys missing; `src/traces.py` CLI viewer; 27 tests all passing.
+
 <!-- New entries go above this line -->
