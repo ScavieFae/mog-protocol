@@ -29,9 +29,25 @@ Read these before starting:
    ```
    Only record on success — not on errors. `price` is the surge-adjusted price already computed. Place it right after the telemetry emit for successful calls.
 
-3. **Add portfolio summary to `/health` response.** In the `_health()` function, add `portfolio.get_summary()` to the response dict:
+3. **Add portfolio summary and recent traces to `/health` response.** In the `_health()` function, add:
    ```python
    "portfolio": portfolio.get_summary(),
+   ```
+   Also add a `traces` section that pulls recent blocker traces (the toolkit may not exist yet when this brief runs — guard the import):
+   ```python
+   try:
+       from src.toolkit import blockers
+       recent_blockers = blockers.get_recent(5)
+       health["traces"] = {
+           "recent_blockers": [
+               {"service_id": b.get("service_id"), "type": b.get("blocker_type"),
+                "recommendation": b.get("recommendation"),
+                "steps": (b.get("trace", {}).get("steps", []))}
+               for b in recent_blockers
+           ]
+       }
+   except ImportError:
+       pass  # toolkit not yet built
    ```
 
 4. **Test manually.** Start gateway locally (or just verify the import chain works):
@@ -48,6 +64,7 @@ Read these before starting:
 - [ ] PortfolioManager imported and initialized in gateway.py
 - [ ] `buy_and_call` calls `portfolio.record_sale()` on success
 - [ ] `/health` response includes `portfolio` key with summary
+- [ ] `/health` response includes `traces` key with recent blocker traces (when toolkit exists)
 - [ ] No import errors in the chain
 
 ## Verification

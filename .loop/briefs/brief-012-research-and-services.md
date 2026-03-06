@@ -55,6 +55,8 @@ Read these before starting:
 
    **archive_fetch** (1 credit) — Fetch the archived version of a URL from archive.ph. Read articles behind paywalls. Params: `url` (required).
 
+   **circle_faucet** (1 credit) — Claim 20 testnet USDC from Circle's faucet for a wallet address. Automates https://faucet.circle.com/ via Browserbase headless browser. Many hackathon teams don't know about this or can't be bothered. We automate it. Params: `wallet_address` (required), `network` (optional, default "BASE", maps to dropdown: BASE→Base Sepolia, ETH→Ethereum Sepolia, ARB→Arbitrum Sepolia, SOL→Solana Devnet, OP→Optimism Sepolia, AVAX→Avalanche Fuji), `currency` (optional, default "USDC", also supports "EURC"). Flow: create browser session → navigate to faucet → select network dropdown → enter wallet → select currency → click submit → wait for confirmation → return result. Handle rate limits gracefully (1 req per stablecoin+network pair every 2 hours) — return `{"error": "Rate limited — try again in ~2 hours"}`. This is the killer test case for BrowseLayer.
+
    Each handler function wraps the corresponding toolkit method, converts result to JSON string (matching existing handler patterns). Handle missing API keys gracefully (return error JSON, don't crash).
 
 3. **Update `.loop/knowledge/learnings.md` — add toolkit section.** Practical guidance for the scout/worker:
@@ -92,15 +94,15 @@ Read these before starting:
 ## Completion Criteria
 
 - [ ] ResearchLayer added to toolkit with social_comments + fetch_archived
-- [ ] 4 new services registered in catalog: browser_navigate, agent_email_inbox, social_search, archive_fetch
+- [ ] 5 new services registered in catalog: browser_navigate, agent_email_inbox, social_search, archive_fetch, circle_faucet
 - [ ] All handlers are sync, return JSON strings, handle missing keys gracefully
 - [ ] learnings.md has toolkit section
 - [ ] Conductor prompt reads blockers and vault
 - [ ] beautifulsoup4 in dependencies
-- [ ] `from src.services import catalog; len(catalog.services) >= 16` (12 existing + 4 new)
+- [ ] `from src.services import catalog; len(catalog.services) >= 17` (12 existing + 5 new)
 
 ## Verification
 
 - `python -c "from src.toolkit import research; print('Research layer loaded')"` works
-- `python -c "from src.services import catalog; print(f'{len(catalog.services)} services')"` shows >= 16
+- `python -c "from src.services import catalog; print(f'{len(catalog.services)} services')"` shows >= 17
 - Read conductor prompt and confirm it references blockers.json and vault.json

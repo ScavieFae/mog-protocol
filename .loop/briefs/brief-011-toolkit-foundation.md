@@ -168,7 +168,27 @@ Read these before starting:
 
 2. **Ensure `data/` directory exists with `.gitkeep`, and add `data/vault.json` and `data/blockers.json` to `.gitignore`.** Portfolio JSON too if not already there.
 
-3. **Create `src/test_toolkit.py` — tests for Trace, vault, and blockers (no API keys needed).** Test:
+3. **Add `python -m src.traces` CLI viewer.** Create `src/traces.py` with a `__main__` block that prints recent traces from blockers and portfolio hypotheses in a clean format:
+   ```
+   $ python -m src.traces
+   RECENT TRACES
+   ─────────────
+   [blocker] stripe (captcha) ESCALATE — 2m ago, 8 steps
+     browse:navigate(stripe.com/signup) -> ok title='Sign Up'
+     browse:fill_form(email,password) -> ok
+     browse:click(Create Account) -> FAIL captcha detected
+
+   [hypothesis] openweather (validated) — 15m ago, 5 steps
+     exa:social_comments(twitter.com, weather API) -> 12 results
+     browse:navigate(openweathermap.org/signup) -> ok
+     email:check_inbox(wait=30) -> 1 message
+     vault:store(openweather_api_key) -> ok
+
+   3 traced operations (2 blockers, 1 hypothesis)
+   ```
+   Implementation: read `data/blockers.json` and `data/portfolio.json`, filter entries that have traces, sort by timestamp, print with simple formatting. Keep it under 50 lines. Accepts optional `--limit N` flag (default 10).
+
+4. **Create `src/test_toolkit.py` — tests for Trace, vault, and blockers (no API keys needed).** Test:
    - Trace: log steps, summary caps at 20, to_dict includes operation and step_count, result truncation at 80 chars
    - Trace with blocker: create trace, log steps, pass to blockers.report(), verify trace appears on report
    - Vault: store, get, list_keys (no values exposed), delete, overwrite, persistence round-trip
@@ -183,6 +203,7 @@ Read these before starting:
 - [ ] All five exports: `Trace`, `browse`, `email`, `vault`, `blockers`
 - [ ] Every toolkit method accepts optional `trace: Trace` and logs one short line
 - [ ] BlockerLayer.report() stores trace.to_dict() when trace is provided
+- [ ] `python -m src.traces` prints recent traces from blockers + hypotheses
 - [ ] Graceful degradation: no crashes when API keys are missing
 - [ ] `data/vault.json` and `data/blockers.json` gitignored
 - [ ] `src/test_toolkit.py` passes for vault + blockers + graceful degradation
@@ -193,3 +214,4 @@ Read these before starting:
 - `python -m pytest src/test_toolkit.py -v` (or `python src/test_toolkit.py`)
 - `python -c "from src.toolkit import browse, email, vault, blockers; print('All layers loaded')"` works
 - `python -c "from src.toolkit import vault; vault.store('test', 'val'); assert vault.get('test') == 'val'; print('Vault works')"` works
+- `python -m src.traces` runs without error (prints "0 traced operations" if no data yet)
