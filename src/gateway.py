@@ -26,7 +26,7 @@ from payments_py.mcp import PaymentsMCP
 
 from src.pricing import get_current_price
 from src.services import catalog
-from src.txlog import txlog
+from src.telemetry import telemetry, TelemetryEvent
 
 payments = Payments.get_instance(
     PaymentOptions(
@@ -63,14 +63,14 @@ def find_service(query: str, budget: int = None) -> str:
     Pass service_id to buy_and_call to execute the service.
     """
     matches = catalog.search(query, budget=budget, top_k=5)
-    if not matches:
-        txlog.log({
-            "type": "unmet_demand",
-            "query": query,
-            "budget": budget,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "matches_returned": 0,
-        })
+    telemetry.emit(TelemetryEvent(
+        "find_service" if matches else "unmet_demand",
+        query=query,
+        budget=budget,
+        matches_returned=len(matches),
+        success=bool(matches),
+        agent_id=NVM_AGENT_ID,
+    ))
     return json.dumps(matches)
 
 
@@ -86,40 +86,44 @@ def buy_and_call(service_id: str, params: dict) -> str:
     """
     service = catalog.get(service_id)
     if service is None:
-        return json.dumps({
-            "error": f"Service '{service_id}' not found. Use find_service to discover available services.",
-            "_meta": {"service_id": service_id, "credits_charged": 0},
-        })
+        telemetry.emit(TelemetryEvent(
+            "buy_and_call",
+            service_id=service_id, params=params,
+            error=f"Service '{service_id}' not found", success=False,
+            agent_id=NVM_AGENT_ID,
+        ))
+        raise ValueError(f"Service '{service_id}' not found. Use find_service to discover available services.")
     if service.handler is None:
-        return json.dumps({
-            "error": f"Service '{service_id}' has no handler registered.",
-            "_meta": {"service_id": service_id, "credits_charged": 0},
-        })
+        raise ValueError(f"Service '{service_id}' has no handler registered.")
     price, surge_multiplier = get_current_price(service_id, service.price_credits)
+    volume = telemetry.count_calls(service_id)
     t0 = time.monotonic()
     try:
         result = service.handler(**(params or {}))
     except Exception as exc:
-        txlog.log({
-            "type": "buy_and_call",
-            "service_id": service_id,
-            "credits_charged": 0,
-            "success": False,
-            "latency_ms": int((time.monotonic() - t0) * 1000),
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-        })
-        return json.dumps({
-            "error": str(exc),
-            "_meta": {"service_id": service_id, "credits_charged": 0},
-        })
-    txlog.log({
-        "type": "buy_and_call",
-        "service_id": service_id,
-        "credits_charged": price,
-        "success": True,
-        "latency_ms": int((time.monotonic() - t0) * 1000),
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-    })
+        latency_ms = int((time.monotonic() - t0) * 1000)
+        telemetry.emit(TelemetryEvent(
+            "buy_and_call",
+            service_id=service_id, service_name=service.name,
+            params=params, error=str(exc), success=False,
+            credits_charged=0, base_price=service.price_credits,
+            surge_multiplier=surge_multiplier, volume_in_window=volume,
+            latency_ms=latency_ms, agent_id=NVM_AGENT_ID,
+            plan_id=os.getenv("NVM_GATEWAY_PLAN_ID", ""),
+        ))
+        # Re-raise so the paywall skips credit redemption.
+        # The MCP layer converts this into an error response for the buyer.
+        raise
+    latency_ms = int((time.monotonic() - t0) * 1000)
+    telemetry.emit(TelemetryEvent(
+        "buy_and_call",
+        service_id=service_id, service_name=service.name,
+        params=params, result=result, success=True,
+        credits_charged=price, base_price=service.price_credits,
+        surge_multiplier=surge_multiplier, volume_in_window=volume,
+        latency_ms=latency_ms, agent_id=NVM_AGENT_ID,
+        plan_id=os.getenv("NVM_GATEWAY_PLAN_ID", ""),
+    ))
     return json.dumps({
         "result": result,
         "_meta": {
@@ -136,7 +140,6 @@ async def main():
     result = await mcp.start(port=port)
 
     # Replace the default /health with our richer marketplace health endpoint.
-    # mcp._manager._fastapi_app is the FastAPI app instance (available post-start).
     app = mcp._manager._fastapi_app
     if app is not None:
         from fastapi.responses import JSONResponse as _JSONResponse
@@ -148,8 +151,9 @@ async def main():
 
         async def _health():
             services = catalog.services
-            recent = txlog.get_recent(10)
-            demand = [e for e in txlog.get_recent(50) if e.get("type") == "unmet_demand"]
+            stats = telemetry.get_stats()
+            recent = telemetry.get_recent(10, event_type="buy_and_call")
+            demand = telemetry.get_recent(10, event_type="unmet_demand")
             return _JSONResponse({
                 "status": "ok",
                 "services_count": len(services),
@@ -157,6 +161,7 @@ async def main():
                     {"service_id": s.service_id, "name": s.name, "price_credits": s.price_credits}
                     for s in services
                 ],
+                "stats": stats,
                 "recent_transactions": recent,
                 "demand_signals": demand,
             })
