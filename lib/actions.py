@@ -215,6 +215,8 @@ def merge(paths):
 
     project_dir = paths["project_dir"]
 
+    # Clean up any stuck merge state from a previous failed attempt
+    git(project_dir, "merge", "--abort", check=False)
     # Ensure on main branch with latest
     git(project_dir, "checkout", main_branch, check=False)
     # Stash any uncommitted changes (e.g. conductor diary entries) so merge can proceed
