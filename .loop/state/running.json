@@ -7,15 +7,7 @@
       "dispatched_at": "2026-03-06T10:40:16Z"
     }
   ],
-  "completed_pending_eval": [
-    {
-      "brief": "brief-007-portfolio-core",
-      "branch": "brief-007-portfolio-core",
-      "brief_file": ".loop/briefs/brief-007-portfolio-core.md",
-      "dispatched_at": "2026-03-06T09:35:20Z",
-      "completed_at": "2026-03-06T09:38:07Z"
-    }
-  ],
+  "completed_pending_eval": [],
   "history": [
     {
       "brief": "brief-001-phase1-seller",
@@ -57,6 +49,12 @@
       "brief": "brief-006-surge-health",
       "branch": "brief-006-surge-health",
       "merged_at": "2026-03-06T00:17:32Z",
+      "evaluation": ""
+    },
+    {
+      "brief": "brief-007-portfolio-core",
+      "branch": "brief-007-portfolio-core",
+      "merged_at": "2026-03-06T10:40:59Z",
       "evaluation": ""
     }
   ]
