@@ -27,6 +27,8 @@ export interface Service {
   description?: string
   provider?: string
   example_params?: Record<string, unknown>
+  value_adds?: string[]
+  ad_supported?: boolean
   call_count?: number
   revenue_credits?: number
   surge_multiplier?: number

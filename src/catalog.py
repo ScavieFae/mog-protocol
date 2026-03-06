@@ -15,6 +15,8 @@ class ServiceEntry:
     provider: str
     embedding: list[float] = field(default_factory=list)
     handler: Optional[Callable] = field(default=None)
+    value_adds: list[str] = field(default_factory=list)  # signup_bypass, micro_paid, api_bypass
+    ad_supported: bool = False
 
 
 class ServiceCatalog:
@@ -59,6 +61,8 @@ class ServiceCatalog:
         example_params: dict[str, Any],
         provider: str,
         handler: Optional[Callable] = None,
+        value_adds: list[str] | None = None,
+        ad_supported: bool = False,
     ) -> None:
         embedding = self._embed(description)
         self._services[service_id] = ServiceEntry(
@@ -70,6 +74,8 @@ class ServiceCatalog:
             provider=provider,
             embedding=embedding,
             handler=handler,
+            value_adds=value_adds or [],
+            ad_supported=ad_supported,
         )
 
     def get(self, service_id: str) -> Optional[ServiceEntry]:

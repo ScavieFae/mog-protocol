@@ -1206,3 +1206,38 @@ catalog.register(
     provider="mog-protocol",
     handler=_circle_faucet,
 )
+
+
+# --- Value-add tags ---
+# signup_bypass: agent skips a signup wall
+# micro_paid: pay-per-call access to APIs that normally need accounts/subscriptions
+# api_bypass: agent skips needing a human to get an API key
+
+_VALUE_ADDS = {
+    "exa_search": ["micro_paid", "api_bypass"],
+    "exa_get_contents": ["micro_paid", "api_bypass"],
+    "claude_summarize": ["micro_paid", "api_bypass"],
+    "nano_banana_pro": ["micro_paid", "api_bypass"],
+    "ip_geolocation": ["api_bypass"],
+    "open_meteo_weather": ["api_bypass"],
+    "frankfurter_fx_rates": ["api_bypass"],
+    "hacker_news_top": ["api_bypass"],
+    "newton_math": ["api_bypass"],
+    "qr_code": ["api_bypass"],
+    "archive_fetch": ["api_bypass"],
+    "social_search": ["micro_paid", "api_bypass"],
+    "browser_navigate": ["signup_bypass", "micro_paid"],
+    "agent_email_inbox": ["signup_bypass"],
+    "circle_faucet": ["signup_bypass", "api_bypass"],
+    "debug_seller": ["micro_paid"],
+    "hackathon_discover": ["api_bypass"],
+    "hackathon_portal": ["api_bypass"],
+    "hackathon_onboarding": ["api_bypass"],
+    "hackathon_pitfalls": ["api_bypass"],
+    "hackathon_all": ["api_bypass"],
+}
+
+for sid, adds in _VALUE_ADDS.items():
+    entry = catalog.get(sid)
+    if entry:
+        entry.value_adds = adds

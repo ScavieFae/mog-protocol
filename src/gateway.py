@@ -225,6 +225,8 @@ async def main():
                     "price_credits": s.price_credits,
                     "provider": s.provider or "mog-protocol",
                     "example_params": s.example_params or {},
+                    "value_adds": s.value_adds or [],
+                    "ad_supported": s.ad_supported,
                     **get_surge_info(s.service_id, s.price_credits),
                 }
                 st = per_service_stats.get(s.service_id)
