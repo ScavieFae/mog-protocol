@@ -1,12 +1,5 @@
 {
-  "active": [
-    {
-      "brief": "brief-012-research-and-services",
-      "branch": "brief-012-research-and-services",
-      "brief_file": ".loop/briefs/brief-012-research-and-services.md",
-      "dispatched_at": "2026-03-06T19:07:47Z"
-    }
-  ],
+  "active": [],
   "completed_pending_eval": [],
   "history": [
     {
@@ -84,8 +77,8 @@
     {
       "brief": "brief-012-research-and-services",
       "branch": "brief-012-research-and-services",
-      "closed_at": "2026-03-06T19:02:00Z",
-      "evaluation": "KILLED \u2014 work landed on main (ResearchLayer), branch stuck in empty dispatch loop. Remaining 4 tasks moved to brief-013."
+      "closed_at": "2026-03-06T19:08:00Z",
+      "evaluation": "KILLED — branch deleted. Work on main. Remaining tasks in brief-013."
     }
   ]
 }
