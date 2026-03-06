@@ -226,8 +226,8 @@ _HACKATHON_GUIDE = {
 }
 
 
-def _hackathon_guide(topic: str = "quickstart") -> str:
-    """Return Nevermined hackathon onboarding content by topic."""
+def _hackathon_guide(topic: str = "all") -> str:
+    """Return Nevermined hackathon onboarding content. Defaults to all topics."""
     topic = topic.lower().strip()
     if topic == "all":
         sections = []
@@ -237,12 +237,11 @@ def _hackathon_guide(topic: str = "quickstart") -> str:
     if topic in _HACKATHON_GUIDE:
         entry = _HACKATHON_GUIDE[topic]
         return json.dumps({"topic": topic, "title": entry["title"], "content": entry["content"]})
-    # Fuzzy match: return topics list
-    return json.dumps({
-        "error": f"Unknown topic '{topic}'",
-        "available_topics": list(_HACKATHON_GUIDE.keys()),
-        "hint": "Use 'all' to get everything, or pick a specific topic.",
-    })
+    # Unknown topic — return everything anyway
+    sections = []
+    for key, val in _HACKATHON_GUIDE.items():
+        sections.append({"topic": key, "title": val["title"], "content": val["content"]})
+    return json.dumps({"topics": list(_HACKATHON_GUIDE.keys()), "sections": sections})
 
 
 def _hackathon_discover(side: str = "all", category: str = "") -> str:
@@ -331,9 +330,9 @@ catalog.register(
 catalog.register(
     service_id="hackathon_guide",
     name="Nevermined Hackathon Guide",
-    description="Curated onboarding docs for the Nevermined hackathon. Topics: quickstart, api_key, transaction_flow, building_seller, deployment, discovery, gotchas, mcp_client. Use 'all' for everything. Saves hours of debugging — written from the floor by a team that hit every wall.",
+    description="Complete Nevermined hackathon onboarding in one call. Quickstart, API key setup, transaction flow, building a seller, Railway deployment, agent discovery, PaymentsMCP gotchas, MCP client config. 1 credit gets you everything. Written from the hackathon floor.",
     price_credits=1,
-    example_params={"topic": "quickstart"},
+    example_params={"topic": "all"},
     provider="mog-protocol",
     handler=_hackathon_guide,
 )
