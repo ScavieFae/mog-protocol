@@ -4,8 +4,10 @@ Handler functions are defined here directly (not imported from server.py)
 to avoid server.py's NVM key exit at import time.
 """
 
+import base64
 import json
 import os
+import time
 import urllib.parse
 import urllib.request
 
@@ -18,6 +20,7 @@ load_dotenv()
 EXA_API_KEY = os.getenv("EXA_API_KEY")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 NVM_API_KEY = os.getenv("NVM_API_KEY")
+NVM_DEBUGGER_BUYER_KEY = os.getenv("NVM_DEBUGGER_BUYER_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 # --- Handler functions ---
@@ -563,4 +566,468 @@ catalog.register(
     example_params={"data": "https://example.com", "size": "200x200"},
     provider="mog-protocol",
     handler=_qr_code,
+)
+
+
+# --- Marketplace Agent Debugger ---
+
+# Known issue patterns from scanning 30+ sellers
+_KNOWN_ISSUES = [
+    {
+        "id": "invalid_address",
+        "title": "Invalid Address in plan registration",
+        "match_fn": lambda r: "Invalid Address" in (r.get("subscribe", {}).get("error") or ""),
+        "detail": "order_plan() returns 500 with 'Invalid Address undefined'. "
+                  "The plan's receiver wallet is not configured correctly.",
+        "fix": "Re-register the plan with a valid receiver wallet address. "
+               "Check that register_agent_and_plan() includes your wallet.",
+    },
+    {
+        "id": "token_rejected_402",
+        "title": "Token rejected by server (402)",
+        "match_fn": lambda r: r.get("test_call", {}).get("status_code") == 402,
+        "detail": "Server returns 402 even with a valid x402 token. "
+                  "The server may validate against a different plan than the one we subscribed to.",
+        "fix": "Ensure your PaymentsMCP middleware is configured with the same plan ID "
+               "that appears in the discovery API. If you have multiple plans, check which "
+               "one the server expects.",
+    },
+    {
+        "id": "token_rejected_403",
+        "title": "Server returns 403 Forbidden",
+        "match_fn": lambda r: r.get("test_call", {}).get("status_code") == 403,
+        "detail": "Server recognizes auth attempt but rejects it. "
+                  "Possible CORS or middleware configuration issue.",
+        "fix": "Check your PaymentsMCP middleware ordering. Ensure the payment validation "
+               "middleware runs before any CORS or auth middleware that might block it.",
+    },
+    {
+        "id": "payload_mismatch_422",
+        "title": "Payload format rejected (422)",
+        "match_fn": lambda r: r.get("test_call", {}).get("status_code") == 422,
+        "detail": "Server returns 422 (validation error). Your API expects specific "
+                  "field names that our generic test payload doesn't match.",
+        "fix": "Document your expected request schema in the discovery API 'services sold' "
+               "field so buyers know what to send. Example: {\"url\": \"...\", \"max_results\": 5}",
+    },
+    {
+        "id": "server_error_500",
+        "title": "Server error (500)",
+        "match_fn": lambda r: r.get("test_call", {}).get("status_code") == 500,
+        "detail": "Server crashes on authenticated requests. Internal error.",
+        "fix": "Check your server logs for the exception. Common causes: unhandled null "
+               "input, database connection issues, or missing environment variables.",
+    },
+    {
+        "id": "endpoint_timeout",
+        "title": "Endpoint timeout",
+        "match_fn": lambda r: r.get("connectivity", {}).get("error") == "timeout"
+                   or r.get("test_call", {}).get("error") == "timeout",
+        "detail": "Server didn't respond within 15 seconds.",
+        "fix": "Check your server is running and the endpoint URL is correct. "
+               "If on ngrok/cloudflare tunnel, the tunnel may have expired.",
+    },
+    {
+        "id": "no_valid_endpoint",
+        "title": "No reachable endpoint",
+        "match_fn": lambda r: not r.get("target", {}).get("endpoint")
+                   or "localhost" in (r.get("target", {}).get("endpoint") or ""),
+        "detail": "No public endpoint URL, or endpoint is localhost/relative path.",
+        "fix": "Deploy your server to a public URL (Railway, Replit, etc.) and update "
+               "your agent registration with the full URL including https://.",
+    },
+]
+
+
+def _log_debug_run(report):
+    """Log every debug run internally, regardless of outcome."""
+    try:
+        os.makedirs("data", exist_ok=True)
+        tc = report.get("test_call", {})
+        internal = {
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "target": report.get("target", {}),
+            "verdict": report.get("verdict", "UNKNOWN"),
+            "plan_price": report.get("subscription", {}).get("plan_price"),
+            "subscribe_result": report.get("subscription", {}).get("subscribe_result"),
+            "test_status": tc.get("status_code"),
+            "server_type": tc.get("server_type"),
+            "tools": tc.get("tools"),
+            "auth_method": tc.get("auth_method"),
+            "known_issues": [ki["id"] for ki in report.get("known_issues", [])],
+        }
+        with open("data/debugger_runs.jsonl", "a") as f:
+            f.write(json.dumps(internal) + "\n")
+    except Exception:
+        pass
+
+
+def _debug_seller(team_name: str = "", endpoint: str = "") -> str:
+    """Run the full Nevermined buy flow against a seller and return diagnostics."""
+    result = _debug_seller_inner(team_name, endpoint)
+    report = json.loads(result)
+    _log_debug_run(report)
+    return result
+
+
+def _debug_seller_inner(team_name: str = "", endpoint: str = "") -> str:
+    import httpx
+
+    if not NVM_API_KEY:
+        return json.dumps({"error": "NVM_API_KEY not set"})
+    buyer_key = NVM_DEBUGGER_BUYER_KEY or NVM_API_KEY
+    max_spend = float(os.getenv("DEBUGGER_MAX_SPEND", "1.0"))
+
+    if not team_name and not endpoint:
+        return json.dumps({"error": "Pass team_name or endpoint to debug."})
+
+    report = {"target": {}, "discovery": {}, "connectivity": {},
+              "subscription": {}, "test_call": {}, "verdict": "UNKNOWN",
+              "known_issues": [], "suggestions": [], "debug_log": []}
+
+    def log_step(step, status, detail):
+        report["debug_log"].append({"step": step, "status": status, "detail": detail})
+
+    # --- Step 1: Resolve target via discovery API ---
+    try:
+        resp = httpx.get(
+            "https://nevermined.ai/hackathon/register/api/discover",
+            params={"side": "sell"},
+            headers={"x-nvm-api-key": NVM_API_KEY},
+            timeout=15,
+        )
+        sellers = resp.json().get("sellers", [])
+    except Exception as e:
+        log_step("discovery", "error", f"Discovery API failed: {str(e)[:200]}")
+        report["verdict"] = "FAIL"
+        report["suggestions"].append("Could not reach the Nevermined discovery API.")
+        return json.dumps(report)
+
+    target = None
+    if team_name:
+        q = team_name.lower()
+        for s in sellers:
+            if q in s.get("name", "").lower() or q in s.get("teamName", "").lower():
+                target = s
+                break
+    if not target and endpoint:
+        for s in sellers:
+            if s.get("endpointUrl", "") == endpoint:
+                target = s
+                break
+
+    if target:
+        report["target"] = {
+            "name": target.get("name", "unknown"),
+            "team": target.get("teamName", "unknown"),
+            "endpoint": target.get("endpointUrl", ""),
+        }
+        plans = target.get("planPricing", [])
+        report["discovery"] = {
+            "found_in_api": True,
+            "plans_count": len(plans),
+            "plans": [{"plan_id": p.get("planDid", "")[:40] + "...",
+                        "price": p.get("planPrice", 0)} for p in plans],
+            "has_valid_endpoint": bool(target.get("endpointUrl")),
+        }
+        ep = target.get("endpointUrl", "")
+        log_step("discovery", "ok", f"Found '{report['target']['name']}' with {len(plans)} plans")
+    elif endpoint:
+        # Not in discovery API but caller gave us an endpoint
+        report["target"] = {"name": "unknown", "team": "unknown", "endpoint": endpoint}
+        report["discovery"] = {"found_in_api": False, "plans_count": 0, "plans": [],
+                                "has_valid_endpoint": True}
+        plans = []
+        ep = endpoint
+        log_step("discovery", "warn", "Not found in discovery API, using provided endpoint")
+    else:
+        log_step("discovery", "fail", f"No match for '{team_name}' in {len(sellers)} sellers")
+        report["verdict"] = "FAIL"
+        report["suggestions"].append(
+            f"No seller matching '{team_name}' found. Check the exact team or agent name "
+            "on the marketplace portal.")
+        return json.dumps(report)
+
+    # --- Step 2: Validate endpoint ---
+    if not ep or "localhost" in ep or ep.startswith("/"):
+        log_step("connectivity", "fail", f"Invalid endpoint: {ep or '(none)'}")
+        report["connectivity"] = {"endpoint_reachable": False, "error": "invalid_endpoint"}
+        report["verdict"] = "FAIL"
+        for ki in _KNOWN_ISSUES:
+            if ki["id"] == "no_valid_endpoint":
+                report["known_issues"].append({"id": ki["id"], "title": ki["title"],
+                                                "detail": ki["detail"], "fix": ki["fix"]})
+        return json.dumps(report)
+
+    # --- Step 3: Connectivity probe (unauthenticated) ---
+    probe_402 = False
+    probe_plan_id = None
+    try:
+        t0 = time.time()
+        probe = httpx.post(ep, headers={"Content-Type": "application/json"},
+                           json={}, timeout=15)
+        probe_ms = int((time.time() - t0) * 1000)
+        report["connectivity"] = {
+            "endpoint_reachable": True,
+            "response_time_ms": probe_ms,
+            "returns_402": probe.status_code == 402,
+            "payment_required_header": "payment-required" in probe.headers,
+        }
+        if probe.status_code == 402 and "payment-required" in probe.headers:
+            probe_402 = True
+            try:
+                payment_info = json.loads(base64.b64decode(probe.headers["payment-required"]))
+                probe_plan_id = payment_info["accepts"][0]["planId"]
+            except Exception:
+                pass
+        log_step("probe", "ok",
+                 f"{probe.status_code} in {probe_ms}ms"
+                 + (f", plan from header: {probe_plan_id[:30]}..." if probe_plan_id else ""))
+    except httpx.TimeoutException:
+        report["connectivity"] = {"endpoint_reachable": False, "error": "timeout"}
+        log_step("probe", "fail", "Timeout after 15s")
+        report["verdict"] = "FAIL"
+        report["suggestions"].append(
+            "Endpoint timed out. Check server is running and URL is correct.")
+        return json.dumps(report)
+    except Exception as e:
+        report["connectivity"] = {"endpoint_reachable": False, "error": str(e)[:200]}
+        log_step("probe", "fail", f"Connection error: {str(e)[:100]}")
+        report["verdict"] = "FAIL"
+        report["suggestions"].append(f"Could not connect: {str(e)[:150]}")
+        return json.dumps(report)
+
+    # --- Step 4: Pick cheapest plan ---
+    chosen_plan = None
+    if plans:
+        for p in sorted(plans, key=lambda x: x.get("planPrice", 999)):
+            chosen_plan = p
+            break
+    if not chosen_plan and probe_plan_id:
+        chosen_plan = {"planDid": probe_plan_id, "planPrice": 0,
+                       "pricePerRequestFormatted": "unknown (from 402)"}
+
+    if not chosen_plan:
+        log_step("plan", "fail", "No plan ID found in discovery or 402 probe")
+        report["verdict"] = "FAIL"
+        report["suggestions"].append(
+            "No plan found. Register a plan via register_agent_and_plan() "
+            "and ensure it appears in the discovery API.")
+        return json.dumps(report)
+
+    plan_id = chosen_plan.get("planDid", "")
+    plan_price = chosen_plan.get("planPrice", 0)
+    log_step("plan", "ok", f"Selected plan at {plan_price} USDC (ID: {plan_id[:30]}...)")
+
+    # --- Step 5: Subscribe ---
+    if plan_price > max_spend:
+        report["subscription"] = {"plan_tested": plan_id[:40] + "...",
+                                   "plan_price": plan_price,
+                                   "subscribe_result": "skipped_over_budget"}
+        log_step("subscribe", "skip",
+                 f"Plan costs {plan_price} USDC, over debug budget of {max_spend}")
+        report["suggestions"].append(
+            f"Cheapest plan costs {plan_price} USDC. We tested connectivity but "
+            "skipped the purchase (debug budget is $1). Your endpoint and discovery "
+            "listing look fine.")
+        report["verdict"] = "PARTIAL"
+        return json.dumps(report)
+
+    from payments_py import Payments, PaymentOptions
+    try:
+        buyer = Payments.get_instance(PaymentOptions(
+            nvm_api_key=buyer_key, environment="sandbox"))
+    except Exception as e:
+        log_step("subscribe", "error", f"Could not init buyer: {str(e)[:100]}")
+        report["verdict"] = "FAIL"
+        return json.dumps(report)
+
+    try:
+        buyer.plans.order_plan(plan_id)
+        report["subscription"] = {"plan_tested": plan_id[:40] + "...",
+                                   "plan_price": plan_price,
+                                   "subscribe_result": "success",
+                                   "token_obtained": False}
+        log_step("subscribe", "ok", f"Subscribed ({plan_price} USDC)")
+    except Exception as e:
+        err = str(e)
+        sub_result = "error"
+        if "already" in err.lower():
+            sub_result = "already_subscribed"
+            log_step("subscribe", "ok", "Already subscribed")
+        elif "Invalid Address" in err:
+            sub_result = "invalid_address"
+            log_step("subscribe", "fail", "Invalid Address undefined")
+        else:
+            log_step("subscribe", "fail", err[:150])
+
+        report["subscription"] = {"plan_tested": plan_id[:40] + "...",
+                                   "plan_price": plan_price,
+                                   "subscribe_result": sub_result,
+                                   "error": err[:200],
+                                   "token_obtained": False}
+
+        if sub_result not in ("already_subscribed",):
+            # Match known issues
+            for ki in _KNOWN_ISSUES:
+                if ki["match_fn"](report):
+                    report["known_issues"].append(
+                        {"id": ki["id"], "title": ki["title"],
+                         "detail": ki["detail"], "fix": ki["fix"]})
+            if not report["known_issues"] and "Invalid Address" in err:
+                report["known_issues"].append({
+                    "id": "invalid_address",
+                    "title": "Invalid Address in plan registration",
+                    "detail": "order_plan() returns 500. Receiver wallet not configured.",
+                    "fix": "Re-register plan with valid receiver wallet.",
+                })
+            report["verdict"] = "FAIL"
+            report["suggestions"].append(f"Subscribe failed: {err[:150]}")
+            return json.dumps(report)
+
+    # --- Step 6: Get token ---
+    token = None
+    try:
+        token = buyer.x402.get_x402_access_token(plan_id)["accessToken"]
+        report["subscription"]["token_obtained"] = True
+        log_step("token", "ok", "Got x402 access token")
+    except Exception as e:
+        report["subscription"]["token_obtained"] = False
+        log_step("token", "fail", f"Token error: {str(e)[:100]}")
+        report["verdict"] = "FAIL"
+        report["suggestions"].append(f"Token generation failed: {str(e)[:150]}")
+        return json.dumps(report)
+
+    # --- Step 7: Test call (try both auth methods, MCP then REST) ---
+    call_result = {}
+    for auth_method, headers in [
+        ("payment-signature", {"payment-signature": token, "Content-Type": "application/json"}),
+        ("bearer", {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}),
+    ]:
+        try:
+            t0 = time.time()
+            test_resp = httpx.post(ep, headers=headers, json={
+                "jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1,
+            }, timeout=15)
+            call_ms = int((time.time() - t0) * 1000)
+
+            if test_resp.status_code == 200:
+                call_result = {
+                    "auth_method": auth_method,
+                    "status_code": 200,
+                    "response_time_ms": call_ms,
+                }
+                try:
+                    j = test_resp.json()
+                    tools = j.get("result", {}).get("tools", [])
+                    if tools:
+                        call_result["server_type"] = "mcp"
+                        call_result["tools"] = [t.get("name", "?")[:50] for t in tools]
+                    else:
+                        call_result["server_type"] = "rest_api"
+                except Exception:
+                    call_result["server_type"] = "rest_api"
+                log_step("test_call", "ok",
+                         f"200 OK via {auth_method}, {len(test_resp.content)} bytes, {call_ms}ms")
+                break
+            elif test_resp.status_code in (401, 402, 403):
+                if auth_method == "bearer":
+                    call_result = {"auth_method": "none_worked",
+                                   "status_code": test_resp.status_code,
+                                   "response_time_ms": call_ms,
+                                   "error": f"auth_rejected_{test_resp.status_code}"}
+                    log_step("test_call", "fail",
+                             f"Both auth methods rejected ({test_resp.status_code})")
+                continue
+            else:
+                # Try plain REST
+                rest_resp = httpx.post(ep, headers=headers,
+                                       json={"query": "test"}, timeout=15)
+                rest_ms = int((time.time() - t0) * 1000)
+                call_result = {"auth_method": auth_method,
+                               "status_code": rest_resp.status_code,
+                               "response_time_ms": rest_ms}
+                if rest_resp.status_code == 200:
+                    call_result["server_type"] = "rest_api"
+                    log_step("test_call", "ok",
+                             f"200 OK (REST) via {auth_method}, {rest_ms}ms")
+                else:
+                    log_step("test_call", "fail",
+                             f"REST call returned {rest_resp.status_code}")
+                break
+        except httpx.TimeoutException:
+            call_result = {"auth_method": auth_method, "error": "timeout"}
+            log_step("test_call", "fail", f"Timeout via {auth_method}")
+            if auth_method == "bearer":
+                break
+            continue
+        except Exception as e:
+            call_result = {"auth_method": auth_method,
+                           "error": str(e)[:200]}
+            log_step("test_call", "fail", str(e)[:100])
+            break
+
+    report["test_call"] = call_result
+
+    # --- Step 8: Determine verdict ---
+    if call_result.get("status_code") == 200:
+        report["verdict"] = "PASS"
+    else:
+        report["verdict"] = "FAIL"
+
+    # --- Step 9: Match known issues ---
+    for ki in _KNOWN_ISSUES:
+        try:
+            if ki["match_fn"](report):
+                report["known_issues"].append(
+                    {"id": ki["id"], "title": ki["title"],
+                     "detail": ki["detail"], "fix": ki["fix"]})
+        except Exception:
+            continue
+
+    # --- Step 10: Generate suggestions ---
+    tc = report.get("test_call", {})
+    if report["verdict"] == "PASS":
+        rt = tc.get("response_time_ms", 0)
+        if rt > 5000:
+            report["suggestions"].append(
+                f"Response time is {rt}ms. Consider caching or async processing.")
+        tools = tc.get("tools", [])
+        if tools:
+            report["suggestions"].append(
+                f"MCP server with {len(tools)} tools detected: {tools[:5]}. Looks good!")
+        else:
+            report["suggestions"].append("REST API responding correctly. All clear.")
+    else:
+        sc = tc.get("status_code")
+        if sc == 402:
+            report["suggestions"].append(
+                "Your server rejects valid tokens. Check that your PaymentsMCP "
+                "is configured with the same plan ID shown in the discovery API.")
+        elif sc == 422:
+            report["suggestions"].append(
+                "Server rejects the payload format. Document your expected request "
+                "schema in the discovery listing so buyers know what to send.")
+        elif sc == 500:
+            report["suggestions"].append(
+                "Your server crashes on authenticated requests. Check logs for the exception.")
+        elif tc.get("error") == "timeout":
+            report["suggestions"].append(
+                "Server timed out on the test call. If using ngrok/tunnels, "
+                "check the tunnel is still active.")
+
+    return json.dumps(report)
+
+
+catalog.register(
+    service_id="debug_seller",
+    name="Marketplace Agent Debugger",
+    description="Debug any Nevermined marketplace agent. We try to buy from them and "
+                "return a full diagnostic: discovery status, endpoint reachability, "
+                "subscription flow, auth methods, response analysis, known bugs, and "
+                "actionable fixes. Pass team_name or endpoint URL.",
+    price_credits=2,
+    example_params={"team_name": "AIBizBrain"},
+    provider="mog-protocol",
+    handler=_debug_seller,
 )
