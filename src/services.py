@@ -97,6 +97,20 @@ def _open_meteo_weather(latitude: float, longitude: float, forecast_days: int = 
     return json.dumps(data)
 
 
+def _mymemory_translate(text: str, source_lang: str = "en", target_lang: str = "es") -> str:
+    encoded_text = urllib.parse.quote(text)
+    url = f"https://api.mymemory.translated.net/get?q={encoded_text}&langpair={source_lang}|{target_lang}"
+    try:
+        with urllib.request.urlopen(url, timeout=10) as resp:
+            data = json.loads(resp.read().decode())
+    except Exception as e:
+        return json.dumps({"error": str(e)})
+    if data.get("responseStatus") != 200:
+        return json.dumps({"error": data.get("responseDetails", "Translation failed"), "original": text})
+    translated = data["responseData"]["translatedText"]
+    return json.dumps({"translated_text": translated, "source": source_lang, "target": target_lang, "original": text})
+
+
 _HACKATHON_GUIDE = {
     "quickstart": {
         "title": "Your First Nevermined Transaction (5 min)",
@@ -368,4 +382,14 @@ catalog.register(
     example_params={"latitude": 37.77, "longitude": -122.42, "forecast_days": 1},
     provider="mog-protocol",
     handler=_open_meteo_weather,
+)
+
+catalog.register(
+    service_id="mymemory_translate",
+    name="Text Translation",
+    description="Translate text between 100+ languages. Supports all major language pairs. Use when processing multilingual content, translating user messages, or localizing output.",
+    price_credits=2,
+    example_params={"text": "Hello world", "source_lang": "en", "target_lang": "es"},
+    provider="mog-protocol",
+    handler=_mymemory_translate,
 )
