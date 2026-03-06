@@ -1,13 +1,14 @@
 {
-  "active": [
+  "active": [],
+  "completed_pending_eval": [
     {
       "brief": "brief-006-surge-health",
       "branch": "brief-006-surge-health",
       "brief_file": ".loop/briefs/brief-006-surge-health.md",
-      "dispatched_at": "2026-03-05T23:40:55Z"
+      "dispatched_at": "2026-03-05T23:40:55Z",
+      "completed_at": "2026-03-06T00:16:43Z"
     }
   ],
-  "completed_pending_eval": [],
   "history": [
     {
       "brief": "brief-001-phase1-seller",
