@@ -171,18 +171,63 @@ async def main():
             stats = telemetry.get_stats()
             recent = telemetry.get_recent(10, event_type="buy_and_call")
             demand = telemetry.get_recent(10, event_type="unmet_demand")
+            # Build per-service stats from telemetry
+            all_events = telemetry.get_recent(10000, event_type="buy_and_call")
+            per_service_stats = {}
+            for e in all_events:
+                sid = e.get("service_id")
+                if not sid:
+                    continue
+                if sid not in per_service_stats:
+                    per_service_stats[sid] = {
+                        "total_calls": 0, "successful_calls": 0, "failed_calls": 0,
+                        "total_latency_ms": 0, "revenue_credits": 0,
+                        "first_seen": e.get("timestamp"), "last_called": e.get("timestamp"),
+                    }
+                st = per_service_stats[sid]
+                st["total_calls"] += 1
+                if e.get("success"):
+                    st["successful_calls"] += 1
+                else:
+                    st["failed_calls"] += 1
+                st["total_latency_ms"] += e.get("latency_ms", 0)
+                st["revenue_credits"] += e.get("credits_charged", 0)
+                ts = e.get("timestamp", "")
+                if ts and ts > (st.get("last_called") or ""):
+                    st["last_called"] = ts
+                if ts and ts < (st.get("first_seen") or ts):
+                    st["first_seen"] = ts
+
+            enriched_services = []
+            for s in services:
+                sdata = {
+                    "service_id": s.service_id,
+                    "name": s.name,
+                    "description": s.description,
+                    "price_credits": s.price_credits,
+                    "provider": s.provider or "mog-protocol",
+                    "example_params": s.example_params or {},
+                    **get_surge_info(s.service_id, s.price_credits),
+                }
+                st = per_service_stats.get(s.service_id)
+                if st:
+                    tc = st["total_calls"]
+                    sdata["stats"] = {
+                        "total_calls": tc,
+                        "successful_calls": st["successful_calls"],
+                        "failed_calls": st["failed_calls"],
+                        "success_rate": round(st["successful_calls"] / tc, 3) if tc else 0.0,
+                        "avg_latency_ms": round(st["total_latency_ms"] / tc) if tc else 0,
+                        "revenue_credits": st["revenue_credits"],
+                        "first_seen": st["first_seen"],
+                        "last_called": st["last_called"],
+                    }
+                enriched_services.append(sdata)
+
             health = {
                 "status": "ok",
                 "services_count": len(services),
-                "services": [
-                    {
-                        "service_id": s.service_id,
-                        "name": s.name,
-                        "price_credits": s.price_credits,
-                        **get_surge_info(s.service_id, s.price_credits),
-                    }
-                    for s in services
-                ],
+                "services": enriched_services,
                 "stats": stats,
                 "recent_transactions": recent,
                 "demand_signals": demand,

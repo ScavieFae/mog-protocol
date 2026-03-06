@@ -9,17 +9,30 @@ export interface SurgeSignals {
   trend: "rising" | "falling" | "stable"
 }
 
+export interface ServiceStats {
+  total_calls: number
+  successful_calls: number
+  failed_calls: number
+  success_rate: number
+  avg_latency_ms: number
+  revenue_credits: number
+  first_seen?: string
+  last_called?: string
+}
+
 export interface Service {
   service_id: string
   name: string
   price_credits: number
   description?: string
   provider?: string
+  example_params?: Record<string, unknown>
   call_count?: number
   revenue_credits?: number
   surge_multiplier?: number
   current_price?: number
   surge_signals?: SurgeSignals
+  stats?: ServiceStats
 }
 
 export interface Transaction {
