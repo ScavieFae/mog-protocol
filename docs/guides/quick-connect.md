@@ -2,15 +2,16 @@
 
 You need a Nevermined API key from [nevermined.app](https://nevermined.app) with all 4 permissions enabled. Your wallet needs USDC on Base Sepolia (you got 20 on registration).
 
-## Pricing
+## Plans
 
-| Pack | Price | Credits | $/call | Plan ID |
-|------|-------|---------|--------|---------|
-| Starter | 1 USDC | 100 | $0.01 | `78367506339425330254643852037464276541596599135446819435850203999970093437014` |
-| Standard | 5 USDC | 650 | ~$0.008 | `58838132650832718911247679162288796191597226415558773615774039353699225980625` |
-| Pro | 10 USDC | 1,500 | ~$0.007 | `104362296634578646451881933824769223681280110332231291824848226485469994462551` |
+| Plan | Price | Credits | Plan ID |
+|------|-------|---------|---------|
+| Free Trial | Free | 3 | `52344374255582061362376941484417434816120915438329652344828008233054799099083` |
+| Starter | 1 USDC | 1 | `27532529988899010156793041100542920191141640561034683667962973311488756564499` |
+| Standard | 5 USDC | 10 | `6476982684193144215967979389100088950230657664983966011439423784485034538208` |
+| Pro | 10 USDC | 25 | `29001175520261924428527314088863841592234134735048963980654691130902766240562` |
 
-Most services cost 1 credit ($0.01). Image generation costs 10 credits ($0.10). Volume discount on bigger packs.
+Most services cost 1 credit. Image generation costs 10 credits.
 
 ## Subscribe + Buy
 
@@ -27,8 +28,8 @@ payments = Payments.get_instance(
     PaymentOptions(nvm_api_key="YOUR_NVM_KEY", environment="sandbox")
 )
 
-# 2. Subscribe (1 USDC = 1 API call)
-PLAN_ID = "60859172884142288164507163059546691936422006932528002950292307302678850457887"
+# 2. Subscribe (free trial = 3 credits)
+PLAN_ID = "52344374255582061362376941484417434816120915438329652344828008233054799099083"
 payments.plans.order_plan(PLAN_ID)
 
 # 3. Get access token
@@ -124,8 +125,7 @@ resp = httpx.post(GATEWAY, headers=headers, json={
         "service_id": "nano_banana_pro",
         "params": {
             "prompt": "A cyberpunk cat riding a skateboard",
-            "aspect_ratio": "1:1",
-            "resolution": "1K"
+            "aspect_ratio": "1:1"
         }
     }}
 }, timeout=60)
@@ -134,19 +134,16 @@ resp = httpx.post(GATEWAY, headers=headers, json={
 Returns:
 ```json
 {
-    "image_url": "https://fal.media/files/...",
-    "width": 1024,
-    "height": 1024,
+    "image_url": "data:image/png;base64,iVBOR...",
     "content_type": "image/png"
 }
 ```
 
 Parameters:
-- `prompt` (required) -- what to generate
+- `prompt` (required) -- descriptive text of the image to generate
 - `aspect_ratio` -- `1:1`, `16:9`, `4:3`, `3:2` (default `1:1`)
-- `resolution` -- `1K`, `2K`, `4K` (default `1K`)
 
-The `image_url` is a public URL you can open directly. 10 credits per image.
+The `image_url` is a base64 data URI. Embed in an `<img>` tag or decode to save as a file. 10 credits per image.
 
 ---
 

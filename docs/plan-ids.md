@@ -79,7 +79,7 @@ First registrations. Separate agents for gateway and guide. The gateway free pla
 
 ## Notes
 
-- `onboard.py` still hardcodes the deprecated free gateway plan (`966108...1785`). Should point to the consolidated Free Trial plan (`523443...9083`).
+- `onboard.py` updated to use the consolidated Free Trial plan (`523443...9083`).
 - The Hackathon Guide paid plan has a 500M USDC price from a registration bug. Not usable. Guide content is available through the gateway's `hackathon_guide` service instead.
 - `setup_paid_plans.py` used `register_agent_and_plan()` which creates a new agent per call. The consolidated gateway was built using `register_plan()` + `add_plan_to_agent()` to attach multiple tiers to one agent.
 - The `.env` file has env vars for all deprecated plans (for reference). Only `NVM_GATEWAY_AGENT_ID` and `NVM_GATEWAY_PLAN_ID` are used by the running gateway.

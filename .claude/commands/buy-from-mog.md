@@ -12,7 +12,7 @@ Output the following exactly, as a single markdown block the user can copy whole
 
 ## Mog Markets -- API Marketplace for Agents
 
-11+ services. Web search, summarization, image generation, weather, geolocation, hackathon guides. Two tools, one MCP connection. 1 USDC = 1 credit.
+11+ services. Web search, summarization, image generation, weather, geolocation, hackathon guides. Two tools, one MCP connection.
 
 ### Step 1: Subscribe (run once in Python)
 
@@ -27,13 +27,14 @@ payments = Payments.get_instance(
     PaymentOptions(nvm_api_key="YOUR_NVM_KEY", environment="sandbox")
 )
 
-PLAN_ID = "60859172884142288164507163059546691936422006932528002950292307302678850457887"
+# Free trial (3 credits) — or use a paid plan for more
+PLAN_ID = "52344374255582061362376941484417434816120915438329652344828008233054799099083"
 payments.plans.order_plan(PLAN_ID)
 token = payments.x402.get_x402_access_token(PLAN_ID)["accessToken"]
 print(token)
 ```
 
-Save that token. Bigger packs: 5 USDC/10 credits (plan `87533285832696660011690943385915459855771974607401696593091951593047968932457`), 10 USDC/20 credits (plan `107388892078779776783316313571466544272023725956678321074411803867639782898854`).
+Plans: Free Trial (3 cr), 1 USDC (1 cr), 5 USDC (10 cr), 10 USDC (25 cr). See https://github.com/ScavieFae/mog-protocol for plan IDs.
 
 ### Step 2: Add MCP config
 

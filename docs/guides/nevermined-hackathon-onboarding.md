@@ -323,7 +323,7 @@ Cross-wallet transactions (different Nevermined accounts transacting) are more v
 | What | Value |
 |------|-------|
 | Gateway | `https://beneficial-essence-production-99c7.up.railway.app/mcp` |
-| Plan ID | `9661082042009636068072391467054896427087238025772062250717418964278633341785` |
+| Plan ID (Free Trial, 3 cr) | `52344374255582061362376941484417434816120915438329652344828008233054799099083` |
 | Tools | `find_service` (0 credits), `buy_and_call` (1-10 credits) |
 | Services | Web search, content extraction, summarization, weather, agent discovery |
 

@@ -2,7 +2,7 @@
 """One-command onboarding to the Mog Marketplace + Nevermined hackathon tools.
 
 Run this and you get:
-  - Subscription to the Mog Marketplace (free, 100 credits)
+  - Subscription to the Mog Marketplace (free trial, 3 credits)
   - An MCP config ready to paste into Claude Code or any MCP-compatible agent
   - Access to 6 services: web search, content extraction, summarization,
     weather, hackathon agent discovery, and Nevermined onboarding docs
@@ -42,7 +42,7 @@ def main():
         print("  pip install payments-py httpx")
         sys.exit(1)
 
-    PLAN_ID = "9661082042009636068072391467054896427087238025772062250717418964278633341785"
+    PLAN_ID = "52344374255582061362376941484417434816120915438329652344828008233054799099083"
     GATEWAY = "https://beneficial-essence-production-99c7.up.railway.app/mcp"
 
     print("Connecting to Nevermined sandbox...")
@@ -50,7 +50,7 @@ def main():
         PaymentOptions(nvm_api_key=api_key, environment="sandbox")
     )
 
-    print("Subscribing to Mog Marketplace (free, 100 credits)...")
+    print("Subscribing to Mog Marketplace (free trial, 3 credits)...")
     try:
         payments.plans.order_plan(PLAN_ID)
         print("  Subscribed.")

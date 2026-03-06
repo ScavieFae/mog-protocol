@@ -16,9 +16,11 @@ Autonomous API marketplace for the Nevermined Autonomous Business Hackathon.
 5. **brief-011-toolkit-foundation** — Browse (Browserbase), email (AgentMail), credential vault, blockers, traces CLI.
 6. **brief-012-research-and-services** — Exa social search, archive.ph, 5 new gateway services incl. circle_faucet.
 
-### Phase 3: Polish (013-014)
+### Phase 3: Polish + Growth (013-016)
 7. **brief-013-surge-pricing-signals** — Multi-signal surge (demand pressure, velocity, cooldown). Expose in /health + website.
 8. **brief-014-service-detail-page** — `/service/:id` page with stats, pricing, how-to-buy. Clickable flowers in garden.
+9. **brief-015-buyer-onboarding** — Website `/connect` page + copy-to-clipboard code blocks. Two paths: CLI agent + human visitor.
+10. **brief-016-ad-supported-free-tier** — Zeroclick (somi.ai) contextual ads in free-tier responses. `src/ads.py`, gateway injection, transparent labeling.
 
 Execute in order. Each phase depends on the previous. The reviewer runs on every evaluation — do not skip it.
 
@@ -30,6 +32,8 @@ Execute in order. Each phase depends on the previous. The reviewer runs on every
 - Toolkit lets agents browse, email, store creds, report blockers
 - Surge pricing reads demand + velocity + cooldown, not just raw count
 - Website shows service detail pages with stats, pricing, uptime
+- Website has `/connect` page with install instructions, copy-paste commands, GitHub link
+- Free ad-supported tier works: contextual Zeroclick ads in free responses, paid plans ad-free
 - Conductor uses reviewer checklist before every merge
 - The loop ran overnight and made autonomous investment decisions
 

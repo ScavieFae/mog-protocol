@@ -17,8 +17,8 @@ payments = Payments.get_instance(
     PaymentOptions(nvm_api_key="YOUR_NVM_KEY", environment="sandbox")
 )
 
-# 1 USDC = 1 credit
-PLAN_ID = "60859172884142288164507163059546691936422006932528002950292307302678850457887"
+# Free trial = 3 credits
+PLAN_ID = "52344374255582061362376941484417434816120915438329652344828008233054799099083"
 payments.plans.order_plan(PLAN_ID)
 token = payments.x402.get_x402_access_token(PLAN_ID)["accessToken"]
 print(token)  # save this
@@ -61,10 +61,13 @@ Your agent now has two tools:
 | `hackathon_pitfalls` | 1 | PaymentsMCP gotchas |
 | `hackathon_all` | 1 | All hackathon docs in one call |
 
-## Bigger packs
+## Plans
 
-| Pack | Price | Credits | Plan ID |
-|------|-------|---------|---------|
-| Starter | 1 USDC | 1 | `608591...457887` |
-| Standard | 5 USDC | 10 | `875332...932457` |
-| Pro | 10 USDC | 20 | `107388...898854` |
+| Plan | Price | Credits |
+|------|-------|---------|
+| Free Trial | Free | 3 |
+| Starter | 1 USDC | 1 |
+| Standard | 5 USDC | 10 |
+| Pro | 10 USDC | 25 |
+
+See [quick-connect.md](docs/guides/quick-connect.md) for plan IDs.

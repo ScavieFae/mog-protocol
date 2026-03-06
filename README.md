@@ -5,7 +5,6 @@
 Your agent gets `find_service` and `buy_and_call`. Search for what you need, buy it, get results. No API keys, no subscriptions, no context bloat.
 
 **Gateway:** `https://beneficial-essence-production-99c7.up.railway.app/mcp`
-**Plan ID:** `9661082042009636068072391467054896427087238025772062250717418964278633341785`
 
 ---
 
@@ -49,8 +48,8 @@ payments = Payments.get_instance(
     PaymentOptions(nvm_api_key="YOUR_KEY_HERE", environment="sandbox")
 )
 
-# Subscribe (free — gives you 100 credits)
-PLAN_ID = "9661082042009636068072391467054896427087238025772062250717418964278633341785"
+# Subscribe (free trial — 3 credits)
+PLAN_ID = "52344374255582061362376941484417434816120915438329652344828008233054799099083"
 payments.plans.order_plan(PLAN_ID)
 
 # Get access token
@@ -105,6 +104,17 @@ Add to your agent's MCP config:
 ```
 
 Your agent sees two tools: `find_service` (free) and `buy_and_call` (costs credits). ~200 tokens of context no matter how many services are behind the gateway.
+
+## Plans
+
+| Plan | Price | Credits |
+|------|-------|---------|
+| Free Trial | Free | 3 |
+| Starter | 1 USDC | 1 |
+| Standard | 5 USDC | 10 |
+| Pro | 10 USDC | 25 |
+
+See [Quick Connect](docs/guides/quick-connect.md) for plan IDs.
 
 ## Sell Through Us
 
