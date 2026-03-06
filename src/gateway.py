@@ -156,8 +156,47 @@ async def main():
     print(f"Starting Mog Gateway MCP server on port {port}")
     result = await mcp.start(port=port)
 
-    # Replace the default /health with our richer marketplace health endpoint.
+    # --- Buyer-friendliness middleware ---
+    # Fix two common issues that trip up buyers:
+    # 1. Missing Accept header → 406 from MCP transport
+    # 2. payment-signature header instead of Authorization: Bearer → 401
     app = mcp._manager._fastapi_app
+    if app is not None:
+        from starlette.middleware.base import BaseHTTPMiddleware
+        from starlette.requests import Request as _Request
+
+        class BuyerCompatMiddleware(BaseHTTPMiddleware):
+            async def dispatch(self, request: _Request, call_next):
+                headers = dict(request.scope.get("headers", []))
+                modified = False
+
+                # If no Accept header, default to application/json
+                if b"accept" not in headers:
+                    request.scope["headers"] = list(request.scope["headers"]) + [
+                        (b"accept", b"application/json")
+                    ]
+                    modified = True
+
+                # Translate payment-signature → Authorization: Bearer
+                if b"payment-signature" in headers and b"authorization" not in headers:
+                    sig_value = None
+                    new_headers = []
+                    for k, v in request.scope["headers"]:
+                        if k == b"payment-signature":
+                            sig_value = v
+                        else:
+                            new_headers.append((k, v))
+                    if sig_value:
+                        new_headers.append((b"authorization", b"Bearer " + sig_value))
+                        request.scope["headers"] = new_headers
+                        modified = True
+
+                return await call_next(request)
+
+        app.add_middleware(BuyerCompatMiddleware)
+        print("BuyerCompatMiddleware registered (Accept default + payment-signature translation)")
+
+    # Replace the default /health with our richer marketplace health endpoint.
     if app is not None:
         from fastapi.responses import JSONResponse as _JSONResponse
 
