@@ -1,20 +1,18 @@
 {
-  "brief": "brief-004-txlog-pricing",
-  "brief_file": ".loop/briefs/brief-004-txlog-pricing.md",
-  "iteration": 4,
+  "brief": "brief-006-surge-health",
+  "brief_file": ".loop/briefs/brief-006-surge-health.md",
+  "iteration": 2,
   "status": "complete",
   "tasks_completed": [
-    "Create src/txlog.py — in-memory transaction logger with log(), count_calls(), get_recent()",
-    "Create src/pricing.py — three-tier surge pricing using txlog",
-    "Wire txlog + pricing into src/server.py (gateway)",
-    "Create src/test_pricing.py and verify it passes"
+    "Wire surge pricing into gateway (_gateway_credits + buy_and_call)",
+    "Add /health endpoint to gateway"
   ],
+  "tasks_remaining": [],
   "learnings": [
-    "The brief references src/gateway.py and src/services.py but the actual gateway is src/server.py. Wire changes there.",
-    "Module-level singleton pattern: txlog = TransactionLog() at bottom of txlog.py for shared state.",
-    "src/server.py uses PaymentsMCP with @mcp.tool(credits=X) decorators — credits are fixed at decoration time, so surge pricing is tracked in txlog but billing stays at base rate.",
-    "SURGE_THRESHOLD_HIGH/MEDIUM env vars configure tier thresholds (defaults: 20/10).",
-    "Adapted wiring: each tool logs to txlog via try/finally, and returns {results/summary, _meta: {surge_multiplier, price_charged}}. Decorator credits remain static; surge info is informational in _meta.",
-    "The imports src.txlog and src.pricing use absolute src.* paths — tests must run from project root."
+    "PaymentsMCP already registers a /health route via oauth_router (returns generic {status,service,timestamp}). To add custom /health, manipulate mcp._manager._fastapi_app.router.routes after mcp.start() — remove existing /health then add_api_route. Or insert before it using route list manipulation.",
+    "mcp._manager._fastapi_app is the FastAPI app instance, available after mcp.start() returns",
+    "tests at 0 call volume still pass after surge pricing because get_current_price returns base_price at low volume",
+    "app.router.routes is a plain list traversed on every request — safe to filter+append after server start without recompile",
+    "app.add_api_route('/health', fn, methods=['GET']) appends to end of routes; removing old route first is required since first-match wins"
   ]
 }
