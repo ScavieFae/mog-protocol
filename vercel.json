@@ -1,0 +1,15 @@
+{
+  "buildCommand": "cd web && npm install && npm run build",
+  "outputDirectory": "web/dist",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/gateway/:path*",
+      "destination": "https://beneficial-essence-production-99c7.up.railway.app/:path*"
+    },
+    {
+      "source": "/((?!assets|vite\\.svg).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
