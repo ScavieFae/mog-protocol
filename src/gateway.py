@@ -127,10 +127,10 @@ def buy_and_call(service_id: str, params: dict) -> str:
 
 
 async def main():
-    port = int(os.getenv("GATEWAY_PORT", "4000"))
+    port = int(os.getenv("PORT", os.getenv("GATEWAY_PORT", "4000")))
     print(f"Starting Mog Gateway MCP server on port {port}")
     result = await mcp.start(port=port)
-    stop = result.get("stop")
+    stop = result.get("stop") if isinstance(result, dict) else None
     try:
         await asyncio.Event().wait()
     except (KeyboardInterrupt, asyncio.CancelledError):

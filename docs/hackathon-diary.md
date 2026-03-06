@@ -138,13 +138,49 @@ Each entry is timestamped. Tag the source.
 
 **[scaviefae]** Conductor heartbeat: evaluated brief-004 (txlog+pricing) — MERGE confirmed. 13/13 tests pass, surge pricing wired into all three tools. All four briefs (001-004) complete and merged. No queued briefs — system idle. Ready for next directive.
 
-### ~23:10 — Back-Office: Scout Evaluated, Weather Wrap Dispatched
+### ~14:10 — Brief 005 Task 1: Surge pricing wired into gateway
 
-**[backoffice]** Evaluated scout-001 (back-office brief 001): worker completed 1/3 tasks (Exa search) but findings are high quality. Two no-key APIs identified:
-- **Open-Meteo** — free weather forecast, no API key, universal demand. Recommendation: WRAP.
-- **ip-api.com** — free IP geolocation, no key. Recommendation: WRAP (queue after weather).
-- **E2B** — code sandbox, needs API key from Mattie. Deferred.
+**[scaviefae]** `_gateway_credits()` now calls `get_current_price()` so Nevermined charges the surge-adjusted amount. `buy_and_call` `_meta` now includes `surge_multiplier`. txlog logs surged price. 7/7 tests pass.
 
-Merged scout branch, wrote api-eval files, dispatched **backoffice-002-wrap-open-meteo** to add weather as 4th paid service (1 credit/call, 100% margin).
+### ~14:30 — Back-Office Agent Live
+
+**[scav]** Back-office autonomous agent deployed via git worktree (`../mog-backoffice`, `backoffice` branch). Conductor/worker loop running on 120s heartbeat. Architecture: conductor reads portfolio.json + txlog, dispatches SCOUT/WRAP/KILL/REPRICE briefs, worker executes in isolated branch.
+
+**[decision]** Git worktree isolation so back-office daemon doesn't conflict with ScavieFae on main. Same repo, different branches, separate `.loop-backoffice/` state directory.
+
+### ~14:45 — Autonomous API Discovery (Scout 001)
+
+**[scav]** Back-office worker completed first scout brief autonomously. Used Exa to discover wrappable APIs. Results:
+1. **Open-Meteo** — free weather forecast API, no key, 100% margin, universal demand → WRAP
+2. **ip-api.com** — free IP geolocation, no key, 45 req/min → queued as next wrap
+3. **E2B** — code sandbox, needs API key → deferred
+
+Conductor evaluated scout results (ACCEPT), wrote structured api-eval files, dispatched wrap brief for Open-Meteo.
+
+### ~15:08 — Open-Meteo Wrapped Autonomously
+
+**[scav]** Back-office worker wrapped Open-Meteo without human intervention:
+- Handler: `_open_meteo_weather(latitude, longitude, forecast_days)` in `src/services.py`
+- Self-tested live: returned 19.7°C for SF
+- Catalog: 4th service, 1 credit, 100% margin
+- Cherry-picked and merged to main
+
+**Catalog now has 4 services:** exa_search (1cr), exa_get_contents (2cr), claude_summarize (5cr), open_meteo_weather (1cr)
+
+This is the demo moment: an autonomous agent discovered an API via web search, evaluated its business case, wrote the handler code, tested it, and added it to the live marketplace — all without human intervention.
+
+### ~15:15 — Parallel Daemons Running
+
+**[scav]** Both daemons running in parallel:
+- ScavieFae (PID 91047): brief-005, gateway surge + deploy readiness
+- Back-office (PID 96092): portfolio monitoring, ready for next dispatch (ip-api.com queued)
+
+**[mattie]** On the hackathon spreadsheet. Push notifications coming in from back-office.
+
+### ~23:45 — IP Geolocation Wrapped
+
+**[backoffice]** Evaluated and merged backoffice-003-wrap-ip-api. Worker added `_ip_geolocation` handler (ip-api.com, free, no key). Clean code, proper error handling, catalog registered at 1 credit/call. Synced backoffice branch with main (resolved divergence from earlier open-meteo merge path).
+
+**Catalog now has 7 services:** exa_search (1cr), exa_get_contents (2cr), claude_summarize (5cr), open_meteo_weather (1cr), ip_geolocation (1cr), hackathon_guide (1cr), hackathon_discover (1cr)
 
 <!-- New entries go above this line -->

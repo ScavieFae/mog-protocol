@@ -52,7 +52,7 @@
   "budget": {
     "initial_credits": 100,
     "spent_discovery": 0,
-    "spent_wrapping": 0,
+    "spent_wrapping": 3,
     "earned_revenue": 12,
     "current_balance": 90
   },

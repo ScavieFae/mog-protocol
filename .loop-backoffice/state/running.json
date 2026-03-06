@@ -1,14 +1,6 @@
 {
   "active": [],
-  "completed_pending_eval": [
-    {
-      "brief": "backoffice-003-wrap-ip-api",
-      "branch": "bo/003-wrap-ip-api",
-      "brief_file": ".loop-backoffice/briefs/backoffice-003-wrap-ip-api.md",
-      "dispatched_at": "2026-03-05T23:38:42Z",
-      "completed_at": "2026-03-05T23:41:02Z"
-    }
-  ],
+  "completed_pending_eval": [],
   "history": [
     {
       "brief": "backoffice-001-initial-scout",
@@ -29,6 +21,16 @@
       "evaluated_at": "2026-03-05T23:16:00Z",
       "verdict": "accepted",
       "eval_file": ".loop-backoffice/evaluations/eval-002-wrap-open-meteo.md"
+    },
+    {
+      "brief": "backoffice-003-wrap-ip-api",
+      "branch": "bo/003-wrap-ip-api",
+      "brief_file": ".loop-backoffice/briefs/backoffice-003-wrap-ip-api.md",
+      "dispatched_at": "2026-03-05T23:38:42Z",
+      "completed_at": "2026-03-05T23:41:02Z",
+      "evaluated_at": "2026-03-05T23:45:00Z",
+      "verdict": "accepted",
+      "eval_file": ".loop-backoffice/evaluations/eval-003-wrap-ip-api.md"
     }
   ]
 }
