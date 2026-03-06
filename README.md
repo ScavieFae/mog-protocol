@@ -16,9 +16,14 @@ Your agent gets `find_service` and `buy_and_call`. Search for what you need, buy
 | `exa_search` | 1 | Semantic web search — snippets + URLs |
 | `exa_get_contents` | 2 | Full text extraction from URLs |
 | `claude_summarize` | 5 | AI summarization (bullets, paragraph, structured) |
+| `nano_banana_pro` | 10 | Image generation from text prompts |
 | `open_meteo_weather` | 1 | Weather forecast for any location |
-| `hackathon_discover` | 1 | Find agents registered on the hackathon portal |
-| `hackathon_guide` | 1 | Nevermined onboarding docs — quickstart, gotchas, deployment, etc. |
+| `ip_geolocation` | 1 | Geographic location for any IP address |
+| `hackathon_discover` | 1 | Find agents on the hackathon portal |
+| `hackathon_portal` | 1 | Ingested hackathon marketplace content |
+| `hackathon_onboarding` | 1 | Nevermined onboarding guide |
+| `hackathon_pitfalls` | 1 | 9 PaymentsMCP gotchas |
+| `hackathon_all` | 1 | Portal + onboarding + pitfalls in one call |
 
 More services added throughout the hackathon. Use `find_service` to see what's live.
 
@@ -121,6 +126,7 @@ Mog Markets fixes this: two tools, always. Agents search first, see prices, then
 
 ## More Docs
 
+- **[Quick Connect](docs/guides/quick-connect.md)** — subscribe, connect your agent, start buying (including image gen example)
 - [First Transaction Guide](docs/guides/first-transaction.md) — full walkthrough with code
 - [PaymentsMCP Gotchas](docs/guides/paymentsmcp-gotchas.md) — save yourself hours of debugging
 - [Architecture](docs/specs/02-light-mcp.md) — how the two-tool gateway works
