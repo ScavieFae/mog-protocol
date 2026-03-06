@@ -451,22 +451,22 @@ catalog.register(
 
 # --- Frankfurter FX Rates (discovered by mog-scout, wrapped by mog-worker via Trinity) ---
 
-async def _frankfurter_fx_rates(base: str = "USD", symbols: str = "", date: str = "latest") -> dict:
+def _frankfurter_fx_rates(base: str = "USD", symbols: str = "", date: str = "latest") -> str:
     """Get live or historical FX rates from Frankfurter (29 major currencies, no auth)."""
     import httpx
     try:
-        async with httpx.AsyncClient() as client:
-            params = {"base": base}
-            if symbols:
-                params["symbols"] = symbols
-            resp = await client.get(
-                f"https://api.frankfurter.dev/v1/{date}",
-                params=params,
-            )
-            resp.raise_for_status()
-            return resp.json()
+        params = {"base": base}
+        if symbols:
+            params["symbols"] = symbols
+        resp = httpx.get(
+            f"https://api.frankfurter.dev/v1/{date}",
+            params=params,
+            timeout=10,
+        )
+        resp.raise_for_status()
+        return json.dumps(resp.json())
     except Exception as e:
-        return {"error": str(e)}
+        return json.dumps({"error": str(e)})
 
 
 catalog.register(
