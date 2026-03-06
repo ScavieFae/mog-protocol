@@ -134,6 +134,36 @@ async def main():
     port = int(os.getenv("PORT", os.getenv("GATEWAY_PORT", "4000")))
     print(f"Starting Mog Gateway MCP server on port {port}")
     result = await mcp.start(port=port)
+
+    # Replace the default /health with our richer marketplace health endpoint.
+    # mcp._manager._fastapi_app is the FastAPI app instance (available post-start).
+    app = mcp._manager._fastapi_app
+    if app is not None:
+        from fastapi.responses import JSONResponse as _JSONResponse
+
+        # Remove the existing /health route registered by the oauth_router.
+        app.router.routes = [
+            r for r in app.router.routes if getattr(r, "path", None) != "/health"
+        ]
+
+        async def _health():
+            services = catalog.services
+            recent = txlog.get_recent(10)
+            demand = [e for e in txlog.get_recent(50) if e.get("type") == "unmet_demand"]
+            return _JSONResponse({
+                "status": "ok",
+                "services_count": len(services),
+                "services": [
+                    {"service_id": s.service_id, "name": s.name, "price_credits": s.price_credits}
+                    for s in services
+                ],
+                "recent_transactions": recent,
+                "demand_signals": demand,
+            })
+
+        app.add_api_route("/health", _health, methods=["GET"])
+        print("Custom /health endpoint registered")
+
     stop = result.get("stop") if isinstance(result, dict) else None
     try:
         await asyncio.Event().wait()
