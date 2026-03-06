@@ -229,7 +229,38 @@ def merge(paths):
     merge_msg = f"Merge {brief}: {title}"
     if evaluation:
         merge_msg += f"\n\nEvaluation: {evaluation}"
-    git(project_dir, "merge", f"{remote}/{branch}", "--no-ff", "-m", merge_msg)
+    merge_result = git(project_dir, "merge", f"{remote}/{branch}", "--no-ff", "-m", merge_msg, check=False)
+
+    # Auto-resolve known conflicts (progress.json always from branch, diary keeps both)
+    if merge_result.returncode != 0:
+        conflicts = git(project_dir, "diff", "--name-only", "--diff-filter=U", check=False).stdout.strip().split("\n")
+        resolvable = {".loop/state/progress.json", "docs/hackathon-diary.md"}
+        unresolvable = [f for f in conflicts if f and f not in resolvable]
+        if unresolvable:
+            git(project_dir, "merge", "--abort", check=False)
+            raise subprocess.CalledProcessError(
+                merge_result.returncode, f"git merge {branch}",
+                output=merge_result.stdout, stderr=merge_result.stderr,
+            )
+        # progress.json: take branch version (latest brief)
+        if ".loop/state/progress.json" in conflicts:
+            git(project_dir, "checkout", "--theirs", ".loop/state/progress.json", check=False)
+            git(project_dir, "add", ".loop/state/progress.json", check=False)
+        # diary: strip conflict markers, keep both sides
+        diary = os.path.join(project_dir, "docs/hackathon-diary.md")
+        if "docs/hackathon-diary.md" in conflicts and os.path.exists(diary):
+            with open(diary) as f:
+                lines = f.readlines()
+            cleaned = []
+            for line in lines:
+                if line.startswith(("<<<<<<< ", "======= ", "=======\n", ">>>>>>> ")):
+                    continue
+                cleaned.append(line)
+            with open(diary, "w") as f:
+                f.writelines(cleaned)
+            git(project_dir, "add", "docs/hackathon-diary.md", check=False)
+        # Complete the merge
+        git(project_dir, "commit", "--no-edit", check=False)
 
     # Restore stashed changes (conductor diary entries, etc.)
     if had_stash:

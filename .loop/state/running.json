@@ -7,15 +7,7 @@
       "dispatched_at": "2026-03-06T15:36:45Z"
     }
   ],
-  "completed_pending_eval": [
-    {
-      "brief": "brief-010-autonomous-investment",
-      "branch": "brief-010-autonomous-investment",
-      "brief_file": ".loop/briefs/brief-010-autonomous-investment.md",
-      "dispatched_at": "2026-03-06T15:23:00Z",
-      "completed_at": "2026-03-06T15:36:43Z"
-    }
-  ],
+  "completed_pending_eval": [],
   "history": [
     {
       "brief": "brief-001-phase1-seller",
@@ -82,6 +74,12 @@
       "branch": "brief-009-gateway-revenue",
       "merged_at": "2026-03-06T15:27:00Z",
       "evaluation": "APPROVE \u2014 portfolio wired into gateway, record_sale on buy_and_call, /health has portfolio+traces"
+    },
+    {
+      "brief": "brief-010-autonomous-investment",
+      "branch": "brief-010-autonomous-investment",
+      "merged_at": "2026-03-06T15:40:00Z",
+      "evaluation": "APPROVE \u2014 conductor/worker prompts updated for portfolio-aware autonomous loop"
     }
   ]
 }
