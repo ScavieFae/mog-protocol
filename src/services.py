@@ -85,170 +85,173 @@ def _open_meteo_weather(latitude: float, longitude: float, forecast_days: int = 
     return json.dumps(data)
 
 
-_HACKATHON_GUIDE = {
-    "marketplace": {
-        "title": "Nevermined Hackathon Marketplace Portal",
-        "content": (
-            "The hackathon marketplace lives at nevermined.ai/hackathon/register. "
-            "This is a Next.js app that reads from Nevermined's on-chain agent registry. "
-            "Claude cannot read the portal directly — it renders client-side.\n\n"
-            "What's on the portal:\n"
-            "- Selling tab: all registered seller agents with name, team, category, "
-            "description, endpoint URL, and price per request\n"
-            "- Buying tab: buyer agents listing what services they need\n"
-            "- Category filters: AI/ML, API Services, Banking, Data Analytics, DeFi, "
-            "Gaming, Identity, Infrastructure, IoT, RegTech, Research, Security, Social\n"
-            "- Each agent shows status: 'Ready' (fully registered) or 'Needs Metadata'\n"
-            "- Agents show pricing as 'Free/req' or '$X.XX (Card)/req'\n\n"
-            "To appear on the portal: register your agent on-chain via "
-            "payments.agents.register_agent_and_plan(), then fill in the metadata form "
-            "on the 'My Agents' tab (name, category, description, services list)."
-        ),
-    },
-    "discovery_api": {
-        "title": "Hackathon Discovery API",
-        "content": (
-            "Programmatic access to the marketplace portal data.\n\n"
-            "Endpoint: GET https://nevermined.ai/hackathon/register/api/discover\n"
-            "Auth: x-nvm-api-key header (your Nevermined API key)\n\n"
-            "Query params:\n"
-            "  side=sell    — only sellers\n"
-            "  side=buy     — only buyers\n"
-            "  category=AI%2FML  — filter by category (URL-encoded)\n\n"
-            "Response shape:\n"
-            "  { sellers: [{ name, teamName, category, description, pricing: { perRequest }, "
-            "endpointUrl, nvmAgentId, planIds: [] }], "
-            "buyers: [{ name, teamName, category, description }], "
-            "meta: { total } }\n\n"
-            "Categories seen: AI/ML, DeFi, Research, Analytics, Data, Infrastructure, "
-            "API Services, Banking, Gaming, Security, Social, RegTech, IoT, Identity.\n\n"
-            "No POST endpoint — registration is on-chain + portal metadata form only."
-        ),
-    },
-    "agent_registration": {
-        "title": "Registering an Agent on Nevermined",
-        "content": (
-            "Two steps to appear on the hackathon marketplace:\n\n"
-            "Step 1 — On-chain registration (code):\n"
-            "  from payments_py.common.types import AgentMetadata, AgentAPIAttributes, Endpoint, PlanMetadata\n"
-            "  from payments_py.plans import get_free_price_config, get_dynamic_credits_config\n"
-            "  result = payments.agents.register_agent_and_plan(\n"
-            "    agent_metadata=AgentMetadata(name='...', description='...', tags=[...]),\n"
-            "    agent_api=AgentAPIAttributes(\n"
-            "      endpoints=[Endpoint(verb='POST', url='https://your-server/mcp')],\n"
-            "      agent_definition_url='https://your-server/mcp'),\n"
-            "    plan_metadata=PlanMetadata(name='...', description='...'),\n"
-            "    price_config=get_free_price_config(),\n"
-            "    credits_config=get_dynamic_credits_config(\n"
-            "      credits_granted=100, min_credits_per_request=1, max_credits_per_request=10),\n"
-            "    access_limit='credits')\n"
-            "  agent_id = result['agentId']; plan_id = result['planId']\n\n"
-            "Step 2 — Portal metadata (browser):\n"
-            "  Go to nevermined.ai/hackathon/register > My Agents tab.\n"
-            "  Your on-chain agent appears with 'Needs Metadata' status.\n"
-            "  Fill in: category, description, services (comma-separated), "
-            "services per request description.\n"
-            "  Endpoint URL and pricing are derived from your on-chain registration.\n"
-            "  Save to flip status to 'Ready'."
-        ),
-    },
-    "api_key": {
-        "title": "Nevermined API Key Setup",
-        "content": (
-            "Go to nevermined.app > create account > generate API key.\n"
-            "4 permission toggles — enable ALL of them:\n"
-            "- Register: create agents and plans on the registry\n"
-            "- Purchase: subscribe to other agents' plans\n"
-            "- Issue: generate x402 access tokens for authenticated calls\n"
-            "- Redeem: settle credits when buyers call your services\n\n"
-            "One key with all 4 permissions works for both selling and buying.\n"
-            "You don't need separate accounts unless you want distinct wallet addresses.\n"
-            "Key format: sandbox:eyJhbGciOiJFUzI1NksifQ.eyJ...\n"
-            "Environment: sandbox (Base Sepolia testnet)."
-        ),
-    },
-    "transaction_flow": {
-        "title": "How Nevermined Transactions Work",
-        "content": (
-            "1. Buyer subscribes: payments.plans.order_plan(PLAN_ID)\n"
-            "   Free to subscribe. Grants credits (e.g. 100).\n"
-            "2. Buyer gets x402 token: payments.x402.get_x402_access_token(PLAN_ID)['accessToken']\n"
-            "   Token is reusable across multiple calls.\n"
-            "3. Buyer calls seller's MCP endpoint:\n"
-            "   POST https://seller-url/mcp\n"
-            "   Headers: Authorization: Bearer <token>, Content-Type: application/json\n"
-            "   Body: {jsonrpc: '2.0', method: 'tools/call', params: {name: 'tool', arguments: {...}}}\n"
-            "4. Seller's PaymentsMCP validates token, deducts credits, runs handler.\n"
-            "5. Settlement on Base Sepolia (automatic).\n\n"
-            "get_free_price_config() means free to SUBSCRIBE, not free to use.\n"
-            "Credits still burn per request. The plan costs $0 to join."
-        ),
-    },
-    "building_seller": {
-        "title": "Building a PaymentsMCP Seller",
-        "content": (
-            "pip install payments-py fastapi\n"
-            "(payments-py[mcp] extra does NOT exist — install fastapi separately)\n\n"
-            "  from payments_py.mcp import PaymentsMCP\n"
-            "  mcp = PaymentsMCP(payments, name='my-agent', agent_id=AGENT_ID, version='1.0.0')\n"
-            "  @mcp.tool(credits=1)\n"
-            "  def my_tool(query: str) -> str: return 'result'\n"
-            "  result = await mcp.start(port=3000)\n"
-            "  await asyncio.Event().wait()  # start() returns immediately!\n\n"
-            "Dynamic pricing: pass a callable instead of int:\n"
-            "  def price_fn(ctx): return lookup(ctx['args']['service_id'])\n"
-            "  @mcp.tool(credits=price_fn)\n\n"
-            "PaymentsMCP auto-creates /health endpoint.\n"
-            "agent_definition_url is metadata only — not a resolvable URL."
-        ),
-    },
-    "discovery": {
-        "title": "Finding Other Agents",
-        "content": (
-            "Nevermined has no search in their agent registry.\n\n"
-            "Discovery channels:\n"
-            "1. Hackathon portal: nevermined.ai/hackathon/register (browse sellers/buyers)\n"
-            "2. Discovery API: GET /hackathon/register/api/discover (programmatic, see discovery_api topic)\n"
-            "3. Ideas Board: Google Sheet shared in hackathon Slack\n"
-            "4. Venue: walk around and talk to teams\n\n"
-            "To connect to a seller, you need their plan_id (to subscribe) "
-            "and endpoint URL (to call). Both visible on the portal."
-        ),
-    },
-    "mcp_client": {
-        "title": "Connecting to a Seller via MCP",
-        "content": (
-            "Add to your agent's .mcp.json:\n"
-            '  { "mcpServers": { "service": { "type": "http",\n'
-            '    "url": "https://seller-url/mcp",\n'
-            '    "headers": { "Authorization": "Bearer YOUR_X402_TOKEN" } } } }\n\n'
-            "Get the token:\n"
-            "  from payments_py import Payments, PaymentOptions\n"
-            "  payments = Payments.get_instance(PaymentOptions(nvm_api_key=KEY, environment='sandbox'))\n"
-            "  payments.plans.order_plan(PLAN_ID)  # subscribe first\n"
-            "  token = payments.x402.get_x402_access_token(PLAN_ID)['accessToken']\n\n"
-            "Your agent sees the seller's tools directly. Each call burns credits."
-        ),
-    },
+_PORTAL_CONTENT = {
+    "marketplace_portal": (
+        "The hackathon marketplace lives at nevermined.ai/hackathon/register. "
+        "Next.js app — renders client-side, Claude cannot read it directly.\n\n"
+        "What's on the portal:\n"
+        "- Selling tab: all registered seller agents with name, team, category, "
+        "description, endpoint URL, and price per request\n"
+        "- Buying tab: buyer agents listing what services they need\n"
+        "- Category filters: AI/ML, API Services, Banking, Data Analytics, DeFi, "
+        "Gaming, Identity, Infrastructure, IoT, RegTech, Research, Security, Social\n"
+        "- Each agent shows status: 'Ready' (fully registered) or 'Needs Metadata'\n"
+        "- Agents show pricing as 'Free/req' or '$X.XX (Card)/req'\n\n"
+        "To appear on the portal: register your agent on-chain via "
+        "payments.agents.register_agent_and_plan(), then fill in the metadata form "
+        "on the 'My Agents' tab (name, category, description, services list)."
+    ),
+    "discovery_api": (
+        "Programmatic access to the marketplace portal data.\n\n"
+        "Endpoint: GET https://nevermined.ai/hackathon/register/api/discover\n"
+        "Auth: x-nvm-api-key header (your Nevermined API key)\n\n"
+        "Query params:\n"
+        "  side=sell    — only sellers\n"
+        "  side=buy     — only buyers\n"
+        "  category=AI%2FML  — filter by category (URL-encoded)\n\n"
+        "Response shape:\n"
+        "  { sellers: [{ name, teamName, category, description, pricing: { perRequest }, "
+        "endpointUrl, nvmAgentId, planIds: [] }], "
+        "buyers: [{ name, teamName, category, description }], "
+        "meta: { total } }\n\n"
+        "Categories in use: AI/ML, DeFi, Research, Analytics, Data, Infrastructure, "
+        "API Services, Banking, Gaming, Security, Social, RegTech, IoT, Identity.\n\n"
+        "No POST endpoint — registration is on-chain + portal metadata form only."
+    ),
+    "agent_registration": (
+        "Two steps to appear on the hackathon marketplace:\n\n"
+        "Step 1 — On-chain registration (code):\n"
+        "  from payments_py.common.types import AgentMetadata, AgentAPIAttributes, Endpoint, PlanMetadata\n"
+        "  from payments_py.plans import get_free_price_config, get_dynamic_credits_config\n"
+        "  result = payments.agents.register_agent_and_plan(\n"
+        "    agent_metadata=AgentMetadata(name='...', description='...', tags=[...]),\n"
+        "    agent_api=AgentAPIAttributes(\n"
+        "      endpoints=[Endpoint(verb='POST', url='https://your-server/mcp')],\n"
+        "      agent_definition_url='https://your-server/mcp'),\n"
+        "    plan_metadata=PlanMetadata(name='...', description='...'),\n"
+        "    price_config=get_free_price_config(),\n"
+        "    credits_config=get_dynamic_credits_config(\n"
+        "      credits_granted=100, min_credits_per_request=1, max_credits_per_request=10),\n"
+        "    access_limit='credits')\n"
+        "  agent_id = result['agentId']; plan_id = result['planId']\n\n"
+        "Step 2 — Portal metadata (browser):\n"
+        "  Go to nevermined.ai/hackathon/register > My Agents tab.\n"
+        "  Your on-chain agent appears with 'Needs Metadata' status.\n"
+        "  Fill in: category, description, services (comma-separated), "
+        "services per request description.\n"
+        "  Endpoint URL and pricing are derived from your on-chain registration.\n"
+        "  Save to flip status to 'Ready'."
+    ),
+}
+
+_ONBOARDING_CONTENT = {
+    "api_key": (
+        "Go to nevermined.app > create account > generate API key.\n"
+        "4 permission toggles — enable ALL of them:\n"
+        "- Register: create agents and plans on the registry\n"
+        "- Purchase: subscribe to other agents' plans\n"
+        "- Issue: generate x402 access tokens for authenticated calls\n"
+        "- Redeem: settle credits when buyers call your services\n\n"
+        "One key with all 4 permissions works for both selling and buying.\n"
+        "You don't need separate accounts unless you want distinct wallet addresses.\n"
+        "Key format: sandbox:eyJhbGciOiJFUzI1NksifQ.eyJ...\n"
+        "Environment: sandbox (Base Sepolia testnet)."
+    ),
+    "transaction_flow": (
+        "1. Buyer subscribes: payments.plans.order_plan(PLAN_ID)\n"
+        "   Free to subscribe. Grants credits (e.g. 100).\n"
+        "2. Buyer gets x402 token: payments.x402.get_x402_access_token(PLAN_ID)['accessToken']\n"
+        "   Token is reusable across multiple calls.\n"
+        "3. Buyer calls seller's MCP endpoint:\n"
+        "   POST https://seller-url/mcp\n"
+        "   Headers: Authorization: Bearer <token>, Content-Type: application/json\n"
+        "   Body: {jsonrpc: '2.0', method: 'tools/call', params: {name: 'tool', arguments: {...}}}\n"
+        "4. Seller's PaymentsMCP validates token, deducts credits, runs handler.\n"
+        "5. Settlement on Base Sepolia (automatic)."
+    ),
+    "building_seller": (
+        "pip install payments-py fastapi\n"
+        "(payments-py[mcp] extra does NOT exist — install fastapi separately)\n\n"
+        "  from payments_py.mcp import PaymentsMCP\n"
+        "  mcp = PaymentsMCP(payments, name='my-agent', agent_id=AGENT_ID, version='1.0.0')\n"
+        "  @mcp.tool(credits=1)\n"
+        "  def my_tool(query: str) -> str: return 'result'\n"
+        "  result = await mcp.start(port=3000)\n"
+        "  await asyncio.Event().wait()  # start() returns immediately!\n\n"
+        "Dynamic pricing: pass a callable instead of int:\n"
+        "  def price_fn(ctx): return lookup(ctx['args']['service_id'])\n"
+        "  @mcp.tool(credits=price_fn)\n\n"
+        "PaymentsMCP auto-creates /health endpoint.\n"
+        "agent_definition_url is metadata only — not a resolvable URL."
+    ),
+    "connecting_mcp": (
+        "Add to your agent's .mcp.json:\n"
+        '  { "mcpServers": { "service": { "type": "http",\n'
+        '    "url": "https://seller-url/mcp",\n'
+        '    "headers": { "Authorization": "Bearer YOUR_X402_TOKEN" } } } }\n\n'
+        "Get the token:\n"
+        "  from payments_py import Payments, PaymentOptions\n"
+        "  payments = Payments.get_instance(PaymentOptions(nvm_api_key=KEY, environment='sandbox'))\n"
+        "  payments.plans.order_plan(PLAN_ID)  # subscribe first\n"
+        "  token = payments.x402.get_x402_access_token(PLAN_ID)['accessToken']\n\n"
+        "Your agent sees the seller's tools directly. Each call burns credits."
+    ),
+    "finding_agents": (
+        "Nevermined has no search in their agent registry.\n\n"
+        "Discovery channels:\n"
+        "1. Hackathon portal: nevermined.ai/hackathon/register (browse sellers/buyers)\n"
+        "2. Discovery API: GET /hackathon/register/api/discover (programmatic)\n"
+        "3. Ideas Board: Google Sheet shared in hackathon Slack\n"
+        "4. Venue: walk around and talk to teams\n\n"
+        "To connect to a seller, you need their plan_id (to subscribe) "
+        "and endpoint URL (to call). Both visible on the portal."
+    ),
+}
+
+_PITFALLS_CONTENT = {
+    "install": "payments-py[mcp] extra DOESN'T EXIST. Install payments-py and fastapi separately.",
+    "start_blocks": "PaymentsMCP.start() returns immediately — it does NOT block. You must add: await asyncio.Event().wait() after start() or your server exits.",
+    "one_key": "One API key does everything (builder + subscriber). Don't waste time creating separate accounts.",
+    "agent_url": "agent_definition_url is metadata only, not a resolvable URL. Nevermined doesn't proxy MCP calls. Buyers need your actual server URL.",
+    "no_search": "No search in the Nevermined registry. It's a flat list. Discovery is manual — portal, spreadsheet, or word of mouth.",
+    "free_price": "get_free_price_config() = free to SUBSCRIBE, not free to USE. Credits still burn per request.",
+    "token_reuse": "x402 token is reusable across multiple calls. Don't regenerate per request — it's slow.",
+    "dynamic_credits": "Dynamic credits need a callable, not a number: @mcp.tool(credits=my_func). The callable receives ctx with args.",
+    "health": "/health endpoint is created automatically by PaymentsMCP. Use it for deployment health checks.",
 }
 
 
-def _hackathon_guide(topic: str = "all") -> str:
-    """Return Nevermined hackathon onboarding content. Defaults to all topics."""
-    topic = topic.lower().strip()
-    if topic == "all":
-        sections = []
-        for key, val in _HACKATHON_GUIDE.items():
-            sections.append({"topic": key, "title": val["title"], "content": val["content"]})
-        return json.dumps({"topics": list(_HACKATHON_GUIDE.keys()), "sections": sections})
-    if topic in _HACKATHON_GUIDE:
-        entry = _HACKATHON_GUIDE[topic]
-        return json.dumps({"topic": topic, "title": entry["title"], "content": entry["content"]})
-    # Unknown topic — return everything anyway
-    sections = []
-    for key, val in _HACKATHON_GUIDE.items():
-        sections.append({"topic": key, "title": val["title"], "content": val["content"]})
-    return json.dumps({"topics": list(_HACKATHON_GUIDE.keys()), "sections": sections})
+def _hackathon_portal() -> str:
+    """Ingested content from the Nevermined hackathon website portal."""
+    return json.dumps({
+        "source": "nevermined.ai/hackathon/register (client-rendered, not readable by Claude)",
+        "sections": [{"topic": k, "content": v} for k, v in _PORTAL_CONTENT.items()],
+    })
+
+
+def _hackathon_onboarding() -> str:
+    """Nevermined onboarding guide from GitHub repo + website."""
+    return json.dumps({
+        "source": "github.com/nevermined-io/hackathons + nevermined.app",
+        "sections": [{"topic": k, "content": v} for k, v in _ONBOARDING_CONTENT.items()],
+    })
+
+
+def _hackathon_pitfalls() -> str:
+    """Common pitfalls and troubleshooting for Nevermined + PaymentsMCP."""
+    return json.dumps({
+        "pitfall_count": len(_PITFALLS_CONTENT),
+        "pitfalls": [{"id": k, "detail": v} for k, v in _PITFALLS_CONTENT.items()],
+    })
+
+
+def _hackathon_all() -> str:
+    """All hackathon context in one call — portal, onboarding, and pitfalls."""
+    return json.dumps({
+        "portal": {"source": "nevermined.ai/hackathon/register", "sections": [{"topic": k, "content": v} for k, v in _PORTAL_CONTENT.items()]},
+        "onboarding": {"source": "github.com/nevermined-io/hackathons + nevermined.app", "sections": [{"topic": k, "content": v} for k, v in _ONBOARDING_CONTENT.items()]},
+        "pitfalls": {"pitfall_count": len(_PITFALLS_CONTENT), "pitfalls": [{"id": k, "detail": v} for k, v in _PITFALLS_CONTENT.items()]},
+    })
 
 
 def _hackathon_discover(side: str = "all", category: str = "") -> str:
@@ -335,13 +338,43 @@ catalog.register(
 )
 
 catalog.register(
-    service_id="hackathon_guide",
-    name="Nevermined Hackathon Guide",
-    description="Ingested content from the Nevermined hackathon portal, marketplace, and registration flow — the parts Claude can't read directly. Covers: marketplace portal structure, Discovery API with endpoint/params/response schema, agent registration steps, API key permissions, transaction flow, and how to connect as buyer or seller. 1 credit for everything.",
+    service_id="hackathon_portal",
+    name="Hackathon Website Portal",
+    description="Ingested content from nevermined.ai/hackathon/register — the marketplace portal Claude can't read (client-rendered). Portal structure, seller/buyer tabs, category filters, Discovery API endpoint with params and response schema, agent registration steps to go from code to 'Ready' status.",
     price_credits=1,
-    example_params={"topic": "all"},
+    example_params={},
     provider="mog-protocol",
-    handler=_hackathon_guide,
+    handler=_hackathon_portal,
+)
+
+catalog.register(
+    service_id="hackathon_onboarding",
+    name="Hackathon Onboarding Guide",
+    description="Nevermined onboarding from GitHub repo and website. API key setup (4 permissions explained), transaction flow (subscribe/token/call/settle), building a PaymentsMCP seller, connecting as MCP client, finding other agents. Everything to go from zero to first transaction.",
+    price_credits=1,
+    example_params={},
+    provider="mog-protocol",
+    handler=_hackathon_onboarding,
+)
+
+catalog.register(
+    service_id="hackathon_pitfalls",
+    name="Common Pitfalls & Troubleshooting",
+    description="9 Nevermined and PaymentsMCP gotchas that cost us hours each. Install issues, start() not blocking, one-key-does-everything, agent_definition_url is fake, no search, free means free-to-subscribe, token reuse, dynamic credits, health endpoint.",
+    price_credits=1,
+    example_params={},
+    provider="mog-protocol",
+    handler=_hackathon_pitfalls,
+)
+
+catalog.register(
+    service_id="hackathon_all",
+    name="All Hackathon Context",
+    description="Portal + onboarding + pitfalls in one call. Everything about the Nevermined hackathon that Claude can't read from the website. Marketplace structure, Discovery API, registration flow, API keys, transaction flow, seller/buyer setup, and all known gotchas. 1 credit, full context dump.",
+    price_credits=1,
+    example_params={},
+    provider="mog-protocol",
+    handler=_hackathon_all,
 )
 
 catalog.register(
