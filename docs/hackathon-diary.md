@@ -303,4 +303,34 @@ Both tx hashes verifiable on [Base Sepolia explorer](https://sepolia.basescan.or
 
 **[blocker]** Nevermined `order_plan` returns 500 "Invalid Address" on many re-subscriptions and all fiat plans. Tokens still issued regardless. Filed as issue #6.
 
+### ~13:00 — The Board: Workshop Visualization
+
+**[scav]** Redesigned web frontend as "The Board" — a workshop view showing services as cards with live stats, agents in a sidebar, ticker scrolling prices. Routes: `/` (Board), `/service/:id` (detail), `/connect` (onboarding), `/garden` (flower viz). Deployed to Vercel at mog-markets.vercel.app, custom domain mog.markets pending DNS.
+
+### ~13:30 — Autonomous Supervisor
+
+**[scav]** Built `src/supervisor.py` — rule-based supervisor that evaluates all services on every /health poll. Decisions: greenlit (>80% success + revenue), under_review (mediocre), killed (<30% success after 3+ calls), pending (not enough data). Integrated into gateway, visible on Board as badges on service cards.
+
+### ~14:00 — Agent Colony: Trinity Comes Alive
+
+**[decision]** Build real autonomous agents using Trinity's designs. Trinity (hackathon sponsor) designed the agent roles, personalities, and dispatch protocol. We're building the runtime that gives their designs real tools and persistent memory.
+
+**Trinity's contribution (used directly):**
+- Role definitions: Scout (Chief Strategist), Worker (Engineering Lead), Dashboard/Supervisor (COO)
+- WRAP BRIEF / WRAP COMPLETE / WRAP FAILED dispatch protocol between agents
+- Autonomous schedules (tick loop logic)
+- Evaluation criteria (Margin/Demand/Ease/Uniqueness/Reliability)
+- Personality profiles (sharp scout, craftsman worker, data-driven COO)
+
+**Our implementation (new):**
+- `src/agents/agent.py` — Agent class with persistent Anthropic API conversation threads + Haiku for speed/cost + conversation compaction
+- `src/agents/bus.py` — Inter-agent message bus implementing Trinity's dispatch protocol, file-backed for persistence
+- `src/agents/tools.py` — Real tool implementations: Exa web search, dynamic handler factory (proxy registration without code gen), service testing, supervisor verdicts. Guardrails: 10 service cap, 1 proposal/tick, URL validation, error masking.
+- `src/agents/loop.py` — Colony loop running as background thread in gateway process. All timing/limits configurable via env vars.
+- Gateway integration: colony state served in /health, Board shows real agent status + inter-agent messages
+
+**Key design choice:** Handler factory lets the worker agent create live services at runtime by providing URL + method + params — system generates a proxy handler. No code generation needed. Services registered by agents are immediately buyable through the gateway.
+
+**Activation:** `MOG_COLONY_ENABLED=true` env var on Railway starts the colony. Model: claude-haiku-4-5 default (configurable via MOG_AGENT_MODEL).
+
 <!-- New entries go above this line -->

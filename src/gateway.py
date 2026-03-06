@@ -29,6 +29,7 @@ from src.helicone import log_tool_call
 from src.portfolio import PortfolioManager
 from src.pricing import get_current_price, get_surge_info
 from src.services import catalog
+from src.supervisor import supervisor
 from src.telemetry import telemetry, TelemetryEvent
 
 FREE_AD_PLAN_ID = os.getenv("NVM_FREE_AD_PLAN_ID", "")
@@ -260,6 +261,17 @@ async def main():
                     "pro": {"credits": 25, "ads": False, "price": "10 USDC"},
                 },
             }
+            # Supervisor evaluations
+            evaluations = supervisor.evaluate_all(services, per_service_stats)
+            health["supervisor"] = supervisor.get_summary(evaluations)
+
+            # Agent colony state (live autonomous agents)
+            try:
+                from src.agents.loop import colony
+                health["colony"] = colony.get_state()
+            except ImportError:
+                pass
+
             try:
                 from src.toolkit import blockers
                 recent_blockers = blockers.get_recent(5)
@@ -277,6 +289,14 @@ async def main():
 
         app.add_api_route("/health", _health, methods=["GET"])
         print("Custom /health endpoint registered")
+
+    # Start the agent colony if enabled
+    if os.getenv("MOG_COLONY_ENABLED", "").lower() in ("1", "true", "yes"):
+        try:
+            from src.agents.loop import colony
+            colony.start()
+        except Exception as e:
+            print(f"[colony] Failed to start: {e}")
 
     stop = result.get("stop") if isinstance(result, dict) else None
     try:

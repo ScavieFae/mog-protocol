@@ -51,6 +51,58 @@ export interface DemandSignal {
   timestamp: string
 }
 
+export interface Portfolio {
+  balance: number
+  starting_credits: number
+  total_spent: number
+  total_earned: number
+  roi: number
+  active_hypotheses: number
+  total_hypotheses: number
+  top_earner: string | null
+}
+
+export interface SupervisorEvaluation {
+  service_id: string
+  status: "greenlit" | "under_review" | "killed" | "pending"
+  reason: string
+  metrics?: Record<string, number>
+}
+
+export interface SupervisorData {
+  counts: Record<string, number>
+  total_evaluated: number
+  recent_actions: string[]
+  evaluations: SupervisorEvaluation[]
+}
+
+export interface ColonyAgent {
+  name: string
+  role: string
+  status: string
+  current_task: string | null
+  recent_actions: string[]
+  tools: string[]
+  last_tick: string | null
+  tick_count: number
+  conversation_length: number
+}
+
+export interface ColonyMessage {
+  id: number
+  from: string
+  to: string
+  content: string
+  timestamp: string
+}
+
+export interface ColonyData {
+  agents: ColonyAgent[]
+  messages: ColonyMessage[]
+  running: boolean
+  tick_interval: number
+}
+
 export interface HealthData {
   status: string
   services_count: number
@@ -59,6 +111,9 @@ export interface HealthData {
   demand_signals: DemandSignal[]
   uptime_seconds?: number
   total_revenue_credits?: number
+  portfolio?: Portfolio
+  supervisor?: SupervisorData
+  colony?: ColonyData
 }
 
 export function useHealth(intervalMs = 5000) {

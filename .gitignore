@@ -22,3 +22,7 @@ build/
 data/vault.json
 data/blockers.json
 data/portfolio.json
+.vercel
+data/agent_messages.json
+data/agent_proposals.json
+data/colony_state.json

@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react"
 import { useState, useEffect } from "react"
-import { type Service } from "@/hooks/useHealth"
+import { type Service, type SupervisorEvaluation } from "@/hooks/useHealth"
 
 const CATEGORY_COLORS: Record<string, string> = {
   search: "#6B8DAE",
@@ -28,12 +28,20 @@ const VALUE_ADD_LABELS: Record<string, { label: string; color: string }> = {
   api_bypass: { label: "API Bypass", color: "#6B8DAE" },
 }
 
+const SUPERVISOR_BADGES: Record<string, { label: string; color: string; icon: string }> = {
+  greenlit: { label: "Greenlit", color: "#87A878", icon: "●" },
+  under_review: { label: "Under Review", color: "#C5A862", icon: "◐" },
+  killed: { label: "Killed", color: "#C47A7A", icon: "✕" },
+  pending: { label: "Pending", color: "#78716C", icon: "○" },
+}
+
 interface ServiceCardProps {
   service: Service
+  evaluation?: SupervisorEvaluation
   onClick?: () => void
 }
 
-export function ServiceCard({ service, onClick }: ServiceCardProps) {
+export function ServiceCard({ service, evaluation, onClick }: ServiceCardProps) {
   const cat = getCategory(service.service_id)
   const color = CATEGORY_COLORS[cat] ?? CATEGORY_COLORS.default
   const surge = service.surge_multiplier ?? 1
@@ -91,7 +99,7 @@ export function ServiceCard({ service, onClick }: ServiceCardProps) {
           <span className="font-mono text-xs text-stone/60">{service.provider ?? "mog"}</span>
         </div>
 
-        {/* Price + Surge */}
+        {/* Price + Surge + Supervisor */}
         <div className="flex items-center gap-2 mb-3">
           <span className="font-mono text-lg text-copper">
             {service.current_price ?? service.price_credits}cr
@@ -102,6 +110,19 @@ export function ServiceCard({ service, onClick }: ServiceCardProps) {
               {surge.toFixed(1)}x
             </span>
           )}
+          {evaluation && (() => {
+            const badge = SUPERVISOR_BADGES[evaluation.status]
+            if (!badge) return null
+            return (
+              <span
+                className="ml-auto font-mono text-[10px] px-1.5 py-0.5 rounded-full"
+                style={{ backgroundColor: `${badge.color}15`, color: badge.color }}
+                title={evaluation.reason}
+              >
+                {badge.icon} {badge.label}
+              </span>
+            )
+          })()}
         </div>
 
         {/* Stats row */}

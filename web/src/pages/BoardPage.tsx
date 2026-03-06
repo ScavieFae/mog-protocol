@@ -1,16 +1,36 @@
 import { useState, useMemo } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "motion/react"
-import { useHealth, type Service } from "@/hooks/useHealth"
+import { useHealth, type SupervisorEvaluation, type ColonyData } from "@/hooks/useHealth"
 import { ServiceCard } from "@/components/ServiceCard"
 import { AgentSidebar, type AgentState } from "@/components/AgentSidebar"
 import { Ticker } from "@/components/Ticker"
 
-// Derive agent states from health data and hypothetical loop state.
-// In production these would come from an /agents endpoint.
+const STATUS_MAP: Record<string, AgentState["status"]> = {
+  idle: "idle",
+  thinking: "working",
+  error: "idle",
+}
+
+// Use real colony data when available, fall back to derived state.
 function deriveAgents(data: ReturnType<typeof useHealth>["data"]): AgentState[] {
   if (!data) return []
 
+  // Real colony agents — live from the agent loop
+  if (data.colony?.agents?.length) {
+    return data.colony.agents.map((a) => ({
+      name: a.name,
+      role: a.role,
+      status: a.status.startsWith("using ")
+        ? "working" as const
+        : (STATUS_MAP[a.status] ?? "working" as const),
+      currentTask: a.current_task ?? (a.status === "idle" ? "waiting for next tick" : a.status),
+      tools: a.tools,
+      recentActions: a.recent_actions,
+    }))
+  }
+
+  // Fallback: derive from telemetry (pre-colony mode)
   const recentTxServices = new Set(
     data.recent_transactions.slice(0, 5).map((t) => t.service_id)
   )
@@ -48,18 +68,45 @@ function deriveAgents(data: ReturnType<typeof useHealth>["data"]): AgentState[] 
       name: "mog-supervisor",
       role: "review",
       status: "evaluating",
-      currentTask: `reviewing ${data.services_count} services`,
+      currentTask: data.supervisor
+        ? `evaluated ${data.supervisor.total_evaluated} services — ${data.supervisor.counts?.greenlit ?? 0} greenlit, ${data.supervisor.counts?.killed ?? 0} killed`
+        : `reviewing ${data.services_count} services`,
       tools: ["nevermined"],
       recentActions: [
-        `portfolio: ${data.portfolio?.total_earned ?? 0}cr earned`,
-        `${data.portfolio?.active_hypotheses ?? 0} active hypotheses`,
-        ...data.services
-          .filter((s) => s.stats && s.stats.total_calls > 0)
-          .slice(0, 2)
-          .map((s) => `${s.service_id}: ${s.stats!.total_calls} calls, ${s.stats!.revenue_credits}cr`),
+        ...(data.supervisor?.recent_actions?.slice(0, 5) ?? [
+          `portfolio: ${data.portfolio?.total_earned ?? 0}cr earned`,
+          `${data.portfolio?.active_hypotheses ?? 0} active hypotheses`,
+        ]),
       ],
     },
   ]
+}
+
+// Inter-agent message feed
+function ColonyMessages({ colony }: { colony?: ColonyData }) {
+  if (!colony?.messages?.length) return null
+  return (
+    <div className="border-t border-sage/10 mt-4 pt-3">
+      <h3 className="font-sans text-[10px] uppercase tracking-wider text-stone/40 mb-2">
+        Agent Comms {colony.running && <span className="text-sage">LIVE</span>}
+      </h3>
+      <div className="space-y-1.5 max-h-32 overflow-y-auto">
+        {colony.messages.slice(-8).reverse().map((m) => (
+          <motion.div
+            key={m.id}
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="font-mono text-[11px] leading-tight"
+          >
+            <span className="text-copper">{m.from.replace("mog-", "")}</span>
+            <span className="text-stone/30"> → </span>
+            <span className="text-sage/80">{m.to.replace("mog-", "")}</span>
+            <span className="text-stone/50">: {m.content.slice(0, 80)}{m.content.length > 80 ? "..." : ""}</span>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 function PortfolioBar({ data }: { data: ReturnType<typeof useHealth>["data"] }) {
@@ -68,12 +115,19 @@ function PortfolioBar({ data }: { data: ReturnType<typeof useHealth>["data"] }) 
   return (
     <div className="border-b border-sage/15 bg-white/40 px-6 py-2.5 flex items-center gap-6 text-sm">
       <span className="font-sans text-stone/60">
-        <span className="inline-block w-2 h-2 rounded-full bg-sage mr-2 align-middle" />
-        {data.status}
+        <span className={`inline-block w-2 h-2 rounded-full mr-2 align-middle ${data.colony?.running ? "bg-sage" : "bg-stone/30"}`} />
+        {data.colony?.running ? "colony live" : data.status}
       </span>
       <span className="font-mono text-copper">{data.services_count} services</span>
       <span className="font-mono text-gold">{p?.total_earned ?? 0}cr earned</span>
       <span className="font-mono text-stone/50">{p?.balance ?? 0}cr balance</span>
+      {data.supervisor && (
+        <span className="font-mono text-xs text-stone/40">
+          {data.supervisor.counts?.greenlit ?? 0} greenlit
+          {(data.supervisor.counts?.under_review ?? 0) > 0 && ` · ${data.supervisor.counts.under_review} reviewing`}
+          {(data.supervisor.counts?.killed ?? 0) > 0 && ` · ${data.supervisor.counts.killed} killed`}
+        </span>
+      )}
       <div className="ml-auto flex gap-4">
         <Link to="/connect" className="font-mono text-xs text-sage/60 hover:text-sage transition-colors">
           connect &rarr;
@@ -115,6 +169,17 @@ export function BoardPage() {
   const navigate = useNavigate()
 
   const agents = useMemo(() => deriveAgents(data), [data])
+
+  // Build evaluation lookup from supervisor data
+  const evaluationMap = useMemo(() => {
+    const map = new Map<string, SupervisorEvaluation>()
+    if (data?.supervisor?.evaluations) {
+      for (const ev of data.supervisor.evaluations) {
+        map.set(ev.service_id, ev)
+      }
+    }
+    return map
+  }, [data])
 
   // Sort services: earning first, then by revenue, then alphabetical
   const sortedServices = useMemo(() => {
@@ -158,6 +223,7 @@ export function BoardPage() {
               <ServiceCard
                 key={service.service_id}
                 service={service}
+                evaluation={evaluationMap.get(service.service_id)}
                 onClick={() => navigate(`/service/${service.service_id}`)}
               />
             ))}
@@ -184,6 +250,9 @@ export function BoardPage() {
               </div>
             </div>
           )}
+
+          {/* Inter-agent communications */}
+          <ColonyMessages colony={data.colony} />
         </div>
 
         {/* Agent sidebar */}
