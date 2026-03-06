@@ -1,9 +1,23 @@
 {
   "brief": "brief-013-surge-pricing-signals",
   "brief_file": ".loop/briefs/brief-013-surge-pricing-signals.md",
-  "iteration": 0,
-  "status": "running",
-  "tasks_completed": [],
+  "iteration": 1,
+  "status": "complete",
+  "tasks_completed": [
+    "Enrich src/pricing.py with multi-signal surge (demand_pressure, velocity, cooldown)",
+    "Expose per-service surge_signals in /health endpoint (gateway.py)",
+    "Update useHealth.ts types with SurgeSignals interface and Service fields",
+    "Update Ticker.tsx to show trend arrows (rising ↑ rose, falling ↓ sage)",
+    "Update FlowerNode.tsx to show demand pressure dotted ring when demand_pressure > 1.5"
+  ],
   "tasks_remaining": [],
-  "learnings": []
+  "learnings": [
+    "pricing.py: _surge_state dict stores last_multiplier + last_updated + peak_multiplier per service for cooldown",
+    "get_surge_info() returns {price, surge_multiplier, surge_signals} — health endpoint uses it, get_current_price() delegates to it",
+    "_demand_pressure() reads txlog.get_recent(500) and filters by event_type + keyword match + time window",
+    "_cooldown_multiplier() returns ratio >= 1.0 to hold prices during decay; returns 1.0 when not in cooldown",
+    "Trend (rising/falling/stable) is determined by comparing final multiplier to _surge_state last_multiplier with 0.05 threshold",
+    "FlowerNode dotted ring: highDemand = demandPressure > 1.5, renders SVG <circle> with strokeDasharray='4 6'",
+    "Ticker uses s.current_price (from /health) in preference to client-side surge calc"
+  ]
 }
