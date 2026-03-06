@@ -156,16 +156,18 @@ async def main():
     print(f"Starting Mog Gateway MCP server on port {port}")
     result = await mcp.start(port=port)
 
-    # --- Buyer-friendliness: wrap the ASGI app ---
+    # --- Buyer-friendliness: wrap the ASGI app on the uvicorn server ---
     # Fix two issues that trip up buyers:
     # 1. Missing Accept header → 406 from MCP transport
     # 2. payment-signature header instead of Authorization: Bearer → 401
-    # Must wrap the ASGI app directly so we run BEFORE PaymentsMCP's auth.
+    # We wrap the app at the uvicorn.Config level so our transform runs
+    # BEFORE FastAPI's dependencies (including PaymentsMCP's auth check).
     app = mcp._manager._fastapi_app
-    if app is not None:
-        _original_app = app.router.app if hasattr(app.router, "app") else None
+    http_server = mcp._manager._http_server
+    if http_server is not None:
+        _inner_app = http_server.config.app
 
-        class BuyerCompatASGI:
+        class _BuyerCompat:
             def __init__(self, app):
                 self.app = app
 
@@ -174,11 +176,9 @@ async def main():
                     headers = list(scope.get("headers", []))
                     header_names = {k for k, v in headers}
 
-                    # Default Accept to application/json if missing
                     if b"accept" not in header_names:
                         headers.append((b"accept", b"application/json"))
 
-                    # Translate payment-signature → Authorization: Bearer
                     if b"payment-signature" in header_names and b"authorization" not in header_names:
                         sig_value = None
                         new_headers = []
@@ -195,37 +195,7 @@ async def main():
 
                 await self.app(scope, receive, send)
 
-        # Wrap the uvicorn-facing app
-        import uvicorn
-        # The FastAPI app itself is what uvicorn serves. We need to wrap it
-        # at the outermost layer. Monkey-patch the app's __call__.
-        _original_call = app.__call__
-
-        async def _wrapped_call(scope, receive, send):
-            if scope["type"] == "http":
-                headers = list(scope.get("headers", []))
-                header_names = {k for k, v in headers}
-
-                if b"accept" not in header_names:
-                    headers.append((b"accept", b"application/json"))
-
-                if b"payment-signature" in header_names and b"authorization" not in header_names:
-                    sig_value = None
-                    new_headers = []
-                    for k, v in headers:
-                        if k == b"payment-signature":
-                            sig_value = v
-                        else:
-                            new_headers.append((k, v))
-                    if sig_value:
-                        new_headers.append((b"authorization", b"Bearer " + sig_value))
-                        headers = new_headers
-
-                scope = {**scope, "headers": headers}
-
-            await _original_call(scope, receive, send)
-
-        app.__call__ = _wrapped_call
+        http_server.config.app = _BuyerCompat(_inner_app)
         print("Buyer compat layer active (Accept default + payment-signature → Bearer)")
 
     # Replace the default /health with our richer marketplace health endpoint.
