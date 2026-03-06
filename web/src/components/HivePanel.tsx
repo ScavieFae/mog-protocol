@@ -15,12 +15,16 @@ const TOOL_META: Record<string, { label: string; color: string; sponsor?: string
   test_service: { label: "TST", color: "#6B8DAE" },
   get_proposals: { label: "Q", color: "#78716C" },
   evaluate_service: { label: "EVL", color: "#C47A7A" },
+  check_errors: { label: "ERR", color: "#C47A7A" },
+  inspect_service: { label: "INS", color: "#C47A7A" },
+  patch_service: { label: "FIX", color: "#87A878" },
 }
 
 const AGENT_COLORS: Record<string, string> = {
   "mog-scout": "#6B8DAE",
   "mog-worker": "#87A878",
   "mog-supervisor": "#C5A862",
+  "mog-debugger": "#C47A7A",
 }
 
 function timeAgo(timestamp: string): string {

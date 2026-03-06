@@ -21,6 +21,7 @@ _NVM_KEYS = {
     "mog-scout": os.getenv("NVM_SCOUT_API_KEY"),
     "mog-worker": os.getenv("NVM_WORKER_API_KEY"),
     "mog-supervisor": os.getenv("NVM_SUPERVISOR_API_KEY"),
+    "mog-debugger": os.getenv("NVM_DEBUGGER_API_KEY"),
 }
 
 # Our own plans (for self-buy testing)
@@ -131,7 +132,7 @@ def _search_web(query: str, max_results: int = 5, **kwargs) -> str:
 
 def _send_message(from_agent: str, to_agent: str, message: str, **kwargs) -> str:
     """Send a message to another agent (scout, worker, supervisor)."""
-    VALID = {"mog-scout", "mog-worker", "mog-supervisor"}
+    VALID = {"mog-scout", "mog-worker", "mog-supervisor", "mog-debugger"}
     if to_agent not in VALID:
         return json.dumps({"error": f"Unknown agent: {to_agent}. Valid: {VALID}"})
     msg = bus.send(from_agent, to_agent, message)
@@ -503,6 +504,99 @@ def _discover_sellers(agent_name: str, **kwargs) -> str:
         return json.dumps({"error": str(e)[:200]})
 
 
+def _check_errors(max_results: int = 10, **kwargs) -> str:
+    """Read recent failed buy_and_call events from telemetry."""
+    try:
+        from src.telemetry import telemetry
+        all_events = telemetry.get_recent(500, event_type="buy_and_call")
+        failures = [e for e in all_events if not e.get("success")][-max_results:]
+        return json.dumps([{
+            "service_id": e.get("service_id"),
+            "error": e.get("error", "unknown"),
+            "params": e.get("params"),
+            "timestamp": e.get("timestamp"),
+            "latency_ms": e.get("latency_ms"),
+        } for e in failures], indent=2)
+    except Exception as e:
+        return json.dumps({"error": str(e)})
+
+
+def _inspect_service(service_id: str, **kwargs) -> str:
+    """Get full service config and stats for debugging."""
+    from src.services import catalog
+    from src.telemetry import telemetry
+
+    service = catalog.get(service_id)
+    if not service:
+        return json.dumps({"error": f"Service '{service_id}' not found in catalog", "exists": False})
+
+    # Get recent events for this service
+    all_events = telemetry.get_recent(500, event_type="buy_and_call")
+    svc_events = [e for e in all_events if e.get("service_id") == service_id]
+    recent_errors = [e for e in svc_events if not e.get("success")][-5:]
+
+    total = len(svc_events)
+    successes = sum(1 for e in svc_events if e.get("success"))
+
+    return json.dumps({
+        "exists": True,
+        "service_id": service.service_id,
+        "name": service.name,
+        "description": service.description,
+        "price_credits": service.price_credits,
+        "provider": service.provider,
+        "has_handler": service.handler is not None,
+        "value_adds": service.value_adds,
+        "total_calls": total,
+        "successful_calls": successes,
+        "success_rate": round(successes / total, 3) if total else None,
+        "recent_errors": [{
+            "error": e.get("error", "unknown"),
+            "params": e.get("params"),
+            "timestamp": e.get("timestamp"),
+            "latency_ms": e.get("latency_ms"),
+        } for e in recent_errors],
+    }, indent=2)
+
+
+def _patch_service(
+    service_id: str, url: str = "", method: str = "", price_credits: int = 0, **kwargs
+) -> str:
+    """Re-register an agent-built service with corrected URL/method/price.
+    Only works for mog-agent services. Preserves name and description."""
+    from src.services import catalog
+
+    service = catalog.get(service_id)
+    if not service:
+        return json.dumps({"error": f"Service '{service_id}' not found"})
+    if service.provider != "mog-agent":
+        return json.dumps({"error": f"Cannot patch '{service_id}' — only mog-agent services can be patched (provider={service.provider})"})
+
+    # Remove old entry and re-register with new config
+    old_name = service.name
+    old_desc = service.description
+    old_price = service.price_credits
+    catalog._services.pop(service_id, None)
+
+    new_url = url or ""
+    new_method = (method or "GET").upper()
+    new_price = price_credits or old_price
+
+    if not new_url:
+        return json.dumps({"error": "Must provide url for patch"})
+
+    # Re-register via the register handler
+    result = _register_service(
+        service_id=service_id,
+        name=old_name,
+        description=old_desc,
+        url=new_url,
+        method=new_method,
+        price_credits=new_price,
+    )
+    return result
+
+
 def _evaluate_service(service_id: str, verdict: str, reason: str = "", **kwargs) -> str:
     """Supervisor evaluates a service: greenlit, under_review, or killed.
     Killed services are removed from search results."""
@@ -649,6 +743,57 @@ WORKER_TOOLS = COMMON_TOOLS + NVM_TOOLS + [
     },
 ]
 
+DEBUGGER_TOOLS = COMMON_TOOLS + NVM_TOOLS + [
+    {
+        "name": "check_errors",
+        "description": "Read recent failed buy_and_call events from telemetry. Returns service_id, error message, params, timestamp, latency.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "max_results": {"type": "integer", "description": "Max failures to return (default 10)"},
+            },
+            "required": [],
+        },
+    },
+    {
+        "name": "inspect_service",
+        "description": "Get full service config, stats, and recent error details for a specific service. Use after check_errors to dig into a failing service.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "service_id": {"type": "string", "description": "Service to inspect"},
+            },
+            "required": ["service_id"],
+        },
+    },
+    {
+        "name": "test_service",
+        "description": "Test a registered service by calling its handler directly with sample params.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "service_id": {"type": "string"},
+                "params": {"type": "object", "description": "Test parameters"},
+            },
+            "required": ["service_id"],
+        },
+    },
+    {
+        "name": "patch_service",
+        "description": "Re-register a mog-agent service with a corrected URL, method, or price. Only works for agent-built services. Preserves name/description.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "service_id": {"type": "string", "description": "Service to patch"},
+                "url": {"type": "string", "description": "New target URL"},
+                "method": {"type": "string", "enum": ["GET", "POST"], "description": "New HTTP method"},
+                "price_credits": {"type": "integer", "description": "New price (1-10)"},
+            },
+            "required": ["service_id", "url"],
+        },
+    },
+]
+
 SUPERVISOR_TOOLS = COMMON_TOOLS + NVM_TOOLS + [
     {
         "name": "evaluate_service",
@@ -681,6 +826,9 @@ def execute_tool(agent_name: str, tool_name: str, tool_input: dict) -> str:
         "register_service": lambda **kw: _register_service(**kw),
         "test_service": lambda **kw: _test_service(**kw),
         "evaluate_service": lambda **kw: _evaluate_service(**kw),
+        "check_errors": lambda **kw: _check_errors(**kw),
+        "inspect_service": lambda **kw: _inspect_service(**kw),
+        "patch_service": lambda **kw: _patch_service(**kw),
         "self_buy": lambda **kw: _self_buy(agent_name=agent_name, **kw),
         "explore_seller": lambda **kw: _explore_seller(agent_name=agent_name, **kw),
         "discover_sellers": lambda **kw: _discover_sellers(agent_name=agent_name, **kw),
