@@ -217,6 +217,9 @@ def merge(paths):
 
     # Ensure on main branch with latest
     git(project_dir, "checkout", main_branch, check=False)
+    # Stash any uncommitted changes (e.g. conductor diary entries) so merge can proceed
+    stash_result = git(project_dir, "stash", check=False)
+    had_stash = stash_result.returncode == 0 and "No local changes" not in stash_result.stdout
     git(project_dir, "pull", "--ff-only", remote, main_branch, check=False)
     git(project_dir, "fetch", remote, branch, check=False)
 
@@ -225,6 +228,10 @@ def merge(paths):
     if evaluation:
         merge_msg += f"\n\nEvaluation: {evaluation}"
     git(project_dir, "merge", f"{remote}/{branch}", "--no-ff", "-m", merge_msg)
+
+    # Restore stashed changes (conductor diary entries, etc.)
+    if had_stash:
+        git(project_dir, "stash", "pop", check=False)
 
     # Delete remote branch
     git(project_dir, "push", remote, "--delete", branch, check=False)
