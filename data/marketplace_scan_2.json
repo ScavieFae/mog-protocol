@@ -1,0 +1,1043 @@
+[
+  {
+    "name": "AIBizBrain",
+    "team": "aibizbrain",
+    "endpoint": "https://aibizbrain.com/use",
+    "category": "Gaming",
+    "description": "https://aibizbrain.com/docs \nhttps://aibizbrain.com\nLet your agent play the game!",
+    "services_sold": "keys, games, maps",
+    "plans": [
+      {
+        "planDid": "15013993749859645033689260449493222500402676058615929198756763594246721010715",
+        "planPrice": 1,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request",
+        "totalRequests": 10,
+        "pricePerRequest": 0.1,
+        "pricePerRequestFormatted": "0.10 USDC"
+      },
+      {
+        "planDid": "8363624958228081791437481203057399797798815974997063472361028266947186420011",
+        "planPrice": 15,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request",
+        "totalRequests": 150,
+        "pricePerRequest": 0.1,
+        "pricePerRequestFormatted": "0.10 USDC"
+      },
+      {
+        "planDid": "65319024020059502426072555134446177702752266748563986006259227333113642230162",
+        "planPrice": 30,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request",
+        "totalRequests": 300,
+        "pricePerRequest": 0.1,
+        "pricePerRequestFormatted": "$0.10"
+      },
+      {
+        "planDid": "30087420039197658373237231280314408143784683862988760688026300639648189486261",
+        "planPrice": 1,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request",
+        "totalRequests": 10,
+        "pricePerRequest": 0.1,
+        "pricePerRequestFormatted": "$0.10"
+      }
+    ],
+    "status": "connected",
+    "subscribe_result": "success",
+    "test_status": 200,
+    "test_response": "{\"response\":\"OK \u2014 10 credits redeemed\",\"credits_used\":10}",
+    "auth_method": "payment-signature",
+    "server_type": "rest_api",
+    "tools": null,
+    "resell_assessment": {
+      "cost_per_call": "0.10 USDC",
+      "margin": "high (<=1 USDC, resell at 2-5x)",
+      "verdict": "MAYBE \u2014 AI service, check differentiation",
+      "overlaps_us": false,
+      "rationale": "Category: Gaming. https://aibizbrain.com/docs \nhttps://aibizbrain.com\nLet your agent play the game!"
+    },
+    "error": null
+  },
+  {
+    "name": "AI Landing Page Builder",
+    "team": "BaseLayer",
+    "endpoint": "http://54.183.4.35:9040",
+    "category": "AI/ML",
+    "description": "Paid AI agent for ad copy, brand strategy, and landing page creation.",
+    "services_sold": "ad copy generation, brand strategy, landing page generation",
+    "plans": [
+      {
+        "planDid": "15792212799337007959472935636047371050909344967265989977042702178153132085218",
+        "planPrice": 10,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 0.1,
+        "pricePerRequestFormatted": "$0.10"
+      }
+    ],
+    "status": "skipped",
+    "subscribe_result": null,
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "price_exceeds_budget_10"
+  },
+  {
+    "name": "Mog Markets",
+    "team": "Mog Markets",
+    "endpoint": "https://api.mog.markets/mcp",
+    "category": "API Services",
+    "description": "API marketplace for agents. Two tools: find_service (free discovery) and buy_and_call (pay per use). 11+ services: web search, summarization, image generation, weather, geolocation, hackathon guides.",
+    "services_sold": "find_service: Search the catalog by keyword or description. Returns matching services with pricing and       descriptions. Free, 0 credits. buy_and_call: Execute any service by name with arguments. Dy",
+    "plans": [
+      {
+        "planDid": "29001175520261924428527314088863841592234134735048963980654691130902766240562",
+        "planPrice": 10,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request",
+        "totalRequests": 25,
+        "pricePerRequest": 0.4,
+        "pricePerRequestFormatted": "0.40 USDC"
+      },
+      {
+        "planDid": "6476982684193144215967979389100088950230657664983966011439423784485034538208",
+        "planPrice": 5,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request",
+        "totalRequests": 10,
+        "pricePerRequest": 0.5,
+        "pricePerRequestFormatted": "0.50 USDC"
+      },
+      {
+        "planDid": "27532529988899010156793041100542920191141640561034683667962973311488756564499",
+        "planPrice": 1,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request",
+        "totalRequests": 1,
+        "pricePerRequest": 1,
+        "pricePerRequestFormatted": "1.00 USDC"
+      }
+    ],
+    "status": "skipped",
+    "subscribe_result": null,
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "self"
+  },
+  {
+    "name": "Crypto Market Intelligence",
+    "team": "BaseLayer",
+    "endpoint": "http://54.183.4.35:9010/",
+    "category": "DeFi",
+    "description": "Real-time crypto and DeFi market intelligence API. Three tools: price check (1 credit) for live token prices, market analysis (5 credits) for OHLCV trend reports, and DeFi protocol reports (10 credits",
+    "services_sold": "price_check, market_analysis, defi_report",
+    "plans": [
+      {
+        "planDid": "64879623316942534303320656207243221098923145021432480870609531852789289356828",
+        "planPrice": 0,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request (free)",
+        "totalRequests": 0,
+        "pricePerRequest": 0,
+        "pricePerRequestFormatted": "Free"
+      },
+      {
+        "planDid": "60037501707435651116294812103080449879416839373596129897733067667583699584971",
+        "planPrice": 10,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request",
+        "totalRequests": 1000,
+        "pricePerRequest": 0.01,
+        "pricePerRequestFormatted": "$0.01"
+      }
+    ],
+    "status": "failed",
+    "subscribe_result": "error",
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "Unable to order plan. 500 - {\"uuid\":\"e-384e9b7d-e52c-4346-bbb9-890846457c74\",\"code\":\"BCK.PROTOCOL.0005\",\"message\":\"Error ordering plan\",\"date\":\"2026-03-06T15:31:55.896Z\",\"stackTrace\":\"Error: Contracts"
+  },
+  {
+    "name": "Agent Evaluator",
+    "team": "BaseLayer",
+    "endpoint": "http://54.183.4.35:9030/",
+    "category": "Agent Review Board",
+    "description": "Agent QA and health monitoring service. Checks availability, discovers agents via the hackathon Discovery API, and produces ranked evaluation reports.",
+    "services_sold": "check_agent, discover_agents, evaluate_agents",
+    "plans": [
+      {
+        "planDid": "15792212799337007959472935636047371050909344967265989977042702178153132085218",
+        "planPrice": 10,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 0.1,
+        "pricePerRequestFormatted": "$0.10"
+      },
+      {
+        "planDid": "6493568109307149606775449436928746266532862322761382202705447107902786819306",
+        "planPrice": 0,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request (free)",
+        "totalRequests": 0,
+        "pricePerRequest": 0,
+        "pricePerRequestFormatted": "Free"
+      }
+    ],
+    "status": "subscribed_call_failed",
+    "subscribe_result": "success",
+    "test_status": 402,
+    "test_response": null,
+    "auth_method": "none_worked",
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": {
+      "verdict": "N/A \u2014 not connectable",
+      "cost_per_call": "Free"
+    },
+    "error": "auth_rejected_402"
+  },
+  {
+    "name": "Web Scraper Agent",
+    "team": "BaseLayer",
+    "endpoint": "http://54.183.4.35:9020/",
+    "category": "Data Analytics",
+    "description": "Web scraping and content extraction agent powered by Apify.Extracts clean text and markdown from websites with single-page, batch, and deep crawl modes.",
+    "services_sold": "scrape_url, batch_scrape, deep_extract",
+    "plans": [
+      {
+        "planDid": "15792212799337007959472935636047371050909344967265989977042702178153132085218",
+        "planPrice": 10,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 0.1,
+        "pricePerRequestFormatted": "$0.10"
+      },
+      {
+        "planDid": "6493568109307149606775449436928746266532862322761382202705447107902786819306",
+        "planPrice": 0,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request (free)",
+        "totalRequests": 0,
+        "pricePerRequest": 0,
+        "pricePerRequestFormatted": "Free"
+      }
+    ],
+    "status": "failed",
+    "subscribe_result": "error",
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "Unable to order plan. 500 - {\"uuid\":\"e-e655ee96-1c91-4206-8246-0153e1639cfd\",\"code\":\"BCK.PROTOCOL.0005\",\"message\":\"Error ordering plan\",\"date\":\"2026-03-06T15:32:05.544Z\",\"stackTrace\":\"Error: Contracts"
+  },
+  {
+    "name": "VentureOS",
+    "team": "VentureOS",
+    "endpoint": "/api/run",
+    "category": "AI/ML",
+    "description": "Autonomous business launch agent. Input a business idea, receive a live URL, brand, and go-to-market plan.",
+    "services_sold": "Business validation report, Brand identity + domain, Deployed landing page, Stripe payment integration, Week 1 go-to-market plan",
+    "plans": [
+      {
+        "planDid": "111170158828988238621952181742530314080625763674353484735897795140598444477539",
+        "planPrice": 1,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request",
+        "totalRequests": 1000,
+        "pricePerRequest": 0.001,
+        "pricePerRequestFormatted": "0.0010 USDC"
+      }
+    ],
+    "status": "skipped",
+    "subscribe_result": null,
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "no_valid_endpoint"
+  },
+  {
+    "name": "Market Buyer",
+    "team": "Undermined",
+    "endpoint": "http://localhost:3000/api/agent/research",
+    "category": "API Services",
+    "description": "Buyer",
+    "services_sold": "data enrichment, company research, person lookup, topic analysis, URL intelligence",
+    "plans": [
+      {
+        "planDid": "83480319637602122918957452839185213999331293232449361790831275088734229713001",
+        "planPrice": 0.1,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 0.001,
+        "pricePerRequestFormatted": "$0.0010"
+      }
+    ],
+    "status": "skipped",
+    "subscribe_result": null,
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "no_valid_endpoint"
+  },
+  {
+    "name": "AgentCard Enhancement Agent",
+    "team": "agenticard",
+    "endpoint": "https://agenticard-ai.manus.space/api/v1/enhance",
+    "category": "API Services",
+    "description": "AgentCard is a VibeCard-inspired platform where AI agents autonomously buy and sell card enhancement services via Nevermined x402. Submit a digital knowledge card and receive AI-powered insights, anal",
+    "services_sold": "AI Card Enhancement, Insight Analysis, Content Enrichment, Data Synthesis, Growth Strategy, Value Amplification, Risk Assessment, RLM Code Execution, ZeroClick Discovery",
+    "plans": [
+      {
+        "planDid": "14617951810481220602283078817831990748590904646100283923289724246676505189165",
+        "planPrice": 10,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 0.1,
+        "pricePerRequestFormatted": "$0.10"
+      },
+      {
+        "planDid": "21471673460249098292429453469764651755624656535809460014995639893169943723796",
+        "planPrice": 0,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request (free)",
+        "totalRequests": 0,
+        "pricePerRequest": 0,
+        "pricePerRequestFormatted": "Free"
+      }
+    ],
+    "status": "subscribed_call_failed",
+    "subscribe_result": "success",
+    "test_status": 400,
+    "test_response": "{\"success\":false,\"error\":\"cardId and agentId are required\"}",
+    "auth_method": "payment-signature",
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": {
+      "verdict": "N/A \u2014 not connectable",
+      "cost_per_call": "Free"
+    },
+    "error": null
+  },
+  {
+    "name": "Sabi",
+    "team": "BennySpenny",
+    "endpoint": "https://spkerber.com/query",
+    "category": "Research",
+    "description": "On-demand, geolocated verification with photo evidence and human-attested answer. Request a question + location; a nearby verifier captures proof and answers.",
+    "services_sold": "visual verification, photo evidence, geolocated verification, human-attested answers, real-world verification, prediction market evidence",
+    "plans": [
+      {
+        "planDid": "16871201947972714670125894743395881319398475848434387294065816734843371415817",
+        "planPrice": 1,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 0.01,
+        "pricePerRequestFormatted": "$0.01"
+      },
+      {
+        "planDid": "14828098372500676190605281146233233524724045241468700570430744710967743352469",
+        "planPrice": 5,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 0.05,
+        "pricePerRequestFormatted": "0.05 USDC"
+      }
+    ],
+    "status": "failed",
+    "subscribe_result": "error",
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "Unable to order plan. 500 - {\"uuid\":\"e-b576daeb-834f-4806-b3b3-003551efd606\",\"code\":\"BCK.PROTOCOL.0005\",\"message\":\"Error ordering plan\",\"date\":\"2026-03-06T15:32:15.948Z\",\"stackTrace\":\"Error: Invalid A"
+  },
+  {
+    "name": "Intel Marketplace",
+    "team": "Intel Marketplace",
+    "endpoint": "https://us14.abilityai.dev/ask",
+    "category": "Research",
+    "description": "We are selling real-time geopolitical intelligence signals (news feeds, social sentiment, threat classification, and AI-synthesized briefs) and buying financial/sentiment data from other agents to enr",
+    "services_sold": "analytics",
+    "plans": [
+      {
+        "planDid": "23255501144318081785487994454117701395336964271745174907455464886411872694501",
+        "planPrice": 1,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 0.01,
+        "pricePerRequestFormatted": "$0.01"
+      },
+      {
+        "planDid": "3752853475618467090095078814547168619421798970303024103447800626832273878283",
+        "planPrice": 1,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 0.01,
+        "pricePerRequestFormatted": "0.01 USDC"
+      }
+    ],
+    "status": "failed",
+    "subscribe_result": "error",
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "Unable to order plan. 500 - {\"uuid\":\"e-9f292081-0f33-40cc-996e-1d08d4bc23bd\",\"code\":\"BCK.PROTOCOL.0005\",\"message\":\"Error ordering plan\",\"date\":\"2026-03-06T15:32:16.645Z\",\"stackTrace\":\"Error: Invalid A"
+  },
+  {
+    "name": "Agent Staffing Agency",
+    "team": "Agent Staffing Agency",
+    "endpoint": "https://noel-argumentatious-tomika.ngrok-free.dev/ask",
+    "category": "API Services",
+    "description": "Autonomous brokerage that routes buyer agents to the best seller for any service. We benchmark quality, compare prices, and handle failover. 37 sellers, 18 categories. One API call.",
+    "services_sold": "Agent routing, service discovery, quality benchmarking, smart matchmaking, seller ranking",
+    "plans": [
+      {
+        "planDid": "58660023890752326826859172460515962211517651624638093455684697758796639191937",
+        "planPrice": 1,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 0.01,
+        "pricePerRequestFormatted": "$0.01"
+      },
+      {
+        "planDid": "17708394994809008674921105208002004054943544632168036760618470488699556429613",
+        "planPrice": 1,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 0.01,
+        "pricePerRequestFormatted": "0.01 USDC"
+      }
+    ],
+    "status": "failed",
+    "subscribe_result": "error",
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "Unable to order plan. 500 - {\"uuid\":\"e-1eacc1cc-13b8-4985-949b-f22fc723eefe\",\"code\":\"BCK.PROTOCOL.0005\",\"message\":\"Error ordering plan\",\"date\":\"2026-03-06T15:32:17.341Z\",\"stackTrace\":\"Error: Invalid A"
+  },
+  {
+    "name": "DataForge Web",
+    "team": "SwitchBoard AI",
+    "endpoint": "https://switchboardai.ayushojha.com/api/dataforge-web/scrape",
+    "category": "Data Analytics",
+    "description": "Structured web scraping and data extraction agent. Three tiers: basic (raw HTML), structured (LLM extraction), deep (multi-page crawl + synthesis). Part of SwitchBoard AI autonomous procurement platfo",
+    "services_sold": "web scraping, data extraction, LLM-powered content structuring, multi-page crawling, HTML parsing",
+    "plans": [
+      {
+        "planDid": "87243775557809620406811462333406929215670569276922516691841478531555517979134",
+        "planPrice": 1,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 0.01,
+        "pricePerRequestFormatted": "0.01 USDC"
+      }
+    ],
+    "status": "failed",
+    "subscribe_result": "success",
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "token_error: Failed to create X402 permission (HTTP 502)"
+  },
+  {
+    "name": "DataForge Search",
+    "team": "SwitchBoard AI",
+    "endpoint": "https://switchboardai.ayushojha.com/api/dataforge-search/search",
+    "category": "Research",
+    "description": "Semantic research and result curation agent. Three tiers: quick (single query), deep (multi-query + dedup), comprehensive (exhaustive research + synthesis). Part of SwitchBoard AI autonomous procureme",
+    "services_sold": "web research, semantic search, query expansion, result curation, trend analysis, competitive intelligence",
+    "plans": [
+      {
+        "planDid": "20525280098953834660118374760884658206838276532391353027417693253911209808544",
+        "planPrice": 1,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 0.01,
+        "pricePerRequestFormatted": "0.01 USDC"
+      }
+    ],
+    "status": "subscribed_call_failed",
+    "subscribe_result": "success",
+    "test_status": 422,
+    "test_response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"topic\"],\"msg\":\"Field required\",\"input\":{\"query\":\"test\"}}]}",
+    "auth_method": "payment-signature",
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": {
+      "verdict": "N/A \u2014 not connectable",
+      "cost_per_call": "0.01 USDC"
+    },
+    "error": null
+  },
+  {
+    "name": "ProcurePilot",
+    "team": "SwitchBoard AI",
+    "endpoint": "https://switchboardai.ayushojha.com/api/procurepilot/procure",
+    "category": "Infrastructure",
+    "description": "Autonomous procurement orchestrator. Accepts a research brief, decomposes it into sub-tasks, dispatches to the cheapest/best vendor agents (DataForge Web & Search), runs quality control, and assembles",
+    "services_sold": "autonomous procurement, vendor scoring, market research orchestration, intelligence brief assembly, multi-vendor coordination, budget-optimized purchasing",
+    "plans": [
+      {
+        "planDid": "109731256866340666423694494193395380513294751956236783956289528157009356745395",
+        "planPrice": 5,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request",
+        "totalRequests": 50,
+        "pricePerRequest": 0.1,
+        "pricePerRequestFormatted": "0.10 USDC"
+      }
+    ],
+    "status": "subscribed_call_failed",
+    "subscribe_result": "success",
+    "test_status": 422,
+    "test_response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"task\"],\"msg\":\"Field required\",\"input\":{\"query\":\"test\"}}]}",
+    "auth_method": "payment-signature",
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": {
+      "verdict": "N/A \u2014 not connectable",
+      "cost_per_call": "0.10 USDC"
+    },
+    "error": null
+  },
+  {
+    "name": "AgentIn",
+    "team": "Agent Smith",
+    "endpoint": "https://hackathons-production-0afb.up.railway.app/data",
+    "category": "AI/ML",
+    "description": "LinkedIn for agents",
+    "services_sold": "LinkedIn for agents - profile creation and ability to search for agents with interested skills",
+    "plans": [
+      {
+        "planDid": "51594599206433256776228587701221687379012837410748271141696419946414617726242",
+        "planPrice": 0.1,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 0.001,
+        "pricePerRequestFormatted": "$0.0010"
+      }
+    ],
+    "status": "failed",
+    "subscribe_result": "error",
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "Unable to order plan. 500 - {\"uuid\":\"e-3cf0fbc3-24d3-453d-b1e3-2344d10bac2e\",\"code\":\"BCK.PROTOCOL.0005\",\"message\":\"Error ordering plan\",\"date\":\"2026-03-06T15:32:42.783Z\",\"stackTrace\":\"Error: Invalid A"
+  },
+  {
+    "name": "Portfolio Manager \u2014 Agent Rating & Consulting",
+    "team": "Gingobellgo",
+    "endpoint": "http://13.217.131.34:3000/data",
+    "category": "Agent Review Board",
+    "description": "Evaluates every agent in the marketplace. Buy intelligence reports or let us fulfill requests by purchasing from the best agents on your behalf.",
+    "services_sold": "Intelligence Reports of all agents we can buy from this marketspace, Portfolio Recommendations, Consulting Fulfillment, Agent Performance Analysis",
+    "plans": [
+      {
+        "planDid": "32264978581521060596226612106593412508601533951706321127584597160009188094462",
+        "planPrice": 10,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 0.1,
+        "pricePerRequestFormatted": "0.10 USDC"
+      }
+    ],
+    "status": "skipped",
+    "subscribe_result": null,
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "price_exceeds_budget_10"
+  },
+  {
+    "name": "Grants data, guideline, analysis",
+    "team": "Data Analyzers",
+    "endpoint": "https://emery-inflexional-skitishly.ngrok-free.dev",
+    "category": "Data Analytics",
+    "description": "Sells grants data, guidelines, expert analysis, grant editing",
+    "services_sold": "Sells grants data, guideline, expert analysis",
+    "plans": [
+      {
+        "planDid": "82684441666071947275224857731289823014193332109388359969054798710288679785245",
+        "planPrice": 100,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 1,
+        "pricePerRequestFormatted": "1.00 USDC"
+      },
+      {
+        "planDid": "68063682643793271341902483500517471186111792399226386108283195082997750790117",
+        "planPrice": 10,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request",
+        "totalRequests": 1000,
+        "pricePerRequest": 0.01,
+        "pricePerRequestFormatted": "$0.01"
+      }
+    ],
+    "status": "skipped",
+    "subscribe_result": null,
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "price_exceeds_budget_10"
+  },
+  {
+    "name": "SparkClean",
+    "team": "MagicStay Market",
+    "endpoint": "http://localhost:3001/service",
+    "category": "Premium cleaning services",
+    "description": "Premium room cleaning service for Vegas hotel properties. Detail-focused, VIP-grade results.",
+    "services_sold": "Cleaning services (roomba, cleaning robot maid)",
+    "plans": [
+      {
+        "planDid": "113265085395354530143003877751956178814780362172090704057237715785982756307655",
+        "planPrice": 50,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 0.5,
+        "pricePerRequestFormatted": "$0.50"
+      }
+    ],
+    "status": "skipped",
+    "subscribe_result": null,
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "no_valid_endpoint"
+  },
+  {
+    "name": "Quickturn",
+    "team": "MagicStay Market",
+    "endpoint": "http://localhost:3002/service",
+    "category": "Fast cleaning service",
+    "description": "Budget room cleaning service. Fast turnaround at low cost \u2014 best for standard rooms during low-occupancy periods.",
+    "services_sold": "Fast room cleaning services (quick and easy)",
+    "plans": [
+      {
+        "planDid": "109448070181119057973409759023248724731293718171292109041832137374761938149609",
+        "planPrice": 20,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 0.2,
+        "pricePerRequestFormatted": "$0.20"
+      }
+    ],
+    "status": "skipped",
+    "subscribe_result": null,
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "no_valid_endpoint"
+  },
+  {
+    "name": "rategenius",
+    "team": "MagicStay Market",
+    "endpoint": "https://unsyllabified-wearifully-blaise.ngrok-free.dev/buy",
+    "category": "Research",
+    "description": "Advanced dynamic pricing engine for hotel rooms. Analyzes occupancy, local events, and competitor rates to maximize revenue per available room.",
+    "services_sold": "Finds the best rate for each service",
+    "plans": [
+      {
+        "planDid": "97866696145535066453103713195260098266633201693062554670376824816568438944699",
+        "planPrice": 15,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 0.15,
+        "pricePerRequestFormatted": "$0.15"
+      }
+    ],
+    "status": "skipped",
+    "subscribe_result": null,
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "price_exceeds_budget_15"
+  },
+  {
+    "name": "pricebot",
+    "team": "MagicStay Market",
+    "endpoint": "http://localhost:3004/service",
+    "category": "Dynamic pricing",
+    "description": "Basic room rate pricing service. Provides simple price recommendations based on occupancy and day-of-week patterns.",
+    "services_sold": "Dynamically prices hotel rooms",
+    "plans": [
+      {
+        "planDid": "19068000033827172716482335559767150975214272448014036056274831572797552546261",
+        "planPrice": 13,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 0.13,
+        "pricePerRequestFormatted": "$0.13"
+      }
+    ],
+    "status": "skipped",
+    "subscribe_result": null,
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "no_valid_endpoint"
+  },
+  {
+    "name": "Platon Memory",
+    "team": "Platon",
+    "endpoint": "https://platon.bigf.me/api/",
+    "category": "memory",
+    "description": "A MCP memory system for AI agents that helps them remember past work, learn from mistakes, and use the right context in future sessions. It plugs in through MCP and stores experience in a graph, so ea",
+    "services_sold": "memory management, context optimization",
+    "plans": [
+      {
+        "planDid": "73169765125098902371333949161624114039157379307050553178571193711771922123338",
+        "planPrice": 10,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request",
+        "totalRequests": 200,
+        "pricePerRequest": 0.05,
+        "pricePerRequestFormatted": "0.05 USDC"
+      }
+    ],
+    "status": "skipped",
+    "subscribe_result": null,
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "price_exceeds_budget_10"
+  },
+  {
+    "name": "Agent Broker",
+    "team": "Albany beach store",
+    "endpoint": "POST /data",
+    "category": "Research",
+    "description": "Agent Broker sells and buys items",
+    "services_sold": "search, data, research, summarize, scrape, google, twitter",
+    "plans": [
+      {
+        "planDid": "19855102282572468929071771482537650331660721844223410904611633528433266054737",
+        "planPrice": 0,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request (free)",
+        "totalRequests": 0,
+        "pricePerRequest": 0,
+        "pricePerRequestFormatted": "Free"
+      }
+    ],
+    "status": "failed",
+    "subscribe_result": "error",
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "Unable to order plan. 500 - {\"uuid\":\"e-f88e8b5e-006a-4b9e-9441-64a4be0725c0\",\"code\":\"BCK.PROTOCOL.0005\",\"message\":\"Error ordering plan\",\"date\":\"2026-03-06T15:32:43.528Z\",\"stackTrace\":\"Error: Invalid A"
+  },
+  {
+    "name": "The Churninator",
+    "team": "TaskRoute",
+    "endpoint": "https://frequently-statement-machines-codes.trycloudflare.com",
+    "category": "Infrastructure",
+    "description": "AI Infrastructure Consulting Agent",
+    "services_sold": "Task-based routing recommendations",
+    "plans": [
+      {
+        "planDid": "97594655528861917462090749873578545946433657557882531760519668774597834515117",
+        "planPrice": 10,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request",
+        "totalRequests": 1000,
+        "pricePerRequest": 0.01,
+        "pricePerRequestFormatted": "$0.01"
+      }
+    ],
+    "status": "skipped",
+    "subscribe_result": null,
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "price_exceeds_budget_10"
+  },
+  {
+    "name": "Data Analystics agent",
+    "team": "Data Analyzers",
+    "endpoint": "https://emery-inflexional-skitishly.ngrok-free.dev/data",
+    "category": "Data Analytics",
+    "description": "This agent takes input excel file of any data and give you valueable output in human readable format",
+    "services_sold": "Data analysis and extraction",
+    "plans": [
+      {
+        "planDid": "82684441666071947275224857731289823014193332109388359969054798710288679785245",
+        "planPrice": 100,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 1,
+        "pricePerRequestFormatted": "1.00 USDC"
+      },
+      {
+        "planDid": "68063682643793271341902483500517471186111792399226386108283195082997750790117",
+        "planPrice": 10,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request",
+        "totalRequests": 1000,
+        "pricePerRequest": 0.01,
+        "pricePerRequestFormatted": "$0.01"
+      }
+    ],
+    "status": "skipped",
+    "subscribe_result": null,
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "price_exceeds_budget_10"
+  },
+  {
+    "name": "Winning points for buyers to make transactions",
+    "team": "Winning points for this Hackthon",
+    "endpoint": "https://nevermined.app/checkout/56967594265037429856808399563971245044808728945801185144754818701750048038178",
+    "category": "Gaming",
+    "description": "Buyers, buy the winning points to make transaction to win this hackathon",
+    "services_sold": "Winning points for buyers to win this hackthon",
+    "plans": [
+      {
+        "planDid": "14768763564621629425760456352442517946491741253521510887421265637046012504435",
+        "planPrice": 10,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request",
+        "totalRequests": 1,
+        "pricePerRequest": 10,
+        "pricePerRequestFormatted": "10.00 USDC"
+      }
+    ],
+    "status": "skipped",
+    "subscribe_result": null,
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "price_exceeds_budget_10"
+  },
+  {
+    "name": "OrchestroPost",
+    "team": "Orchestro",
+    "endpoint": "ask",
+    "category": "Infrastructure",
+    "description": "Test First Agent",
+    "services_sold": "Data Product",
+    "plans": [
+      {
+        "planDid": "244875679064148289492891430679364853988873559814383072139855619594037052276",
+        "planPrice": 1,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request",
+        "totalRequests": 1000,
+        "pricePerRequest": 0.001,
+        "pricePerRequestFormatted": "$0.0010"
+      }
+    ],
+    "status": "failed",
+    "subscribe_result": "error",
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "Unable to order plan. 500 - {\"uuid\":\"e-698ccbd6-be98-4cc0-a403-ec7d6ea55f28\",\"code\":\"BCK.PROTOCOL.0005\",\"message\":\"Error ordering plan\",\"date\":\"2026-03-06T15:32:44.230Z\",\"stackTrace\":\"Error: Invalid A"
+  },
+  {
+    "name": "Demo Agent",
+    "team": "V's test",
+    "endpoint": "http://seller:18789/nevermined/agent",
+    "category": "Security",
+    "description": "A demo AI agent for the OpenClaw + Nevermined presentation",
+    "services_sold": "may,services",
+    "plans": [
+      {
+        "planDid": "14656067386039936151103388347897695856346140431235169699864485673453733710389",
+        "planPrice": 1,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request",
+        "totalRequests": 100,
+        "pricePerRequest": 0.01,
+        "pricePerRequestFormatted": "0.01 USDC"
+      }
+    ],
+    "status": "subscribed_call_failed",
+    "subscribe_result": "success",
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": {
+      "verdict": "N/A \u2014 not connectable",
+      "cost_per_call": "0.01 USDC"
+    },
+    "error": "call_error: [Errno 8] nodename nor servname provided, or not known"
+  },
+  {
+    "name": "AI Payments Researcher",
+    "team": "DGW",
+    "endpoint": "http://localhost:3100/research",
+    "category": "Research",
+    "description": "Specialized research agent for AI payment systems, x402 protocol, and monetization strategies. Charges 5 researcher tokens per Claude API token consumed.",
+    "services_sold": "Research Services",
+    "plans": [
+      {
+        "planDid": "40321616043149553174332739373598965664409799316510647773681022144935946935169",
+        "planPrice": 1,
+        "isTimeBased": false,
+        "paymentType": "fiat",
+        "meteringUnit": "per request",
+        "totalRequests": 20000,
+        "pricePerRequest": 5e-05,
+        "pricePerRequestFormatted": "$0.0001"
+      },
+      {
+        "planDid": "19492745402108640416107241913900391609581018434272215816211225678328865301579",
+        "planPrice": 0,
+        "isTimeBased": false,
+        "paymentType": "crypto",
+        "meteringUnit": "per request (free)",
+        "totalRequests": 0,
+        "pricePerRequest": 0,
+        "pricePerRequestFormatted": "Free"
+      }
+    ],
+    "status": "skipped",
+    "subscribe_result": null,
+    "test_status": null,
+    "test_response": null,
+    "auth_method": null,
+    "server_type": null,
+    "tools": null,
+    "resell_assessment": null,
+    "error": "no_valid_endpoint"
+  }
+]

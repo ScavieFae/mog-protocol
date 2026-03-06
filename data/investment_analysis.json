@@ -1,0 +1,132 @@
+[
+  {
+    "name": "AI Landing Page Builder",
+    "team": "BaseLayer",
+    "endpoint": "http://54.183.4.35:9040",
+    "plan_price": 10,
+    "subscribe": "error: Unable to order plan. 500 - {\"uuid\":\"e-03e86f14-e8f6-46ac-9cbb-9e16a4adbd5f\",\"code\":\"BCK.PROTOCOL.0005\",\"message\":\"Error ordering plan\",\"date\":\"2026-0",
+    "token": null,
+    "test_results": [],
+    "server_type": null,
+    "tools": null,
+    "overall_status": "failed_subscribe",
+    "resell_analysis": null
+  },
+  {
+    "name": "Portfolio Manager",
+    "team": "Gingobellgo",
+    "endpoint": "http://13.217.131.34:3000/data",
+    "plan_price": 10,
+    "subscribe": "already_subscribed",
+    "token": "obtained",
+    "test_results": [
+      {
+        "payload": "tools/list",
+        "auth": "payment-signature",
+        "status": 422,
+        "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"query\"],\"msg\":\"Field required\",\"input\":{\"jsonrpc\":\"2.0\",\"method\":\"tools/list\",\"params\":{},\"id\":1}}]}"
+      },
+      {
+        "payload": "rest_query",
+        "auth": "payment-signature",
+        "status": 500,
+        "response": "{\"error\":\"Internal server error\"}"
+      }
+    ],
+    "server_type": null,
+    "tools": null,
+    "overall_status": "subscribed_call_failed",
+    "resell_analysis": null
+  },
+  {
+    "name": "Grants data",
+    "team": "Data Analyzers",
+    "endpoint": "https://emery-inflexional-skitishly.ngrok-free.dev",
+    "plan_price": 10,
+    "subscribe": "error: Unable to order plan. 500 - {\"uuid\":\"e-a03ee1c6-1169-423e-abaf-468bc14363d5\",\"code\":\"BCK.PROTOCOL.0005\",\"message\":\"Error ordering plan\",\"date\":\"2026-0",
+    "token": null,
+    "test_results": [],
+    "server_type": null,
+    "tools": null,
+    "overall_status": "failed_subscribe",
+    "resell_analysis": null
+  },
+  {
+    "name": "rategenius",
+    "team": "MagicStay Market",
+    "endpoint": "https://unsyllabified-wearifully-blaise.ngrok-free.dev/buy",
+    "plan_price": 15,
+    "subscribe": "error: Unable to order plan. 500 - {\"uuid\":\"e-194ba56f-3519-4994-a877-865bf781b705\",\"code\":\"BCK.PROTOCOL.0005\",\"message\":\"Error ordering plan\",\"date\":\"2026-0",
+    "token": null,
+    "test_results": [],
+    "server_type": null,
+    "tools": null,
+    "overall_status": "failed_subscribe",
+    "resell_analysis": null
+  },
+  {
+    "name": "Platon Memory",
+    "team": "Platon",
+    "endpoint": "https://platon.bigf.me/api/",
+    "plan_price": 10,
+    "subscribe": "already_subscribed",
+    "token": "obtained",
+    "test_results": [
+      {
+        "payload": "tools/list",
+        "auth": "payment-signature",
+        "status": 404,
+        "response": "{\"message\":\"Route POST:/ not found\",\"error\":\"Not Found\",\"statusCode\":404}"
+      },
+      {
+        "payload": "rest_query",
+        "auth": "payment-signature",
+        "status": 404,
+        "response": "{\"message\":\"Route POST:/ not found\",\"error\":\"Not Found\",\"statusCode\":404}"
+      }
+    ],
+    "server_type": null,
+    "tools": null,
+    "overall_status": "subscribed_call_failed",
+    "resell_analysis": null
+  },
+  {
+    "name": "The Churninator",
+    "team": "TaskRoute",
+    "endpoint": "https://frequently-statement-machines-codes.trycloudflare.com",
+    "plan_price": 10,
+    "subscribe": "error: Unable to order plan. 500 - {\"uuid\":\"e-556e1e90-1932-4291-b118-506db4e89618\",\"code\":\"BCK.PROTOCOL.0005\",\"message\":\"Error ordering plan\",\"date\":\"2026-0",
+    "token": null,
+    "test_results": [],
+    "server_type": null,
+    "tools": null,
+    "overall_status": "failed_subscribe",
+    "resell_analysis": null
+  },
+  {
+    "name": "Data Analytics agent",
+    "team": "Data Analyzers",
+    "endpoint": "https://emery-inflexional-skitishly.ngrok-free.dev/data",
+    "plan_price": 10,
+    "subscribe": "error: Unable to order plan. 500 - {\"uuid\":\"e-87ad1961-b103-4962-b43a-72fde5889ef0\",\"code\":\"BCK.PROTOCOL.0005\",\"message\":\"Error ordering plan\",\"date\":\"2026-0",
+    "token": null,
+    "test_results": [],
+    "server_type": null,
+    "tools": null,
+    "overall_status": "failed_subscribe",
+    "resell_analysis": null
+  },
+  {
+    "name": "Winning points",
+    "team": "Winning points for this Hackthon",
+    "endpoint": "https://nevermined.app/checkout/56967594265037429856808399563971245044808728945801185144754818701750048038178",
+    "plan_price": 10,
+    "subscribe": "error: Unable to order plan. 500 - {\"uuid\":\"e-33334076-2d7d-4704-87b8-4a07bd2ce8df\",\"code\":\"BCK.PROTOCOL.0005\",\"message\":\"Error ordering plan\",\"date\":\"2026-0",
+    "token": null,
+    "test_results": [],
+    "server_type": null,
+    "tools": null,
+    "overall_status": "failed_subscribe",
+    "resell_analysis": null
+  }
+]
