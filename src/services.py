@@ -421,6 +421,12 @@ def _newton_math(operation: str, expression: str) -> str:
     return json.dumps(data)
 
 
+def _qr_code(data: str, size: str = "150x150", format: str = "png") -> str:
+    encoded_data = urllib.parse.quote(data)
+    url = f"https://api.qrserver.com/v1/create-qr-code/?size={size}&data={encoded_data}&format={format}"
+    return json.dumps({"qr_url": url, "data": data, "size": size, "format": format})
+
+
 def _random_user(count: int = 1, nationality: str = "") -> str:
     count = max(1, min(count, 10))
     url = f"https://randomuser.me/api/?results={count}"
@@ -590,4 +596,14 @@ catalog.register(
     example_params={"operation": "simplify", "expression": "2^2+2(2)"},
     provider="mog-protocol",
     handler=_newton_math,
+)
+
+catalog.register(
+    service_id="qr_code",
+    name="QR Code Generator",
+    description="Generate QR codes for any text or URL. Returns a direct URL to the QR code image. Supports PNG, SVG, and EPS formats. Free, no API key.",
+    price_credits=1,
+    example_params={"data": "https://example.com", "size": "200x200"},
+    provider="mog-protocol",
+    handler=_qr_code,
 )
