@@ -20,7 +20,7 @@ from src.agents.tools import execute_tool
 MODEL = os.getenv("MOG_AGENT_MODEL", "claude-haiku-4-5-20251001")
 COMPACTION_MODEL = os.getenv("MOG_COMPACTION_MODEL", "claude-haiku-4-5-20251001")
 MAX_RECENT_TURNS = int(os.getenv("MOG_MAX_RECENT_TURNS", "8"))  # Keep last N exchanges in full
-MAX_TOOL_ROUNDS = int(os.getenv("MOG_MAX_TOOL_ROUNDS", "5"))
+MAX_TOOL_ROUNDS = int(os.getenv("MOG_MAX_TOOL_ROUNDS", "8"))
 COMPACT_AFTER = int(os.getenv("MOG_COMPACT_AFTER", "16"))  # Compact when conversation exceeds this
 
 
@@ -142,10 +142,21 @@ class Agent:
 
     def _compact(self) -> None:
         """Compact old conversation into a memory summary, keep recent turns."""
-        # Split: old messages to compact, recent to keep
-        keep_count = MAX_RECENT_TURNS * 2  # user+assistant pairs
-        old_msgs = self.messages[:-keep_count]
-        recent_msgs = self.messages[-keep_count:]
+        # Find a clean cut point — must be a regular user text message (not tool_results)
+        # so the remaining conversation is valid for the Anthropic API.
+        target = max(0, len(self.messages) - MAX_RECENT_TURNS * 2)
+        cut_point = target
+        while cut_point < len(self.messages):
+            msg = self.messages[cut_point]
+            if msg.get("role") == "user" and isinstance(msg.get("content"), str):
+                break
+            cut_point += 1
+
+        if cut_point >= len(self.messages) - 2:
+            return  # Can't find clean boundary, skip compaction
+
+        old_msgs = self.messages[:cut_point]
+        recent_msgs = self.messages[cut_point:]
 
         if not old_msgs:
             return
