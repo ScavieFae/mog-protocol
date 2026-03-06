@@ -24,26 +24,34 @@ export function Ticker({ services }: TickerProps) {
       >
         {items.map((s, i) => {
           const trend = s.surge_signals?.trend
+          const surging = s.surge_multiplier && s.surge_multiplier > 1
+          const hotSurge = s.surge_multiplier && s.surge_multiplier > 1.5
           return (
-            <span key={`${s.service_id}-${i}`} className="inline-flex items-center gap-3 text-lg">
-              <span className="font-sans text-stone">{s.name}</span>
-              <span className="font-mono text-copper font-medium text-xl">
+            <span
+              key={`${s.service_id}-${i}`}
+              className={`inline-flex items-center gap-3 text-lg ${surging ? "px-3 py-1 rounded-lg" : ""}`}
+              style={surging ? {
+                backgroundColor: hotSurge ? "#C47A7A12" : "#C5A86210",
+              } : undefined}
+            >
+              <span className={`font-sans ${surging ? "text-charcoal font-medium" : "text-stone"}`}>{s.name}</span>
+              <span className={`font-mono font-medium text-xl ${hotSurge ? "text-rose" : surging ? "text-gold" : "text-copper"}`}>
                 {s.current_price != null
                   ? `${s.current_price}cr`
-                  : s.surge_multiplier && s.surge_multiplier > 1
-                  ? `${Math.round(s.price_credits * s.surge_multiplier)}cr`
+                  : surging
+                  ? `${Math.round(s.price_credits * s.surge_multiplier!)}cr`
                   : `${s.price_credits}cr`}
               </span>
-              {s.surge_multiplier && s.surge_multiplier > 1 && (
-                <span className="font-mono text-rose text-base animate-pulse-copper">
-                  {s.surge_multiplier.toFixed(1)}x
+              {surging && (
+                <span className={`font-mono font-bold text-base animate-pulse-copper ${hotSurge ? "text-rose" : "text-gold"}`}>
+                  {s.surge_multiplier!.toFixed(1)}x
                 </span>
               )}
               {trend === "rising" && (
-                <span className="text-rose text-base leading-none" title="rising">↑</span>
+                <span className="text-rose text-lg font-bold leading-none" title="rising">↑</span>
               )}
               {trend === "falling" && (
-                <span className="text-sage text-base leading-none" title="falling">↓</span>
+                <span className="text-sage text-lg leading-none" title="falling">↓</span>
               )}
               <span className="text-stone/30 text-xl">|</span>
             </span>

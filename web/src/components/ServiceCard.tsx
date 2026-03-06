@@ -85,8 +85,11 @@ export function ServiceCard({ service, evaluation, onClick }: ServiceCardProps) 
       </AnimatePresence>
 
       <div
-        className={`rounded-xl p-4 border bg-white/60 hover:bg-white/80 transition-all ${flash ? "animate-shimmer" : ""}`}
-        style={{ borderColor: `${color}30` }}
+        className={`rounded-xl p-4 border hover:bg-white/80 transition-all ${flash ? "animate-shimmer" : ""} ${surge > 1.5 ? "bg-rose/5" : surge > 1.1 ? "bg-gold/5" : "bg-white/60"}`}
+        style={{
+          borderColor: surge > 1.5 ? "#C47A7A50" : surge > 1.1 ? "#C5A86240" : `${color}30`,
+          boxShadow: surge > 1.5 ? "0 0 12px #C47A7A20" : surge > 1.1 ? "0 0 8px #C5A86215" : undefined,
+        }}
       >
         {/* Header */}
         <div className="flex items-start justify-between mb-2">
@@ -101,14 +104,21 @@ export function ServiceCard({ service, evaluation, onClick }: ServiceCardProps) 
 
         {/* Price + Surge + Supervisor */}
         <div className="flex items-center gap-2 mb-3">
-          <span className="font-mono text-lg text-copper">
+          <span className={`font-mono font-medium ${surge > 1.5 ? "text-rose text-xl" : surge > 1.1 ? "text-gold text-xl" : "text-copper text-lg"}`}>
             {service.current_price ?? service.price_credits}cr
           </span>
           {surge > 1.1 && (
-            <span className="font-mono text-xs px-1.5 py-0.5 rounded-full animate-pulse-copper"
-              style={{ backgroundColor: `${surge > 1.5 ? "#C47A7A" : "#C5A862"}20`, color: surge > 1.5 ? "#C47A7A" : "#C5A862" }}>
-              {surge.toFixed(1)}x
-            </span>
+            <motion.span
+              className="font-mono text-xs font-bold px-2 py-0.5 rounded-full animate-pulse-copper"
+              style={{
+                backgroundColor: surge > 1.5 ? "#C47A7A30" : "#C5A86230",
+                color: surge > 1.5 ? "#C47A7A" : "#C5A862",
+              }}
+              animate={{ scale: [1, 1.08, 1] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+            >
+              {surge.toFixed(1)}x SURGE
+            </motion.span>
           )}
           {evaluation && (() => {
             const badge = SUPERVISOR_BADGES[evaluation.status]
