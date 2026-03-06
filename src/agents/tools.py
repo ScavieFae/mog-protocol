@@ -505,6 +505,168 @@ def _discover_sellers(agent_name: str, **kwargs) -> str:
         return json.dumps({"error": str(e)[:200]})
 
 
+def _scout_exa(query: str, focus: str = "api", max_results: int = 5, **kwargs) -> str:
+    """Exa-powered API discovery — finds wrappable APIs matching a demand signal.
+
+    Focus modes:
+      - api: free/cheap REST APIs with public endpoints
+      - mcp: existing MCP servers we could resell
+      - competitor: what other teams are building
+    """
+    if not EXA_API_KEY:
+        return json.dumps({"error": "EXA_API_KEY not set"})
+
+    focus_prompts = {
+        "api": f"free REST API {query} JSON endpoint no auth",
+        "mcp": f"MCP server {query} tool github",
+        "competitor": f"hackathon agent marketplace {query} API",
+    }
+    search_query = focus_prompts.get(focus, focus_prompts["api"])
+
+    try:
+        import exa_py
+        client = exa_py.Exa(api_key=EXA_API_KEY)
+        result = client.search_and_contents(search_query, num_results=max_results, text=True)
+        apis = []
+        for r in result.results:
+            text = (r.text or "")[:600]
+            # Try to extract useful signals
+            has_endpoint = any(kw in text.lower() for kw in ["endpoint", "/api/", "curl", "GET ", "POST "])
+            has_free = any(kw in text.lower() for kw in ["free", "no auth", "open", "public", "no key"])
+            apis.append({
+                "title": r.title,
+                "url": r.url,
+                "snippet": text[:300],
+                "signals": {
+                    "has_endpoint": has_endpoint,
+                    "likely_free": has_free,
+                },
+            })
+        return json.dumps({
+            "query": query,
+            "focus": focus,
+            "results": apis,
+            "recommendation": "Look for results with has_endpoint=true and likely_free=true for easy wraps.",
+        }, indent=2)
+    except Exception as e:
+        return json.dumps({"error": str(e)})
+
+
+def _scout_apify(query: str = "", category: str = "", max_results: int = 5, **kwargs) -> str:
+    """Search Apify's actor store for wrappable actors.
+
+    Apify actors are pre-built scrapers/automations that can be called via REST API.
+    Each actor has a run endpoint: POST https://api.apify.com/v2/acts/{actorId}/runs
+    We can wrap these as marketplace services with zero code.
+    """
+    try:
+        import httpx
+        # Apify store search API (public, no auth needed for discovery)
+        params = {"limit": max_results}
+        if query:
+            params["search"] = query
+        if category:
+            params["category"] = category
+
+        resp = httpx.get(
+            "https://api.apify.com/v2/store",
+            params=params,
+            timeout=10,
+        )
+        if resp.status_code != 200:
+            return json.dumps({"error": f"Apify store returned {resp.status_code}"})
+
+        data = resp.json().get("data", {}).get("items", [])
+        actors = []
+        for item in data[:max_results]:
+            actors.append({
+                "actor_id": item.get("id", ""),
+                "name": item.get("name", ""),
+                "title": item.get("title", ""),
+                "description": (item.get("description") or "")[:200],
+                "username": item.get("username", ""),
+                "stats": {
+                    "total_runs": item.get("stats", {}).get("totalRuns", 0),
+                    "total_users": item.get("stats", {}).get("totalUsers", 0),
+                },
+                "is_free": item.get("currentPricingInfo", {}).get("pricingModel") == "FREE",
+                "run_endpoint": f"https://api.apify.com/v2/acts/{item.get('username', '')}/{item.get('name', '')}/runs",
+                "wrap_difficulty": "easy" if item.get("currentPricingInfo", {}).get("pricingModel") == "FREE" else "medium",
+            })
+
+        return json.dumps({
+            "query": query or "(trending)",
+            "actors_found": len(actors),
+            "actors": actors,
+            "recommendation": "Free actors with high total_runs are best candidates. Wrap via POST to run_endpoint with APIFY_API_TOKEN.",
+        }, indent=2)
+    except Exception as e:
+        return json.dumps({"error": str(e)})
+
+
+def _scout_trustnet(**kwargs) -> str:
+    """Scan Trust-Net for hackathon participant data and purchasing signals.
+
+    Returns all registered agents with trust scores, then analyzes:
+    - Which agents are active buyers (high transaction counts)
+    - Which services are getting reviews (demand signal)
+    - Arbitrage candidates: services with high trust but no Mog equivalent
+    """
+    try:
+        import httpx
+
+        # Get all agents from trust-net
+        resp = httpx.post(
+            "https://trust-net-mcp.rikenshah-02.workers.dev/mcp",
+            json={
+                "jsonrpc": "2.0",
+                "method": "tools/call",
+                "params": {"name": "list_agents", "arguments": {}},
+                "id": 1,
+            },
+            headers={"Content-Type": "application/json"},
+            timeout=15,
+        )
+
+        if resp.status_code != 200:
+            return json.dumps({"error": f"Trust-Net returned {resp.status_code}"})
+
+        result = resp.json()
+        # Parse the MCP response
+        content = result.get("result", {}).get("content", [])
+        agents_text = ""
+        for c in content:
+            if c.get("type") == "text":
+                agents_text = c["text"]
+                break
+
+        try:
+            agents_data = json.loads(agents_text)
+        except (json.JSONDecodeError, TypeError):
+            agents_data = agents_text
+
+        # Also check our own catalog to find gaps
+        from src.services import catalog
+        our_services = {s.service_id for s in catalog.services}
+
+        # Analyze the data
+        analysis = {
+            "trust_net_agents": agents_data,
+            "our_service_count": len(our_services),
+            "our_services": list(our_services),
+            "analysis_hints": [
+                "Look for agents with high trust scores — they're validated sellers",
+                "Agents with many reviews have active buyer communities",
+                "Cross-reference their services against our catalog — gaps = arbitrage",
+                "If a competitor has a popular service we don't, propose wrapping it",
+            ],
+        }
+
+        return json.dumps(analysis, indent=2, default=str)
+    except Exception as e:
+        return json.dumps({"error": str(e)})
+
+
 def _check_errors(max_results: int = 10, **kwargs) -> str:
     """Read recent failed buy_and_call events from telemetry."""
     try:
@@ -716,6 +878,36 @@ SCOUT_TOOLS = COMMON_TOOLS + NVM_TOOLS + [
         },
     },
     {
+        "name": "scout_exa",
+        "description": "FIRE WHEN: you have a demand signal or gap to investigate. Targeted Exa search for wrappable APIs — better than search_web for finding specific API endpoints. Focus modes: 'api' (free REST endpoints), 'mcp' (existing MCP servers to resell), 'competitor' (what other teams build).",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "What kind of API/service to find"},
+                "focus": {"type": "string", "enum": ["api", "mcp", "competitor"], "description": "Search focus (default: api)"},
+                "max_results": {"type": "integer", "description": "Max results (default 5)"},
+            },
+            "required": ["query"],
+        },
+    },
+    {
+        "name": "scout_apify",
+        "description": "FIRE WHEN: looking for scrapers, data extraction, or automation services. Searches Apify's actor store for pre-built actors we can wrap as marketplace services with zero code. Free actors = 100% margin.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "What to search for (e.g. 'twitter scraper', 'google maps')"},
+                "category": {"type": "string", "description": "Apify category filter (optional)"},
+                "max_results": {"type": "integer", "description": "Max results (default 5)"},
+            },
+        },
+    },
+    {
+        "name": "scout_trustnet",
+        "description": "FIRE WHEN: evaluating competitors, looking for arbitrage, or scanning purchasing behavior. Fetches all hackathon participants from Trust-Net with trust scores, then cross-references against our catalog to find gaps and arbitrage opportunities.",
+        "input_schema": {"type": "object", "properties": {}, "required": []},
+    },
+    {
         "name": "propose_service",
         "description": "Propose a new API service for the worker to wrap. Max 1 proposal per tick. Max 10 agent services total.",
         "input_schema": {
@@ -848,6 +1040,9 @@ def execute_tool(agent_name: str, tool_name: str, tool_input: dict) -> str:
         "check_marketplace": lambda **kw: _check_marketplace(**kw),
         "send_message": lambda **kw: _send_message(from_agent=agent_name, **kw),
         "search_web": lambda **kw: _search_web(**kw),
+        "scout_exa": lambda **kw: _scout_exa(**kw),
+        "scout_apify": lambda **kw: _scout_apify(**kw),
+        "scout_trustnet": lambda **kw: _scout_trustnet(**kw),
         "propose_service": lambda **kw: _propose_service(**kw),
         "get_proposals": lambda **kw: _get_proposals(**kw),
         "register_service": lambda **kw: _register_service(**kw),
