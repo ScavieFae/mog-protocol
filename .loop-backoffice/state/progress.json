@@ -1,19 +1,19 @@
 {
-  "brief": "backoffice-001-initial-scout",
-  "brief_file": ".loop-backoffice/briefs/backoffice-001-initial-scout.md",
+  "brief": "backoffice-003-wrap-ip-api",
+  "brief_file": ".loop-backoffice/briefs/backoffice-003-wrap-ip-api.md",
   "iteration": 1,
-  "status": "running",
+  "status": "complete",
   "tasks_completed": [
-    "task-1: Exa search for free APIs useful to AI agents, write scout-001-results.md"
+    "Read api-eval-ip-api.md for context",
+    "Write _ip_geolocation handler in src/services.py using urllib.request",
+    "Add catalog.register for ip_geolocation (1 credit/call)",
+    "Self-test: handler returns valid JSON (country=United States, city=Ashburn) for 8.8.8.8",
+    "Update portfolio.json: ip_geolocation entry with wrapping_cost_credits=3, status=active"
   ],
-  "tasks_remaining": [
-    "task-2: Evaluate top 3 APIs, write api-eval files",
-    "task-3: Update portfolio.json demand_signals"
-  ],
+  "tasks_remaining": [],
   "learnings": [
-    "Open-Meteo: no API key required, free weather forecast, strong wrap candidate",
-    "ip-api.com: no API key required, free geolocation, strong wrap candidate",
-    "E2B: code sandbox, free tier but needs API key from Mattie — defer",
-    "Results written to .loop-backoffice/knowledge/scout-001-results.md"
+    "ip-api.com free tier: HTTP only, 45 req/min, no key needed. Returns status field — must check status=='success' before treating as good result.",
+    "portfolio.json nesting: service entries go inside the 'services' object, not at top level. Easy to mis-place when editing.",
+    "urllib.request.urlopen with timeout=10 is sufficient for simple GET APIs — no new dependencies needed."
   ]
 }

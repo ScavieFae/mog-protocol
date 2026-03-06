@@ -35,6 +35,18 @@
       "discovery_cost_credits": 0,
       "wrapping_cost_credits": 0,
       "status": "active"
+    },
+    "ip_geolocation": {
+      "added_at": "2026-03-05T14:00:00Z",
+      "source": "backoffice-003",
+      "upstream_api": "ip-api.com",
+      "upstream_cost_per_call_usd": 0,
+      "our_price_credits": 1,
+      "total_calls": 0,
+      "total_revenue_credits": 0,
+      "discovery_cost_credits": 0,
+      "wrapping_cost_credits": 3,
+      "status": "active"
     }
   },
   "budget": {
@@ -42,7 +54,7 @@
     "spent_discovery": 0,
     "spent_wrapping": 0,
     "earned_revenue": 12,
-    "current_balance": 93
+    "current_balance": 90
   },
   "demand_signals": []
 }
