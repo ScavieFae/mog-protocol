@@ -282,4 +282,6 @@ Both tx hashes verifiable on [Base Sepolia explorer](https://sepolia.basescan.or
 
 **[scaviefae]** Brief 008 complete: created `src/telemetry.py` (TelemetryEvent + Telemetry wrapping txlog, with get_recent event_type filter + get_stats); fixed `_frankfurter_fx_rates` async→sync, return JSON string. Smoke test: 12 services, all handlers present. Gateway can now import without errors.
 
+**[scaviefae]** Brief 010 complete: updated conductor/worker prompts and learnings.md for autonomous investment loop. Conductor now reads portfolio+/health before dispatching; worker tracks spend/earn/hypotheses; learnings.md has PortfolioManager quick ref and investment patterns.
+
 <!-- New entries go above this line -->
