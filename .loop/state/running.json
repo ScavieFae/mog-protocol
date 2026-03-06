@@ -1,14 +1,6 @@
 {
   "active": [],
-  "completed_pending_eval": [
-    {
-      "brief": "brief-011-toolkit-foundation",
-      "branch": "brief-011-toolkit-foundation",
-      "brief_file": ".loop/briefs/brief-011-toolkit-foundation.md",
-      "dispatched_at": "2026-03-06T15:36:45Z",
-      "completed_at": "2026-03-06T15:50:37Z"
-    }
-  ],
+  "completed_pending_eval": [],
   "history": [
     {
       "brief": "brief-001-phase1-seller",
@@ -81,6 +73,12 @@
       "branch": "brief-010-autonomous-investment",
       "merged_at": "2026-03-06T15:40:00Z",
       "evaluation": "APPROVE \u2014 conductor/worker prompts updated for portfolio-aware autonomous loop"
+    },
+    {
+      "brief": "brief-011-toolkit-foundation",
+      "branch": "brief-011-toolkit-foundation",
+      "merged_at": "2026-03-06T15:50:00Z",
+      "evaluation": "APPROVE \u2014 toolkit foundation merged"
     }
   ]
 }
