@@ -1106,7 +1106,7 @@ def _circle_faucet(wallet_address: str, network: str = "BASE", currency: str = "
             _time.sleep(2)
 
             page_text = page.inner_text("body")
-            if "rate" in page_text.lower() and "limit" in page_text.lower():
+            if "you have exceeded" in page_text.lower() or "too many requests" in page_text.lower():
                 browser.close()
                 return json.dumps({"error": "Rate limited — try again in ~2 hours"})
 
@@ -1140,7 +1140,7 @@ def _circle_faucet(wallet_address: str, network: str = "BASE", currency: str = "
             result_text = page.inner_text("body")[:500]
             browser.close()
 
-        if "rate" in result_text.lower() and "limit" in result_text.lower():
+        if "you have exceeded" in result_text.lower() or "too many requests" in result_text.lower():
             return json.dumps({"error": "Rate limited — try again in ~2 hours"})
 
         return json.dumps({

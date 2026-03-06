@@ -333,4 +333,32 @@ Both tx hashes verifiable on [Base Sepolia explorer](https://sepolia.basescan.or
 
 **Activation:** `MOG_COLONY_ENABLED=true` env var on Railway starts the colony. Model: claude-haiku-4-5 default (configurable via MOG_AGENT_MODEL).
 
+### ~14:30 — Colony Nevermined Integration
+
+**[mattie/scav]** Wired Nevermined transactions into the agent colony. Each agent type gets its own API key AND its own registered Nevermined agent:
+
+| Agent | Role | NVM Agent ID | API Key Env |
+|-------|------|-------------|-------------|
+| Mog Scout | Discovery + exploratory buys | `100226...8289` | `NVM_SCOUT_API_KEY` |
+| Mog Worker | Build + self-buy verification | `76626...0388` | `NVM_WORKER_API_KEY` |
+| Mog Supervisor | Audit + quality buys | `111130...9022` | `NVM_SUPERVISOR_API_KEY` |
+
+All on wallet `0xca67...` — leaderboard accrues to us.
+
+**New agent tools (src/agents/tools.py):**
+- `self_buy(service_id, params)` — buys from our own gateway through Nevermined payment flow (sell-side leaderboard)
+- `explore_seller(team_name)` — discovers + subscribes + tests other teams' services (buy-side leaderboard)
+- `discover_sellers()` — lists all hackathon marketplace sellers
+
+**Each tool call generates REAL Nevermined transactions.** Agents are instructed to do at least one transaction per tick (60s in demo mode).
+
+**Observability:**
+- `/health` → `colony.agents[].recent_actions` shows what each agent did
+- `/health` → `colony.agents[].status` shows idle/working
+- Railway logs show NVM API calls (SSL warnings = transactions happening)
+- `data/colony_state.json` persists colony state across restarts
+- `data/agent_proposals.json` tracks scout→worker proposals
+
+**Live on Railway** with `MOG_COLONY_ENABLED=true`, `MOG_AGENT_TICK_SECONDS=60`.
+
 <!-- New entries go above this line -->
