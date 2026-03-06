@@ -1,5 +1,12 @@
 {
-  "active": [],
+  "active": [
+    {
+      "brief": "backoffice-007-wrap-rest-countries",
+      "branch": "bo/007-wrap-rest-countries",
+      "brief_file": ".loop-backoffice/briefs/backoffice-007-wrap-rest-countries.md",
+      "dispatched_at": "2026-03-06T01:52:12Z"
+    }
+  ],
   "completed_pending_eval": [],
   "history": [
     {
