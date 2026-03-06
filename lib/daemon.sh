@@ -242,7 +242,8 @@ run_worker_iteration() {
 
     cd "$PROJECT_DIR"
 
-    # Checkout brief branch
+    # Clean up any stuck merge state, then checkout brief branch
+    git merge --abort 2>/dev/null || true
     git stash -q 2>/dev/null
     if ! git checkout "$branch" -q 2>/dev/null; then
         if git show-ref --verify --quiet "refs/remotes/${GIT_REMOTE}/$branch" 2>/dev/null; then
@@ -411,6 +412,8 @@ while true; do
 
     # --- Git sync ---
     cd "$PROJECT_DIR"
+    # Clear any stuck merge state before switching branches
+    git merge --abort 2>/dev/null || true
     CURRENT_BRANCH=$(git branch --show-current 2>/dev/null)
     if [ "$CURRENT_BRANCH" != "$GIT_MAIN_BRANCH" ]; then
         daemon_log "GIT CLEANUP: on '$CURRENT_BRANCH', switching to $GIT_MAIN_BRANCH"
