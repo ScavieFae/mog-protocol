@@ -151,52 +151,64 @@ def buy_and_call(service_id: str, params: dict) -> str:
     })
 
 
+class _BuyerCompat:
+    """ASGI wrapper: translates payment-signature → Bearer, defaults Accept header."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http":
+            headers = list(scope.get("headers", []))
+            header_names = {k for k, v in headers}
+
+            if b"accept" not in header_names:
+                headers.append((b"accept", b"application/json"))
+
+            if b"payment-signature" in header_names and b"authorization" not in header_names:
+                sig_value = None
+                new_headers = []
+                for k, v in headers:
+                    if k == b"payment-signature":
+                        sig_value = v
+                    else:
+                        new_headers.append((k, v))
+                if sig_value:
+                    new_headers.append((b"authorization", b"Bearer " + sig_value))
+                    headers = new_headers
+
+            scope = {**scope, "headers": headers}
+
+        await self.app(scope, receive, send)
+
+
 async def main():
     port = int(os.getenv("PORT", os.getenv("GATEWAY_PORT", "4000")))
     print(f"Starting Mog Gateway MCP server on port {port}")
-    result = await mcp.start(port=port)
 
-    # --- Buyer-friendliness: wrap the ASGI app on the uvicorn server ---
-    # Fix two issues that trip up buyers:
-    # 1. Missing Accept header → 406 from MCP transport
-    # 2. payment-signature header instead of Authorization: Bearer → 401
-    # We wrap the app at the uvicorn.Config level so our transform runs
-    # BEFORE FastAPI's dependencies (including PaymentsMCP's auth check).
-    app = mcp._manager._fastapi_app
-    http_server = mcp._manager._http_server
-    if http_server is not None:
-        _inner_app = http_server.config.app
+    # Patch the manager's start to wrap the FastAPI app BEFORE uvicorn launches.
+    _original_start = mcp._manager.start
 
-        class _BuyerCompat:
-            def __init__(self, app):
-                self.app = app
+    async def _patched_start(config):
+        result = await _original_start(config)
+        return result
 
-            async def __call__(self, scope, receive, send):
-                if scope["type"] == "http":
-                    headers = list(scope.get("headers", []))
-                    header_names = {k for k, v in headers}
+    # Instead of patching start (which is complex), we patch uvicorn.Config
+    # to intercept the app before the server binds to it.
+    import uvicorn as _uvicorn
+    _OrigConfig = _uvicorn.Config
 
-                    if b"accept" not in header_names:
-                        headers.append((b"accept", b"application/json"))
+    class _WrappedConfig(_OrigConfig):
+        def __init__(self, app=None, **kwargs):
+            wrapped = _BuyerCompat(app) if app is not None else app
+            super().__init__(app=wrapped, **kwargs)
 
-                    if b"payment-signature" in header_names and b"authorization" not in header_names:
-                        sig_value = None
-                        new_headers = []
-                        for k, v in headers:
-                            if k == b"payment-signature":
-                                sig_value = v
-                            else:
-                                new_headers.append((k, v))
-                        if sig_value:
-                            new_headers.append((b"authorization", b"Bearer " + sig_value))
-                            headers = new_headers
-
-                    scope = {**scope, "headers": headers}
-
-                await self.app(scope, receive, send)
-
-        http_server.config.app = _BuyerCompat(_inner_app)
-        print("Buyer compat layer active (Accept default + payment-signature → Bearer)")
+    _uvicorn.Config = _WrappedConfig
+    try:
+        result = await mcp.start(port=port)
+    finally:
+        _uvicorn.Config = _OrigConfig
+    print("Buyer compat layer active (Accept default + payment-signature → Bearer)")
 
     # Replace the default /health with our richer marketplace health endpoint.
     if app is not None:
