@@ -1,9 +1,17 @@
 {
   "brief": "backoffice-006-wrap-currency-conversion",
   "brief_file": ".loop-backoffice/briefs/backoffice-006-wrap-currency-conversion.md",
-  "iteration": 0,
-  "status": "running",
-  "tasks_completed": [],
+  "iteration": 1,
+  "status": "complete",
+  "tasks_completed": [
+    "read-api-eval",
+    "add-handler-and-catalog-register",
+    "self-test",
+    "update-portfolio"
+  ],
   "tasks_remaining": [],
-  "learnings": []
+  "learnings": [
+    "fawazahmed0/currency-api: CDN-hosted, no key needed, 342 currencies, response structure is data[base][target] for rate",
+    "Self-test passed: USD->EUR 100 = 86.03, live rate confirmed"
+  ]
 }

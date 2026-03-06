@@ -59,6 +59,18 @@
       "discovery_cost_credits": 0,
       "wrapping_cost_credits": 2,
       "status": "active"
+    },
+    "currency_convert": {
+      "added_at": "2026-03-05T16:00:00Z",
+      "source": "backoffice-006",
+      "upstream_api": "cdn.jsdelivr.net/npm/@fawazahmed0/currency-api",
+      "upstream_cost_per_call_usd": 0,
+      "our_price_credits": 1,
+      "total_calls": 0,
+      "total_revenue_credits": 0,
+      "discovery_cost_credits": 0,
+      "wrapping_cost_credits": 2,
+      "status": "active"
     }
   },
   "budget": {
