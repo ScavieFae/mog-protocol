@@ -111,6 +111,28 @@ def _mymemory_translate(text: str, source_lang: str = "en", target_lang: str = "
     return json.dumps({"translated_text": translated, "source": source_lang, "target": target_lang, "original": text})
 
 
+def _currency_convert(from_currency: str = "usd", to_currency: str = "eur", amount: float = 1.0) -> str:
+    from_currency = from_currency.lower()
+    to_currency = to_currency.lower()
+    url = f"https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/{from_currency}.json"
+    try:
+        with urllib.request.urlopen(url, timeout=10) as resp:
+            data = json.loads(resp.read().decode())
+    except Exception as e:
+        return json.dumps({"error": str(e)})
+    rates = data.get(from_currency, {})
+    if to_currency not in rates:
+        return json.dumps({"error": f"Unknown target currency '{to_currency}'"})
+    rate = rates[to_currency]
+    return json.dumps({
+        "from": from_currency,
+        "to": to_currency,
+        "amount": amount,
+        "rate": rate,
+        "converted": round(rate * amount, 6),
+    })
+
+
 _HACKATHON_GUIDE = {
     "quickstart": {
         "title": "Your First Nevermined Transaction (5 min)",
@@ -392,4 +414,14 @@ catalog.register(
     example_params={"text": "Hello world", "source_lang": "en", "target_lang": "es"},
     provider="mog-protocol",
     handler=_mymemory_translate,
+)
+
+catalog.register(
+    service_id="currency_convert",
+    name="Currency Conversion",
+    description="Convert between 342 currencies (fiat and crypto). Real-time exchange rates updated daily. Use for pricing, invoicing, financial calculations, or multi-currency data.",
+    price_credits=1,
+    example_params={"from_currency": "usd", "to_currency": "eur", "amount": 100},
+    provider="mog-protocol",
+    handler=_currency_convert,
 )
