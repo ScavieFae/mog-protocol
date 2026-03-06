@@ -1,13 +1,14 @@
 {
-  "active": [
+  "active": [],
+  "completed_pending_eval": [
     {
       "brief": "brief-009-gateway-revenue",
       "branch": "brief-009-gateway-revenue",
       "brief_file": ".loop/briefs/brief-009-gateway-revenue.md",
-      "dispatched_at": "2026-03-06T11:15:08Z"
+      "dispatched_at": "2026-03-06T11:15:08Z",
+      "completed_at": "2026-03-06T15:22:59Z"
     }
   ],
-  "completed_pending_eval": [],
   "history": [
     {
       "brief": "brief-001-phase1-seller",
