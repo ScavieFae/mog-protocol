@@ -26,8 +26,11 @@ class ServiceCatalog:
             try:
                 import openai
                 self._openai_client = openai.OpenAI(api_key=api_key)
+                print(f"[catalog] OpenAI embeddings enabled")
             except ImportError:
-                pass
+                print(f"[catalog] openai package not installed, using keyword fallback")
+        else:
+            print(f"[catalog] No OPENAI_API_KEY, using keyword fallback")
 
     @property
     def services(self) -> list[ServiceEntry]:
@@ -79,9 +82,12 @@ class ServiceCatalog:
             query_embedding = self._embed(query)
             scored = [(self._cosine(query_embedding, s.embedding), s) for s in candidates]
         else:
-            q = query.lower()
+            q_words = query.lower().split()
             scored = [
-                (int(q in s.name.lower() or q in s.description.lower()), s)
+                (
+                    sum(1 for w in q_words if w in s.name.lower() or w in s.description.lower()),
+                    s,
+                )
                 for s in candidates
             ]
 
