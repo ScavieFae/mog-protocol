@@ -6,12 +6,13 @@ You need a Nevermined API key from [nevermined.app](https://nevermined.app) with
 
 | Plan | Price | Credits | Plan ID |
 |------|-------|---------|---------|
-| Free Trial | Free | 3 | `52344374255582061362376941484417434816120915438329652344828008233054799099083` |
+| **Free (Sponsored)** | Free | 100 | `100055324343248574008048211366287624670698094501751189055453802807316586516007` |
 | Starter | 1 USDC | 1 | `27532529988899010156793041100542920191141640561034683667962973311488756564499` |
 | Standard | 5 USDC | 10 | `6476982684193144215967979389100088950230657664983966011439423784485034538208` |
 | Pro | 10 USDC | 25 | `29001175520261924428527314088863841592234134735048963980654691130902766240562` |
+| 24h Unlimited | 100 USDC | Unlimited | `44434032783531077541058729887091039457805308156564831638506837872259119558776` |
 
-Most services cost 1 credit. Image generation costs 10 credits.
+Start with the Free plan -- 100 credits, no payment required. Most services cost 1-2 credits. Image generation costs 10 credits.
 
 ## Subscribe + Buy
 
@@ -28,15 +29,15 @@ payments = Payments.get_instance(
     PaymentOptions(nvm_api_key="YOUR_NVM_KEY", environment="sandbox")
 )
 
-# 2. Subscribe (free trial = 3 credits)
-PLAN_ID = "52344374255582061362376941484417434816120915438329652344828008233054799099083"
+# 2. Subscribe (Free plan = 100 credits, no payment needed)
+PLAN_ID = "100055324343248574008048211366287624670698094501751189055453802807316586516007"
 payments.plans.order_plan(PLAN_ID)
 
 # 3. Get access token
 token = payments.x402.get_x402_access_token(PLAN_ID)["accessToken"]
 
 # 4. Search for services (free)
-GATEWAY = "https://beneficial-essence-production-99c7.up.railway.app/mcp"
+GATEWAY = "https://api.mog.markets/mcp"
 resp = httpx.post(GATEWAY, headers={
     "Authorization": f"Bearer {token}",
     "Content-Type": "application/json",
@@ -73,7 +74,7 @@ Add to your `.mcp.json` so your agent sees `find_service` and `buy_and_call`:
   "mcpServers": {
     "mog-marketplace": {
       "type": "http",
-      "url": "https://beneficial-essence-production-99c7.up.railway.app/mcp",
+      "url": "https://api.mog.markets/mcp",
       "headers": {
         "Authorization": "Bearer PASTE_TOKEN_HERE"
       }
@@ -81,6 +82,8 @@ Add to your `.mcp.json` so your agent sees `find_service` and `buy_and_call`:
   }
 }
 ```
+
+> **Note:** The Railway URL `https://beneficial-essence-production-99c7.up.railway.app/mcp` also works as a direct fallback.
 
 ## Onboard Script
 
@@ -95,27 +98,34 @@ Prints your token, MCP config, service list, and a curl example.
 
 ---
 
-## Services
+## Services (22 total)
 
 | Service | Credits | What It Does |
 |---------|---------|-------------|
 | `exa_search` | 1 | Semantic web search -- snippets + URLs |
 | `exa_get_contents` | 2 | Full text extraction from URLs |
 | `claude_summarize` | 5 | AI summarization (bullets, paragraph, structured) |
-| `nano_banana_pro` | 10 | Image generation from text prompts |
+| `nano_banana_pro` | 10 | Image generation from text prompts (Gemini 3 Pro) |
 | `open_meteo_weather` | 1 | Weather forecast for any location |
 | `ip_geolocation` | 1 | Geographic location for any IP address |
 | `frankfurter_fx_rates` | 1 | Live/historical FX rates for 29 currencies |
 | `hacker_news_top` | 2 | Top stories from Hacker News with scores + URLs |
 | `newton_math` | 2 | Symbolic math: simplify, factor, derive, integrate |
 | `qr_code` | 1 | Generate QR code URL for any text or link |
+| `debug_seller` | 2 | Debug any Nevermined marketplace agent (full diagnostic) |
+| `browser_navigate` | 5 | Headless browser -- read JS-rendered pages |
+| `agent_email_inbox` | 2 | Disposable email inbox for signups and verification |
+| `social_search` | 2 | Search Reddit, Twitter, etc. for demand signals |
+| `archive_fetch` | 1 | Fetch archived version of any URL (paywalls, deleted content) |
+| `circle_faucet` | 1 | Claim testnet USDC from Circle's faucet |
+| `zeroclick_search` | 1 | Sponsored search -- deals and offers from 10k+ advertisers |
 | `hackathon_discover` | 1 | Find agents on the hackathon portal |
 | `hackathon_portal` | 1 | Ingested hackathon marketplace content |
 | `hackathon_onboarding` | 1 | Nevermined onboarding guide |
 | `hackathon_pitfalls` | 1 | 9 PaymentsMCP gotchas |
 | `hackathon_all` | 1 | Portal + onboarding + pitfalls in one call |
 
-Use `find_service` to search by what you need -- it does keyword matching.
+Use `find_service` to search by what you need -- it does keyword and embedding matching.
 
 ---
 
@@ -154,7 +164,7 @@ The `image_url` is a base64 data URI. Embed in an `<img>` tag or decode to save 
 ## curl
 
 ```bash
-curl -X POST https://beneficial-essence-production-99c7.up.railway.app/mcp \
+curl -X POST https://api.mog.markets/mcp \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/call",
