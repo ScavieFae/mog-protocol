@@ -223,6 +223,55 @@ Registered "Nevermined Hackathon Guide" as dedicated agent on the marketplace po
 
 **[scav]** Revenue model clarification: `get_free_price_config()` means $0 subscriptions, credits are metering tokens with no monetary value. To show real revenue numbers would need `get_erc20_price_config()` with testnet USDC. For hackathon purposes, transaction count and economic behavior matter more than dollar amounts.
 
-**Current state:** 11 services, 2 marketplace listings (Gateway + Hackathon Guide), 4+ external subscribers, keyword search active, gateway stable on Railway. Other team at venue actively testing our endpoint.
+### ~17:00 — Revenue Model Deep Dive
+
+**[scav]** Investigated what actually exchanged hands across all transactions. Answer: nothing of monetary value. All plans had `price_per_credit=0.0`. Credits minted free, burned on use, zero tokens returned to seller. On-chain tx hashes are real but they're accounting entries for free credits.
+
+**[scav]** Created `docs/questions-for-nevermined.md` — 11 consolidated questions for the Nevermined team. Key ones: can one agent have multiple plans? How do judges track economic behavior? Does fiat work in sandbox?
+
+### ~17:30 — USDC Paid Plans Registered
+
+**[decision]** Charge for everything. Free tier will be ZeroClick ad-supported later.
+
+**[scav]** Created `src/setup_paid_plans.py` and registered 4 USDC plans on Base Sepolia:
+- Gateway: $1/1 credit, $5/10 credits, $10/20 credits
+- Hackathon Guide: $0.10/1 credit
+
+All 4 fiat/card plans failed with HTTP 500 (`BCK.PROTOCOL.0040`) — Nevermined backend crashes on `isCrypto: false`. Filed as [GitHub issue #1](https://github.com/ScavieFae/mog-protocol/issues/1). Mattie set up Stripe Connect but the API-side bug persists.
+
+### ~18:00 — FIRST REAL USDC TRANSACTION
+
+**[scav]** Lynn subscribed to the $1 USDC plan and called `exa_search`. 1 USDC paid, 1 credit burned, `price_per_credit: 1.0`. Tx hash: `0x7332acf2...`. This is actual revenue — USDC transferred on-chain.
+
+**[blocker]** Buyers need testnet USDC in their wallet. Nevermined grants 20 USDC on registration (portal step 4). Lynn's wallet wasn't funded because she was created as a second API key, not through the portal. Circle faucet at faucet.circle.com works for manual funding.
+
+### ~18:15 — Cross-Team Transaction: Trust Net
+
+**[scav]** Subscribed to Trust Net's plan (another hackathon team) and called their `list_agents` tool. Returned agent listings from aibizbrain, SwitchBoard AI, and others. Cross-team paid transaction — good for "Most Interconnected" prize.
+
+### ~18:30 — Repo Public, Free Plans Disabled
+
+**[decision]** Made repo public on GitHub. `.env` is gitignored, no secrets exposed.
+
+**[scav]** Disabled 5 old plans via `update_agent_metadata` (no delete endpoint exists in the SDK):
+- 3 free plans (Exa, Gateway, Hackathon Guide)
+- 2 broken-price plans ($5M and $10M — from other Scav instance's registration attempts)
+
+Renamed to `[DISABLED]`, endpoints pointed to `disabled.example.com`.
+
+**[scav]** Updated `quick-connect.md` with USDC pricing, all 3 plan IDs, and simplified onboarding flow.
+
+### ~19:00 — END-TO-END PAID TRANSACTION WITH FULL ON-CHAIN PROOF
+
+**[scav]** Ran a second Lynn transaction specifically to capture the full proof chain. Every step has a verifiable on-chain receipt:
+
+1. **USDC payment:** `0xb6ad7041d1b508aaa5c1679db232bdad2fcd3d7ba3104d7eca400bdeb236d25f` — 1 USDC transferred from Lynn's wallet to contract
+2. **Credit burn:** `0xcf98db436e4aff521de6c8412e80d415fb7e362b667a134cf029f8f4c5ef99cf` — 1 credit redeemed, `success: true`, subscriber `0x863e...`
+3. **API result:** Exa search returned 2 articles about Nevermined marketplace
+4. **Balance:** 1 → 0 credits
+
+Both tx hashes verifiable on [Base Sepolia explorer](https://sepolia.basescan.org). This is the demo moment: USDC in, credit minted, credit burned, real API result out, all settled on-chain.
+
+**Current state:** 11 services, 4 active paid plans (USDC), 2 USDC revenue transactions ($2 total), 1 cross-team transaction (Trust Net), full on-chain proof captured, fiat blocked by Nevermined backend bug, repo public.
 
 <!-- New entries go above this line -->
