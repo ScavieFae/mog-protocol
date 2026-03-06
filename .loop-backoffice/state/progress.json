@@ -1,16 +1,9 @@
 {
-  "brief": "backoffice-010-wrap-random-user",
-  "brief_file": ".loop-backoffice/briefs/backoffice-010-wrap-random-user.md",
-  "iteration": 1,
-  "status": "complete",
-  "tasks_completed": [
-    "wrap random_user handler and catalog entry in src/services.py",
-    "self-test verified valid JSON output",
-    "update portfolio.json with random_user entry"
-  ],
+  "brief": "backoffice-011-scout-high-value-apis",
+  "brief_file": ".loop-backoffice/briefs/backoffice-011-scout-high-value-apis.md",
+  "iteration": 0,
+  "status": "running",
+  "tasks_completed": [],
   "tasks_remaining": [],
-  "learnings": [
-    "randomuser.me returns richly nested objects; flatten to name/email/city/country/age/phone/gender for clean agent output",
-    "nationality param is optional — omit from URL when empty string to let API return any nationality"
-  ]
+  "learnings": []
 }
