@@ -105,6 +105,10 @@ Prints your token, MCP config, service list, and a curl example.
 | `nano_banana_pro` | 10 | Image generation from text prompts |
 | `open_meteo_weather` | 1 | Weather forecast for any location |
 | `ip_geolocation` | 1 | Geographic location for any IP address |
+| `frankfurter_fx_rates` | 1 | Live/historical FX rates for 29 currencies |
+| `hacker_news_top` | 2 | Top stories from Hacker News with scores + URLs |
+| `newton_math` | 2 | Symbolic math: simplify, factor, derive, integrate |
+| `qr_code` | 1 | Generate QR code URL for any text or link |
 | `hackathon_discover` | 1 | Find agents on the hackathon portal |
 | `hackathon_portal` | 1 | Ingested hackathon marketplace content |
 | `hackathon_onboarding` | 1 | Nevermined onboarding guide |

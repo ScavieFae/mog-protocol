@@ -478,3 +478,89 @@ catalog.register(
     provider="mog-protocol",
     handler=_frankfurter_fx_rates,
 )
+
+
+# --- Cherry-picked from backoffice branch (zero-dependency services) ---
+
+def _hacker_news_top(count: int = 5) -> str:
+    """Get current top stories from Hacker News."""
+    count = max(1, min(count, 20))
+    base_url = "https://hacker-news.firebaseio.com/v0"
+    try:
+        with urllib.request.urlopen(f"{base_url}/topstories.json", timeout=10) as resp:
+            story_ids = json.loads(resp.read().decode())
+    except Exception as e:
+        return json.dumps({"error": f"Failed to fetch top stories: {e}"})
+    stories = []
+    for story_id in story_ids[:count]:
+        try:
+            with urllib.request.urlopen(f"{base_url}/item/{story_id}.json", timeout=10) as resp:
+                item = json.loads(resp.read().decode())
+            if item:
+                stories.append({
+                    "title": item.get("title", ""),
+                    "url": item.get("url", ""),
+                    "score": item.get("score", 0),
+                    "author": item.get("by", ""),
+                    "comments": item.get("descendants", 0),
+                    "id": item.get("id"),
+                })
+        except Exception:
+            continue
+    return json.dumps({"stories": stories, "count": len(stories)})
+
+
+def _newton_math(operation: str, expression: str) -> str:
+    """Perform symbolic math operations via Newton API."""
+    valid_operations = {
+        "simplify", "factor", "derive", "integrate", "zeroes", "tangent",
+        "area", "cos", "sin", "tan", "arccos", "arcsin", "arctan", "abs", "log",
+    }
+    if operation not in valid_operations:
+        return json.dumps({"error": f"Invalid operation '{operation}'. Valid: {sorted(valid_operations)}"})
+    encoded = urllib.parse.quote(expression, safe="")
+    url = f"https://newton.now.sh/api/v2/{operation}/{encoded}"
+    try:
+        with urllib.request.urlopen(url, timeout=10) as resp:
+            data = json.loads(resp.read().decode())
+    except Exception as e:
+        return json.dumps({"error": str(e)})
+    return json.dumps(data)
+
+
+def _qr_code(data: str, size: str = "150x150", format: str = "png") -> str:
+    """Generate QR code URL for any text or URL."""
+    encoded_data = urllib.parse.quote(data)
+    url = f"https://api.qrserver.com/v1/create-qr-code/?size={size}&data={encoded_data}&format={format}"
+    return json.dumps({"qr_url": url, "data": data, "size": size, "format": format})
+
+
+catalog.register(
+    service_id="hacker_news_top",
+    name="Hacker News Top Stories",
+    description="Get the current top stories from Hacker News with title, URL, score, author, and comment count. Covers tech news, startups, science, and programming. Live rankings updated in real time.",
+    price_credits=2,
+    example_params={"count": 5},
+    provider="mog-protocol",
+    handler=_hacker_news_top,
+)
+
+catalog.register(
+    service_id="newton_math",
+    name="Symbolic Math Computation",
+    description="Perform symbolic math operations: simplify, factor, derive, integrate, find zeroes, compute trig functions, and more. Powered by Newton API. Free, no API key.",
+    price_credits=2,
+    example_params={"operation": "simplify", "expression": "2^2+2(2)"},
+    provider="mog-protocol",
+    handler=_newton_math,
+)
+
+catalog.register(
+    service_id="qr_code",
+    name="QR Code Generator",
+    description="Generate QR codes for any text or URL. Returns a direct URL to the QR code image. Supports PNG, SVG, and EPS formats. Free, no API key.",
+    price_credits=1,
+    example_params={"data": "https://example.com", "size": "200x200"},
+    provider="mog-protocol",
+    handler=_qr_code,
+)

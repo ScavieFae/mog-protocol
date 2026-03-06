@@ -24,6 +24,7 @@ if not NVM_API_KEY or not NVM_AGENT_ID:
 from payments_py import Payments, PaymentOptions
 from payments_py.mcp import PaymentsMCP
 
+from src.helicone import log_tool_call
 from src.portfolio import PortfolioManager
 from src.pricing import get_current_price
 from src.services import catalog
@@ -114,6 +115,12 @@ def buy_and_call(service_id: str, params: dict) -> str:
             latency_ms=latency_ms, agent_id=NVM_AGENT_ID,
             plan_id=os.getenv("NVM_GATEWAY_PLAN_ID", ""),
         ))
+        log_tool_call(
+            agent_id=NVM_AGENT_ID, plan_id=os.getenv("NVM_GATEWAY_PLAN_ID", ""),
+            service_id=service_id, service_name=service.name,
+            params=params, result=str(exc), credits_charged=0,
+            latency_ms=latency_ms, success=False, surge_multiplier=surge_multiplier,
+        )
         # Re-raise so the paywall skips credit redemption.
         # The MCP layer converts this into an error response for the buyer.
         raise
@@ -128,6 +135,12 @@ def buy_and_call(service_id: str, params: dict) -> str:
         plan_id=os.getenv("NVM_GATEWAY_PLAN_ID", ""),
     ))
     portfolio.record_sale(service_id, price)
+    log_tool_call(
+        agent_id=NVM_AGENT_ID, plan_id=os.getenv("NVM_GATEWAY_PLAN_ID", ""),
+        service_id=service_id, service_name=service.name,
+        params=params, result=result, credits_charged=price,
+        latency_ms=latency_ms, success=True, surge_multiplier=surge_multiplier,
+    )
     return json.dumps({
         "result": result,
         "_meta": {
