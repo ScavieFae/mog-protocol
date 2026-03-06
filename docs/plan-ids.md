@@ -4,7 +4,7 @@ Reference for all Nevermined agent and plan registrations. Queried live from the
 
 Wallet: `0xca676aFBa6c12fb49Fd68Af9a1B400A577A3D58a`
 Environment: sandbox
-Gateway URL: `https://beneficial-essence-production-99c7.up.railway.app/mcp`
+Gateway URL: `https://api.mog.markets/mcp` (Railway: `https://beneficial-essence-production-99c7.up.railway.app/mcp`)
 
 ## Active Plans
 
@@ -12,11 +12,10 @@ Gateway URL: `https://beneficial-essence-production-99c7.up.railway.app/mcp`
 
 Agent ID: `48240718023678475399341842835225621286665771301570840304774956518509943562731`
 
-The primary marketplace gateway. One agent, four plans. Runs `src/gateway.py` on Railway.
+The primary marketplace gateway. One agent, three paid plans. Runs `src/gateway.py` on Railway.
 
 | Plan | Price | Credits | Plan ID |
 |------|-------|---------|---------|
-| Free Trial | Free | 3 | `52344374255582061362376941484417434816120915438329652344828008233054799099083` |
 | 1 USDC | 1,000,000 micro-USDC | 1 | `27532529988899010156793041100542920191141640561034683667962973311488756564499` |
 | 5 USDC | 5,000,000 micro-USDC | 10 | `6476982684193144215967979389100088950230657664983966011439423784485034538208` |
 | 10 USDC | 10,000,000 micro-USDC | 25 | `29001175520261924428527314088863841592234134735048963980654691130902766240562` |
@@ -68,9 +67,17 @@ Created by `src/setup_paid_plans.py` using `register_agent_and_plan()`, which cr
 | Mog Markets USDC 20 Credits | `26362256032719680862657608533856503228352336116352372689675428778853218417830` | `107388892078779776783316313571466544272023725956678321074411803867639782898854` |
 | Hackathon Guide USDC 1 Credit | `70017738080613879717066126226930242682259074906188166961853946497052825410503` | `97008325797120983960610080256091504556118455322568723324233173955711405894085` |
 
+### Free Trial (removed from consolidated agent)
+
+Was attached to the consolidated Mog Markets agent, removed on 2026-03-06. Plan still exists on-chain.
+
+| Plan | Credits | Plan ID |
+|------|---------|---------|
+| Free Trial | 3 | `52344374255582061362376941484417434816120915438329652344828008233054799099083` |
+
 ### Original free plans (commented out in .env)
 
-First registrations. Separate agents for gateway and guide. The gateway free plan ID is still hardcoded in `onboard.py` — should be updated to the consolidated Free Trial plan.
+First registrations. Separate agents for gateway and guide. The gateway free plan ID is still hardcoded in `onboard.py` — should be updated to a paid plan.
 
 | Label | Agent ID | Plan ID |
 |-------|----------|---------|
@@ -79,7 +86,7 @@ First registrations. Separate agents for gateway and guide. The gateway free pla
 
 ## Notes
 
-- `onboard.py` updated to use the consolidated Free Trial plan (`523443...9083`).
+- `onboard.py` was updated to use the Free Trial plan, but that plan has since been removed. Needs reworking for paid-only plans.
 - The Hackathon Guide paid plan has a 500M USDC price from a registration bug. Not usable. Guide content is available through the gateway's `hackathon_guide` service instead.
 - `setup_paid_plans.py` used `register_agent_and_plan()` which creates a new agent per call. The consolidated gateway was built using `register_plan()` + `add_plan_to_agent()` to attach multiple tiers to one agent.
 - The `.env` file has env vars for all deprecated plans (for reference). Only `NVM_GATEWAY_AGENT_ID` and `NVM_GATEWAY_PLAN_ID` are used by the running gateway.
