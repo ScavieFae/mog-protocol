@@ -176,9 +176,10 @@ def dispatch(paths):
     # Return to main branch
     git(project_dir, "checkout", main_branch)
 
-    # Update running.json
+    # Update running.json (deduplicate: remove any stale entries for this brief first)
     rc = load_running(paths)
-    rc.setdefault("active", []).append({
+    rc["active"] = [e for e in rc.get("active", []) if e.get("brief") != brief]
+    rc["active"].append({
         "brief": brief,
         "branch": branch,
         "brief_file": brief_file,

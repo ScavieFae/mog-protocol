@@ -16,10 +16,10 @@ Read these files now:
 
 What's the situation?
 
-- **Brief complete?** → Evaluate it. Read the diff (`git diff <main_branch>...<branch> --stat`), check quality, write evaluation to `.loop/evaluations/`. Decide: merge, fix, or escalate.
+- **Brief in completed_pending_eval?** → **EVALUATE FIRST.** This takes priority over everything. Read the diff, check quality, write evaluation, decide merge/fix/escalate. Do NOT dispatch a new brief until all pending evaluations are done.
 - **Brief active and running?** → The daemon handles worker iterations. No action needed unless it's blocked.
 - **Brief blocked?** → Read the learnings. Can you unblock it, or does the human need to intervene? If stuck, write `.loop/state/signals/escalate.json`.
-- **No active brief?** → Check goals.md for what to do next. If there are queued briefs in `.loop/briefs/` that haven't been dispatched, dispatch the highest priority one.
+- **No active brief AND no pending evals?** → Check goals.md for what to do next. If there are queued briefs in `.loop/briefs/` that haven't been dispatched, dispatch the highest priority one.
 - **Nothing to do?** → Idle. That's fine.
 
 ## Step 3: Evaluate (if brief complete)
