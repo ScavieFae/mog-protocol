@@ -11,6 +11,8 @@ Read these files now:
 - `.loop/state/log.jsonl` — tail the last 20 lines for recent decisions
 - `.loop/knowledge/learnings.md` — accumulated knowledge
 - `docs/hackathon-diary.md` — tail recent entries for director decisions and venue updates
+- `data/blockers.json` — recent worker blockers (check for RETRY_WITH_TOOL: now that toolkit is available, retry these)
+- `data/vault.json` — check for newly acquired API keys; note them in the diary
 
 ## Step 1b: Read Portfolio State
 
@@ -35,6 +37,8 @@ What's the situation?
 - **Brief blocked?** → Read the learnings. Can you unblock it, or does the human need to intervene? If stuck, write `.loop/state/signals/escalate.json`.
 - **No active brief?** → Check goals.md for what to do next. If there are queued briefs in `.loop/briefs/` that haven't been dispatched, dispatch the highest priority one.
 - **Portfolio review needed?** → If any hypothesis has been in "wrapped" status for >1hr with zero actual_revenue, generate a KILL or REPRICE brief. If balance is healthy (>20cr) and demand signals exist, propose a new scout brief.
+- **Blockers with RETRY_WITH_TOOL?** → The agent toolkit (browse, email, vault) is now available. If `data/blockers.json` has entries with recommendation=RETRY_WITH_TOOL, dispatch a brief to retry the blocked service using the toolkit.
+- **New vault entries?** → If `data/vault.json` has credentials acquired since the last tick, log them in the diary and consider dispatching a wrap brief for the newly unblocked service.
 - **Nothing to do?** → Idle. That's fine.
 
 ## Step 3: Review + Evaluate (if brief complete)

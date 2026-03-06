@@ -1031,3 +1031,178 @@ catalog.register(
     provider="mog-protocol",
     handler=_debug_seller,
 )
+
+
+# --- Toolkit services (browser, email, research, faucet) ---
+
+def _browser_navigate(url: str) -> str:
+    """Create a Browserbase session, navigate to url, return title + text."""
+    from src.toolkit import browse
+    if not browse.api_key:
+        return json.dumps({"error": "BROWSERBASE_API_KEY not set"})
+    session = browse.create_session()
+    if "error" in session:
+        return json.dumps(session)
+    sid = session["session_id"]
+    try:
+        result = browse.navigate(sid, url)
+        return json.dumps(result)
+    finally:
+        browse.close_session(sid)
+
+
+def _agent_email_inbox(label: str) -> str:
+    """Create a disposable AgentMail inbox. Returns inbox_id and email address."""
+    from src.toolkit import email as email_layer
+    result = email_layer.create_inbox(label)
+    return json.dumps(result)
+
+
+def _social_search(domain: str, query: str, max_results: int = 10) -> str:
+    """Search a social media domain for posts/comments via Exa."""
+    from src.toolkit import research
+    results = research.social_comments(domain, query, max_results)
+    return json.dumps(results)
+
+
+def _archive_fetch(url: str) -> str:
+    """Fetch an archived version of a URL from archive.ph."""
+    from src.toolkit import research
+    result = research.fetch_archived(url)
+    return json.dumps(result)
+
+
+def _circle_faucet(wallet_address: str, network: str = "BASE", currency: str = "USDC") -> str:
+    """Claim testnet stablecoins from Circle's faucet via headless browser."""
+    from src.toolkit import browse
+    if not browse.api_key:
+        return json.dumps({"error": "BROWSERBASE_API_KEY not set"})
+
+    network_map = {
+        "BASE": "Base Sepolia",
+        "ETH": "Ethereum Sepolia",
+        "ARB": "Arbitrum Sepolia",
+        "SOL": "Solana Devnet",
+        "OP": "Optimism Sepolia",
+        "AVAX": "Avalanche Fuji",
+    }
+    network_label = network_map.get(network.upper(), "Base Sepolia")
+
+    session = browse.create_session()
+    if "error" in session:
+        return json.dumps(session)
+    sid = session["session_id"]
+
+    try:
+        import time as _time
+        from playwright.sync_api import sync_playwright
+
+        with sync_playwright() as p:
+            browser = p.chromium.connect_over_cdp(
+                f"wss://connect.browserbase.com?apiKey={browse.api_key}&sessionId={sid}"
+            )
+            page = browser.contexts[0].pages[0]
+            page.goto("https://faucet.circle.com/", timeout=30000)
+            _time.sleep(2)
+
+            page_text = page.inner_text("body")
+            if "rate" in page_text.lower() and "limit" in page_text.lower():
+                browser.close()
+                return json.dumps({"error": "Rate limited — try again in ~2 hours"})
+
+            # Select network
+            try:
+                page.select_option("select", label=network_label)
+                _time.sleep(0.5)
+            except Exception:
+                pass
+
+            # Select currency (EURC tab if not USDC)
+            if currency.upper() == "EURC":
+                try:
+                    page.get_by_text("EURC", exact=True).click()
+                    _time.sleep(0.3)
+                except Exception:
+                    pass
+
+            # Fill wallet address
+            try:
+                page.fill("input[placeholder*='address'], input[type='text'], input[name*='wallet']",
+                          wallet_address)
+            except Exception:
+                page.fill("input", wallet_address)
+            _time.sleep(0.5)
+
+            # Submit
+            page.click("button[type='submit']")
+            _time.sleep(3)
+
+            result_text = page.inner_text("body")[:500]
+            browser.close()
+
+        if "rate" in result_text.lower() and "limit" in result_text.lower():
+            return json.dumps({"error": "Rate limited — try again in ~2 hours"})
+
+        return json.dumps({
+            "success": True,
+            "wallet": wallet_address,
+            "network": network_label,
+            "currency": currency.upper(),
+            "message": "Faucet request submitted. 20 testnet tokens will arrive shortly.",
+            "result_text": result_text[:200],
+        })
+    except Exception as e:
+        return json.dumps({"error": str(e)})
+    finally:
+        browse.close_session(sid)
+
+
+catalog.register(
+    service_id="browser_navigate",
+    name="Browser Navigate",
+    description="Create a headless browser session and navigate to any URL. Returns page title and text content. Reads client-rendered pages, JS apps, dashboards that Claude can't access directly. Use for signup flow evaluation, API docs, portal pages.",
+    price_credits=5,
+    example_params={"url": "https://example.com"},
+    provider="mog-protocol",
+    handler=_browser_navigate,
+)
+
+catalog.register(
+    service_id="agent_email_inbox",
+    name="Agent Email Inbox",
+    description="Create a disposable email inbox via AgentMail. Returns inbox_id and email address. Use for account signups, verification flows, receiving confirmation emails from APIs you're signing up for.",
+    price_credits=2,
+    example_params={"label": "signup-test"},
+    provider="mog-protocol",
+    handler=_agent_email_inbox,
+)
+
+catalog.register(
+    service_id="social_search",
+    name="Social Media Search",
+    description="Search a specific social media domain for posts and comments matching a query. Find demand signals, feature requests, and complaints. Powered by Exa neural search with domain filtering.",
+    price_credits=2,
+    example_params={"domain": "reddit.com", "query": "need API for weather data", "max_results": 10},
+    provider="mog-protocol",
+    handler=_social_search,
+)
+
+catalog.register(
+    service_id="archive_fetch",
+    name="Archive Fetch",
+    description="Fetch the archived version of any URL from archive.ph. Read articles behind paywalls, access deleted content, get a snapshot of any web page. No API key needed.",
+    price_credits=1,
+    example_params={"url": "https://example.com/paywalled-article"},
+    provider="mog-protocol",
+    handler=_archive_fetch,
+)
+
+catalog.register(
+    service_id="circle_faucet",
+    name="Circle Testnet Faucet",
+    description="Claim 20 testnet USDC (or EURC) from Circle's faucet for a wallet address. Automates faucet.circle.com via headless browser. Supports Base Sepolia, Ethereum Sepolia, Arbitrum Sepolia, Solana Devnet, Optimism Sepolia, and Avalanche Fuji. Handles rate limits gracefully.",
+    price_credits=1,
+    example_params={"wallet_address": "0xYourWalletAddress", "network": "BASE", "currency": "USDC"},
+    provider="mog-protocol",
+    handler=_circle_faucet,
+)
