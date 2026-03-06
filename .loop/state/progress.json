@@ -1,19 +1,9 @@
 {
-  "brief": "brief-009-gateway-revenue",
-  "brief_file": ".loop/briefs/brief-009-gateway-revenue.md",
-  "iteration": 1,
-  "status": "complete",
-  "tasks_completed": [
-    "Import and initialize PortfolioManager in gateway.py",
-    "Wire portfolio.record_sale() into buy_and_call on success",
-    "Add portfolio summary to /health response",
-    "Add guarded traces section to /health response"
-  ],
+  "brief": "brief-011-toolkit-foundation",
+  "brief_file": ".loop/briefs/brief-011-toolkit-foundation.md",
+  "iteration": 0,
+  "status": "running",
+  "tasks_completed": [],
   "tasks_remaining": [],
-  "learnings": [
-    "venv uses Python 3.14; system python3 is 3.9.6 (no int|None union syntax support)",
-    "Run verification with .venv/bin/python, not python3",
-    "portfolio.record_sale() is already thread-safe via PortfolioManager._lock",
-    "data/portfolio.json may have stale test entries from verification — harmless"
-  ]
+  "learnings": []
 }
