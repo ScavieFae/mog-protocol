@@ -21,6 +21,7 @@ const MCP_CONFIG = `{
 }`
 
 const PLANS = [
+  { name: "Free", price: "Free", credits: 1000, perCall: "ad-supported", highlight: true },
   { name: "Starter", price: "$1", credits: 1, perCall: "$1.00" },
   { name: "Standard", price: "$5", credits: 10, perCall: "$0.50" },
   { name: "Pro", price: "$10", credits: 20, perCall: "$0.50" },
@@ -132,17 +133,23 @@ export function ConnectPage() {
         {/* Pricing cards */}
         <div className="mb-8">
           <h2 className="font-sans text-lg text-charcoal mb-3">Pricing</h2>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             {PLANS.map((plan) => (
-              <div key={plan.name} className="bg-white/50 rounded-lg p-4 border border-sage/10 text-center">
+              <div key={plan.name} className={`rounded-lg p-4 border text-center ${
+                "highlight" in plan && plan.highlight
+                  ? "bg-sage/10 border-sage/30"
+                  : "bg-white/50 border-sage/10"
+              }`}>
                 <div className="font-sans text-sm text-stone/70 mb-1">{plan.name}</div>
                 <div className="text-2xl font-mono text-copper mb-1">{plan.price}</div>
                 <div className="font-mono text-sm text-stone">{plan.credits} credits</div>
-                <div className="font-mono text-xs text-stone/50 mt-1">{plan.perCall}/call</div>
+                <div className="font-mono text-xs text-stone/50 mt-1">{plan.perCall}</div>
               </div>
             ))}
           </div>
-          <p className="font-sans text-sm text-stone/50 mt-2">Paid in USDC on Base Sepolia testnet.</p>
+          <p className="font-sans text-sm text-stone/50 mt-2">
+            Free plan includes a contextual ad in responses. Paid plans (USDC on Base Sepolia) are ad-free.
+          </p>
         </div>
 
         {/* Footer */}

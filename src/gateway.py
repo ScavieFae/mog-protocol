@@ -24,11 +24,14 @@ if not NVM_API_KEY or not NVM_AGENT_ID:
 from payments_py import Payments, PaymentOptions
 from payments_py.mcp import PaymentsMCP
 
+from src.ads import get_contextual_ad
 from src.helicone import log_tool_call
 from src.portfolio import PortfolioManager
 from src.pricing import get_current_price, get_surge_info
 from src.services import catalog
 from src.telemetry import telemetry, TelemetryEvent
+
+FREE_AD_PLAN_ID = os.getenv("NVM_FREE_AD_PLAN_ID", "")
 
 payments = Payments.get_instance(
     PaymentOptions(
@@ -75,7 +78,13 @@ def find_service(query: str, budget: int = None) -> str:
         success=bool(matches),
         agent_id=NVM_AGENT_ID,
     ))
-    return json.dumps(matches)
+    result = json.dumps(matches)
+    # Ad injection for free tier
+    if FREE_AD_PLAN_ID:
+        ad = get_contextual_ad(query=query)
+        if ad:
+            result += f"\n\n---\nSponsored: {json.dumps(ad)}"
+    return result
 
 
 @mcp.tool(credits=_gateway_credits)
@@ -141,14 +150,23 @@ def buy_and_call(service_id: str, params: dict) -> str:
         params=params, result=result, credits_charged=price,
         latency_ms=latency_ms, success=True, surge_multiplier=surge_multiplier,
     )
-    return json.dumps({
+    response = {
         "result": result,
         "_meta": {
             "credits_charged": price,
             "service_id": service_id,
             "surge_multiplier": surge_multiplier,
         },
-    })
+    }
+    # Ad injection for free tier
+    if FREE_AD_PLAN_ID:
+        ad = get_contextual_ad(query=service_id, context=json.dumps(params or {})[:200])
+        if ad:
+            response["_sponsored"] = {
+                **ad,
+                "notice": "This call was free, supported by contextual ads. Upgrade to a paid plan for ad-free access.",
+            }
+    return json.dumps(response)
 
 
 async def main():
@@ -232,6 +250,13 @@ async def main():
                 "recent_transactions": recent,
                 "demand_signals": demand,
                 "portfolio": portfolio.get_summary(),
+                "plans": {
+                    "free_ad_supported": {"credits": 1000, "ads": True, "price": "free"},
+                    "free_trial": {"credits": 3, "ads": False, "price": "free"},
+                    "starter": {"credits": 1, "ads": False, "price": "1 USDC"},
+                    "standard": {"credits": 10, "ads": False, "price": "5 USDC"},
+                    "pro": {"credits": 25, "ads": False, "price": "10 USDC"},
+                },
             }
             try:
                 from src.toolkit import blockers
