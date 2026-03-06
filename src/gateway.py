@@ -24,6 +24,7 @@ if not NVM_API_KEY or not NVM_AGENT_ID:
 from payments_py import Payments, PaymentOptions
 from payments_py.mcp import PaymentsMCP
 
+from src.pricing import get_current_price
 from src.services import catalog
 from src.txlog import txlog
 
@@ -44,11 +45,12 @@ mcp = PaymentsMCP(
 
 
 def _gateway_credits(ctx: dict) -> int:
-    """Dynamic credits for buy_and_call — look up service price from catalog."""
+    """Dynamic credits for buy_and_call — look up service price with surge pricing."""
     service_id = (ctx.get("args") or {}).get("service_id", "")
     service = catalog.get(service_id)
     if service:
-        return service.price_credits
+        price, _ = get_current_price(service_id, service.price_credits)
+        return price
     return 1
 
 
@@ -93,6 +95,7 @@ def buy_and_call(service_id: str, params: dict) -> str:
             "error": f"Service '{service_id}' has no handler registered.",
             "_meta": {"service_id": service_id, "credits_charged": 0},
         })
+    price, surge_multiplier = get_current_price(service_id, service.price_credits)
     t0 = time.monotonic()
     try:
         result = service.handler(**(params or {}))
@@ -112,7 +115,7 @@ def buy_and_call(service_id: str, params: dict) -> str:
     txlog.log({
         "type": "buy_and_call",
         "service_id": service_id,
-        "credits_charged": service.price_credits,
+        "credits_charged": price,
         "success": True,
         "latency_ms": int((time.monotonic() - t0) * 1000),
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -120,8 +123,9 @@ def buy_and_call(service_id: str, params: dict) -> str:
     return json.dumps({
         "result": result,
         "_meta": {
-            "credits_charged": service.price_credits,
+            "credits_charged": price,
             "service_id": service_id,
+            "surge_multiplier": surge_multiplier,
         },
     })
 
@@ -130,6 +134,36 @@ async def main():
     port = int(os.getenv("PORT", os.getenv("GATEWAY_PORT", "4000")))
     print(f"Starting Mog Gateway MCP server on port {port}")
     result = await mcp.start(port=port)
+
+    # Replace the default /health with our richer marketplace health endpoint.
+    # mcp._manager._fastapi_app is the FastAPI app instance (available post-start).
+    app = mcp._manager._fastapi_app
+    if app is not None:
+        from fastapi.responses import JSONResponse as _JSONResponse
+
+        # Remove the existing /health route registered by the oauth_router.
+        app.router.routes = [
+            r for r in app.router.routes if getattr(r, "path", None) != "/health"
+        ]
+
+        async def _health():
+            services = catalog.services
+            recent = txlog.get_recent(10)
+            demand = [e for e in txlog.get_recent(50) if e.get("type") == "unmet_demand"]
+            return _JSONResponse({
+                "status": "ok",
+                "services_count": len(services),
+                "services": [
+                    {"service_id": s.service_id, "name": s.name, "price_credits": s.price_credits}
+                    for s in services
+                ],
+                "recent_transactions": recent,
+                "demand_signals": demand,
+            })
+
+        app.add_api_route("/health", _health, methods=["GET"])
+        print("Custom /health endpoint registered")
+
     stop = result.get("stop") if isinstance(result, dict) else None
     try:
         await asyncio.Event().wait()
