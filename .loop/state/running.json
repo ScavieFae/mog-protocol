@@ -1,5 +1,12 @@
 {
-  "active": [],
+  "active": [
+    {
+      "brief": "brief-014-service-detail-page",
+      "branch": "brief-014-service-detail-page",
+      "brief_file": ".loop/briefs/brief-014-service-detail-page.md",
+      "dispatched_at": "2026-03-06T19:25:05Z"
+    }
+  ],
   "completed_pending_eval": [
     {
       "brief": "brief-013-surge-pricing-signals",
