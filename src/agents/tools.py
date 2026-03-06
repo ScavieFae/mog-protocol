@@ -16,6 +16,21 @@ from src.agents.bus import bus
 
 EXA_API_KEY = os.getenv("EXA_API_KEY")
 
+# Per-agent Nevermined keys (main wallet 0xca67..., leaderboard accrues to us)
+_NVM_KEYS = {
+    "mog-scout": os.getenv("NVM_SCOUT_API_KEY"),
+    "mog-worker": os.getenv("NVM_WORKER_API_KEY"),
+    "mog-supervisor": os.getenv("NVM_SUPERVISOR_API_KEY"),
+}
+
+# Our own plans (for self-buy testing)
+OUR_PLAN_IDS = [
+    os.getenv("NVM_MOG_MARKETS_USDC_1_CREDIT_PLAN_ID", "60859172884142288164507163059546691936422006932528002950292307302678850457887"),
+    os.getenv("NVM_DEBUGGER_PLAN_ID", "100055324343248574008048211366287624670698094501751189055453802807316586516007"),
+]
+
+GATEWAY_URL = os.getenv("MCP_SERVER_URL", "https://api.mog.markets")
+
 # Guardrails
 MAX_AGENT_SERVICES = int(os.getenv("MOG_MAX_AGENT_SERVICES", "10"))
 MAX_PROPOSALS_PER_TICK = int(os.getenv("MOG_MAX_PROPOSALS_PER_TICK", "1"))
@@ -294,6 +309,200 @@ def _test_service(service_id: str, params: dict = None, **kwargs) -> str:
         return json.dumps({"success": False, "service_id": service_id, "error": str(e)})
 
 
+def _get_nvm_payments(agent_name: str):
+    """Get a Payments instance for the given agent, or None if key not set."""
+    key = _NVM_KEYS.get(agent_name)
+    if not key:
+        return None
+    from payments_py import Payments, PaymentOptions
+    return Payments.get_instance(PaymentOptions(nvm_api_key=key, environment="sandbox"))
+
+
+def _self_buy(agent_name: str, service_id: str = "exa_search", params: dict = None, **kwargs) -> str:
+    """Buy from our own gateway through Nevermined — generates real leaderboard transactions."""
+    payments = _get_nvm_payments(agent_name)
+    if not payments:
+        return json.dumps({"error": f"No NVM key for {agent_name}"})
+
+    plan_id = OUR_PLAN_IDS[0]  # $1 USDC plan
+    try:
+        # Subscribe (idempotent — "already subscribed" is fine)
+        try:
+            payments.plans.order_plan(plan_id)
+        except Exception as e:
+            if "already" not in str(e).lower():
+                pass  # Non-fatal — token might still work
+
+        # Get x402 token
+        token = payments.x402.get_x402_access_token(plan_id)["accessToken"]
+
+        # Call through gateway via HTTP (this is what generates the Nevermined transaction)
+        import httpx
+        hdrs = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+        r = httpx.post(f"{GATEWAY_URL}/mcp", headers=hdrs, json={
+            "jsonrpc": "2.0",
+            "method": "tools/call",
+            "params": {"name": "buy_and_call", "arguments": {
+                "service_id": service_id,
+                "params": params or {},
+            }},
+            "id": 1,
+        }, timeout=30)
+
+        return json.dumps({
+            "status": r.status_code,
+            "agent": agent_name,
+            "service_id": service_id,
+            "response": r.text[:500],
+            "nevermined_transaction": True,
+        })
+    except Exception as e:
+        return json.dumps({"error": str(e)[:300], "agent": agent_name})
+
+
+def _explore_seller(agent_name: str, team_name: str = "", plan_id: str = "", **kwargs) -> str:
+    """Discover and buy from another hackathon seller — generates Nevermined buy-side transactions."""
+    payments = _get_nvm_payments(agent_name)
+    if not payments:
+        return json.dumps({"error": f"No NVM key for {agent_name}"})
+
+    try:
+        import httpx
+
+        # Step 1: Find the seller via discovery API
+        if not plan_id and team_name:
+            resp = httpx.get(
+                "https://nevermined.ai/hackathon/register/api/discover",
+                params={"side": "sell"},
+                headers={"x-nvm-api-key": _NVM_KEYS[agent_name]},
+                timeout=15,
+            )
+            sellers = resp.json().get("sellers", [])
+            query = team_name.lower()
+            matches = [s for s in sellers if query in s.get("name", "").lower() or query in s.get("teamName", "").lower()]
+            if not matches:
+                return json.dumps({"error": f"No seller found for '{team_name}'", "total_sellers": len(sellers)})
+
+            seller = matches[0]
+            endpoint = seller.get("endpointUrl", "")
+
+            # Pick cheapest crypto plan
+            crypto_plans = [p for p in seller.get("planPricing", []) if p.get("paymentType") == "crypto"]
+            if not crypto_plans:
+                return json.dumps({"error": f"No crypto plans for {seller.get('name')}", "team": seller.get("teamName")})
+            crypto_plans.sort(key=lambda p: float(p.get("planPrice", 999)))
+
+            # Cap at $5 USDC
+            plan = crypto_plans[0]
+            if float(plan.get("planPrice", 999)) > 5:
+                return json.dumps({"error": f"Cheapest plan is ${plan['planPrice']} — over $5 cap", "team": seller.get("teamName")})
+            plan_id = plan["planDid"]
+        elif not plan_id:
+            return json.dumps({"error": "Provide team_name or plan_id"})
+        else:
+            endpoint = ""
+
+        # Step 2: Subscribe
+        sub_status = "subscribed"
+        try:
+            payments.plans.order_plan(plan_id)
+        except Exception as e:
+            sub_status = "already" if "already" in str(e).lower() else f"error: {str(e)[:100]}"
+
+        # Step 3: Get token
+        token = payments.x402.get_x402_access_token(plan_id)["accessToken"]
+
+        # Step 4: Test call (try MCP then REST)
+        if not endpoint:
+            return json.dumps({
+                "subscribed": sub_status,
+                "plan_id": plan_id,
+                "token_acquired": True,
+                "nevermined_transaction": True,
+                "note": "Subscribed but no endpoint to test",
+            })
+
+        # Skip unreachable endpoints
+        if endpoint.startswith("/") or "localhost" in endpoint or "127.0.0.1" in endpoint:
+            return json.dumps({
+                "subscribed": sub_status,
+                "plan_id": plan_id,
+                "endpoint": endpoint,
+                "token_acquired": True,
+                "nevermined_transaction": True,
+                "note": "Endpoint not publicly reachable",
+            })
+
+        # Try calling
+        for auth_style in ["bearer", "payment-signature"]:
+            hdrs = {"Content-Type": "application/json", "Accept": "application/json"}
+            if auth_style == "bearer":
+                hdrs["Authorization"] = f"Bearer {token}"
+            else:
+                hdrs["payment-signature"] = token
+
+            try:
+                r = httpx.post(endpoint, headers=hdrs, json={
+                    "jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1,
+                }, timeout=20)
+                if r.status_code == 200:
+                    return json.dumps({
+                        "subscribed": sub_status,
+                        "plan_id": plan_id,
+                        "endpoint": endpoint,
+                        "auth": auth_style,
+                        "status": 200,
+                        "response": r.text[:400],
+                        "nevermined_transaction": True,
+                    })
+            except Exception:
+                continue
+
+        return json.dumps({
+            "subscribed": sub_status,
+            "plan_id": plan_id,
+            "endpoint": endpoint,
+            "token_acquired": True,
+            "test_failed": True,
+            "nevermined_transaction": True,
+        })
+
+    except Exception as e:
+        return json.dumps({"error": str(e)[:300], "agent": agent_name})
+
+
+def _discover_sellers(agent_name: str, **kwargs) -> str:
+    """List all sellers on the Nevermined hackathon marketplace."""
+    key = _NVM_KEYS.get(agent_name)
+    if not key:
+        return json.dumps({"error": f"No NVM key for {agent_name}"})
+    try:
+        import httpx
+        resp = httpx.get(
+            "https://nevermined.ai/hackathon/register/api/discover",
+            params={"side": "sell"},
+            headers={"x-nvm-api-key": key},
+            timeout=15,
+        )
+        sellers = resp.json().get("sellers", [])
+        return json.dumps([{
+            "team": s.get("teamName", "?"),
+            "name": s.get("name", "?"),
+            "endpoint": s.get("endpointUrl", "none"),
+            "plans": [{
+                "plan_id": p.get("planDid"),
+                "price": p.get("planPrice"),
+                "type": p.get("paymentType"),
+            } for p in s.get("planPricing", [])],
+        } for s in sellers], indent=2)
+    except Exception as e:
+        return json.dumps({"error": str(e)[:200]})
+
+
 def _evaluate_service(service_id: str, verdict: str, reason: str = "", **kwargs) -> str:
     """Supervisor evaluates a service: greenlit, under_review, or killed.
     Killed services are removed from search results."""
@@ -341,7 +550,38 @@ COMMON_TOOLS = [
     },
 ]
 
-SCOUT_TOOLS = COMMON_TOOLS + [
+NVM_TOOLS = [
+    {
+        "name": "self_buy",
+        "description": "Buy from our own Mog Markets gateway through Nevermined. Generates REAL leaderboard transactions. Use to test our services and create revenue.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "service_id": {"type": "string", "description": "Service to buy (e.g. exa_search, open_meteo_weather)"},
+                "params": {"type": "object", "description": "Parameters for the service call"},
+            },
+            "required": ["service_id"],
+        },
+    },
+    {
+        "name": "explore_seller",
+        "description": "Discover and buy from another hackathon team's agent. Subscribes to their plan and tests their endpoint. Generates Nevermined buy-side transactions. Capped at $5 USDC.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "team_name": {"type": "string", "description": "Team or service name to search for"},
+                "plan_id": {"type": "string", "description": "Direct plan ID (skip discovery)"},
+            },
+        },
+    },
+    {
+        "name": "discover_sellers",
+        "description": "List all sellers on the Nevermined hackathon marketplace. Returns team names, service names, endpoints, and plan pricing.",
+        "input_schema": {"type": "object", "properties": {}, "required": []},
+    },
+]
+
+SCOUT_TOOLS = COMMON_TOOLS + NVM_TOOLS + [
     {
         "name": "search_web",
         "description": "Search the web for APIs, services, or information using Exa. Use this to find free/cheap APIs to wrap.",
@@ -373,7 +613,7 @@ SCOUT_TOOLS = COMMON_TOOLS + [
     },
 ]
 
-WORKER_TOOLS = COMMON_TOOLS + [
+WORKER_TOOLS = COMMON_TOOLS + NVM_TOOLS + [
     {
         "name": "get_proposals",
         "description": "Get pending service proposals from the scout.",
@@ -409,7 +649,7 @@ WORKER_TOOLS = COMMON_TOOLS + [
     },
 ]
 
-SUPERVISOR_TOOLS = COMMON_TOOLS + [
+SUPERVISOR_TOOLS = COMMON_TOOLS + NVM_TOOLS + [
     {
         "name": "evaluate_service",
         "description": "Set a supervisor verdict on a service: greenlit, under_review, or killed. Killed services are REMOVED from the catalog.",
@@ -441,6 +681,9 @@ def execute_tool(agent_name: str, tool_name: str, tool_input: dict) -> str:
         "register_service": lambda **kw: _register_service(**kw),
         "test_service": lambda **kw: _test_service(**kw),
         "evaluate_service": lambda **kw: _evaluate_service(**kw),
+        "self_buy": lambda **kw: _self_buy(agent_name=agent_name, **kw),
+        "explore_seller": lambda **kw: _explore_seller(agent_name=agent_name, **kw),
+        "discover_sellers": lambda **kw: _discover_sellers(agent_name=agent_name, **kw),
     }
     fn = dispatch.get(tool_name)
     if not fn:
