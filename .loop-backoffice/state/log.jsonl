@@ -6,3 +6,5 @@
 {"ts":"2026-03-06T00:25:00Z","action":"eval_accept","brief":"backoffice-004-scout-agent-apis","notes":"Scout found 5 APIs, 3 wrappable (MyMemory, CurrencyConversion, RESTCountries), 2 skipped (Judge0 needs key, LibreTranslate needs key). Dispatching wrap-005 for MyMemory Translation."}
 {"ts":"2026-03-06T00:52:00Z","action":"eval","brief":"backoffice-005-wrap-mymemory-translation","verdict":"accepted","notes":"Clean wrap of MyMemory Translation. Handler + catalog registration follows pattern. Free upstream, 2 credits/call."}
 {"ts":"2026-03-06T00:52:30Z","action":"dispatch","brief":"backoffice-006-wrap-currency-conversion","notes":"Wrap fawazahmed0 currency-api. Free CDN, no key. 1 credit/call."}
+{"ts":"2026-03-06T01:25:00Z","action":"eval","brief":"backoffice-006-wrap-currency-conversion","verdict":"accepted","notes":"Clean wrap of currency conversion. Handler follows pattern, self-test passed. Free upstream, 1 credit/call. Portfolio now 7 services."}
+{"ts":"2026-03-06T01:25:30Z","action":"dispatch","brief":"backoffice-007-wrap-rest-countries","notes":"Wrap REST Countries API. Free, no key, country data. Last in current wrap queue from scout-004."}

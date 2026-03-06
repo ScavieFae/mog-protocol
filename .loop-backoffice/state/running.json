@@ -1,14 +1,6 @@
 {
   "active": [],
-  "completed_pending_eval": [
-    {
-      "brief": "backoffice-006-wrap-currency-conversion",
-      "branch": "bo/006-wrap-currency-conversion",
-      "brief_file": ".loop-backoffice/briefs/backoffice-006-wrap-currency-conversion.md",
-      "dispatched_at": "2026-03-06T01:19:07Z",
-      "completed_at": "2026-03-06T01:20:55Z"
-    }
-  ],
+  "completed_pending_eval": [],
   "history": [
     {
       "brief": "backoffice-001-initial-scout",
@@ -59,6 +51,16 @@
       "evaluated_at": "2026-03-06T00:52:00Z",
       "verdict": "accepted",
       "eval_file": ".loop-backoffice/evaluations/eval-005-wrap-mymemory-translation.md"
+    },
+    {
+      "brief": "backoffice-006-wrap-currency-conversion",
+      "branch": "bo/006-wrap-currency-conversion",
+      "brief_file": ".loop-backoffice/briefs/backoffice-006-wrap-currency-conversion.md",
+      "dispatched_at": "2026-03-06T01:19:07Z",
+      "completed_at": "2026-03-06T01:20:55Z",
+      "evaluated_at": "2026-03-06T01:25:00Z",
+      "verdict": "accepted",
+      "eval_file": ".loop-backoffice/evaluations/eval-006-wrap-currency-conversion.md"
     }
   ]
 }

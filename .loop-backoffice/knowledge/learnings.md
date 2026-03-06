@@ -40,6 +40,6 @@
 - **LibreTranslate** — public instance now requires API key. MyMemory is the free alternative.
 
 ### Wrap Queue (priority order)
-1. MyMemory Translation (brief-005, dispatched)
-2. Currency Conversion (next)
-3. REST Countries (after that)
+1. ~~MyMemory Translation (brief-005, accepted)~~
+2. ~~Currency Conversion (brief-006, accepted)~~
+3. REST Countries (brief-007, dispatched)
