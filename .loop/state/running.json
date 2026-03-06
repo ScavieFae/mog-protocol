@@ -1,21 +1,13 @@
 {
   "active": [
     {
-      "brief": "brief-007-portfolio-core",
-      "branch": "brief-007-portfolio-core",
-      "brief_file": ".loop/briefs/brief-007-portfolio-core.md",
-      "dispatched_at": "2026-03-06T10:41:34Z"
+      "brief": "brief-009-gateway-revenue",
+      "branch": "brief-009-gateway-revenue",
+      "brief_file": ".loop/briefs/brief-009-gateway-revenue.md",
+      "dispatched_at": "2026-03-06T11:15:08Z"
     }
   ],
-  "completed_pending_eval": [
-    {
-      "brief": "brief-008-fix-fx-wire-services",
-      "branch": "brief-008-fix-fx-wire-services",
-      "brief_file": ".loop/briefs/brief-008-fix-fx-wire-services.md",
-      "dispatched_at": "2026-03-06T10:40:16Z",
-      "completed_at": "2026-03-06T10:44:07Z"
-    }
-  ],
+  "completed_pending_eval": [],
   "history": [
     {
       "brief": "brief-001-phase1-seller",
@@ -64,6 +56,12 @@
       "branch": "brief-007-portfolio-core",
       "merged_at": "2026-03-06T10:40:59Z",
       "evaluation": ""
+    },
+    {
+      "brief": "brief-008-fix-fx-wire-services",
+      "branch": "brief-008-fix-fx-wire-services",
+      "completed_at": "2026-03-06T10:44:07Z",
+      "evaluation": "APPROVE \u2014 telemetry.py created, FX handler fixed, 12 services verified. Pending merge."
     }
   ]
 }
