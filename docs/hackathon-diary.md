@@ -181,4 +181,48 @@ This is the demo moment: an autonomous agent discovered an API via web search, e
 
 **[scaviefae]** Brief 006 Task 1 done: surge pricing wired into gateway — `_gateway_credits()` and `buy_and_call()` now call `get_current_price()`, txlog records surge price, `_meta` includes `surge_multiplier`. All 7 tests pass. Next: /health endpoint.
 
+### ~15:30 — Railway Deployed, Pump Running
+
+**[scav]** Gateway deployed to Railway with all services. Transaction pump running on ScavieFae (`--buyer --loop 0 --delay 60`) generating cross-wallet transactions (Lynn → Mattie). Created `src/pump.py` for automated tx generation. Registered "Mog Buyer" as discrete agent under Lynn's account for cross-wallet visibility.
+
+**[scav]** Created developer onboarding guides: `docs/guides/first-transaction.md`, `docs/guides/paymentsmcp-gotchas.md`. README with quickstart code, MCP config, contact info.
+
+### ~16:00 — Hackathon Guide as Paid Service
+
+**[scav]** Key insight: the Nevermined hackathon portal (nevermined.ai/hackathon/register) is client-rendered — Claude can't read it. We ingested the portal content, Discovery API schema, registration flow, and all the onboarding docs, then wrapped them as paid services through the gateway.
+
+Split into 4 services at 1 credit each:
+- `hackathon_portal` — ingested website portal content
+- `hackathon_onboarding` — GitHub + website onboarding guide
+- `hackathon_pitfalls` — 9 PaymentsMCP gotchas
+- `hackathon_all` — everything in one call
+
+Registered "Nevermined Hackathon Guide" as dedicated agent on the marketplace portal. Category: Infrastructure.
+
+### ~16:10 — External Subscribers
+
+**[mattie]** Revenue page shows 14 subscription events. 4 unknown external wallets subscribed to our plans — real teams finding us on the portal. One of them subscribed specifically to "Hackathon Guide Access."
+
+**[decision]** Paused the auto-pump. External traction is more interesting than self-buying. Focus on serving real customers.
+
+### ~16:20 — OpenAI Quota Issue, Graceful Degradation
+
+**[scav]** OpenAI API key hit quota limit — gateway was crashing on startup trying to embed 10 service descriptions. Fixed `src/catalog.py` to catch embedding errors and fall back to keyword search. Gateway now starts reliably regardless of OpenAI key status.
+
+**[scav]** Keyword search improved: now matches individual words instead of requiring full query as substring. "hackathon portal" correctly ranks `hackathon_portal` first.
+
+### ~16:30 — ScavieFae Adds fal.ai Image Gen + IP Geolocation
+
+**[scaviefae]** Wrapped `nano_banana_pro` (fal.ai image generation, 10 credits) and `ip_geolocation` (free API, 1 credit). Catalog now at 11 services. FAL_KEY added to Railway.
+
+### ~16:40 — Quick Connect Guide, Another External Purchase
+
+**[scav]** Created `docs/guides/quick-connect.md` — subscribe, connect, buy with full service catalog and image gen example. Linked from README.
+
+**[mattie]** Got another hackathon_guide purchase from an external wallet. Real revenue (well, real credits). The system works end to end: portal listing → discovery → subscribe → buy.
+
+**[scav]** Revenue model clarification: `get_free_price_config()` means $0 subscriptions, credits are metering tokens with no monetary value. To show real revenue numbers would need `get_erc20_price_config()` with testnet USDC. For hackathon purposes, transaction count and economic behavior matter more than dollar amounts.
+
+**Current state:** 11 services, 2 marketplace listings (Gateway + Hackathon Guide), 4+ external subscribers, keyword search active, gateway stable on Railway. Other team at venue actively testing our endpoint.
+
 <!-- New entries go above this line -->
