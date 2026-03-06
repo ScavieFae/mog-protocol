@@ -388,6 +388,22 @@ def _hacker_news_top(count: int = 5) -> str:
     return json.dumps({"stories": stories, "count": len(stories)})
 
 
+def _pollinations_image(prompt: str, model: str = "flux", width: int = 512, height: int = 512, seed: int = None) -> str:
+    encoded_prompt = urllib.parse.quote(prompt)
+    url = (
+        f"https://image.pollinations.ai/prompt/{encoded_prompt}"
+        f"?model={model}&width={width}&height={height}&nologo=true"
+    )
+    if seed is not None:
+        url += f"&seed={seed}"
+    return json.dumps({
+        "image_url": url,
+        "prompt": prompt,
+        "model": model,
+        "dimensions": f"{width}x{height}",
+    })
+
+
 def _random_user(count: int = 1, nationality: str = "") -> str:
     count = max(1, min(count, 10))
     url = f"https://randomuser.me/api/?results={count}"
@@ -537,4 +553,14 @@ catalog.register(
     example_params={"count": 3, "nationality": "us"},
     provider="mog-protocol",
     handler=_random_user,
+)
+
+catalog.register(
+    service_id="image_generate",
+    name="AI Image Generation",
+    description="Generate AI images from text prompts using Pollinations.ai (Flux, GPT Image, Seedream models). Returns an image URL. Free, no API key needed.",
+    price_credits=3,
+    example_params={"prompt": "a robot at a hackathon", "model": "flux", "width": 512, "height": 512},
+    provider="mog-protocol",
+    handler=_pollinations_image,
 )
