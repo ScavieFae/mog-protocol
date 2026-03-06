@@ -98,32 +98,83 @@ export function ServiceCard({ service, evaluation, onClick }: ServiceCardProps) 
           boxShadow: surge > 1.5 ? "0 0 12px #C47A7A20" : surge > 1.1 ? "0 0 8px #C5A86215" : undefined,
         }}
       >
-        {/* Header */}
-        <div className="flex items-start justify-between mb-2">
+        {/* Header: name + badges */}
+        <div className="flex items-start justify-between mb-1.5">
           <div className="flex items-center gap-2">
-            <div className={`w-2.5 h-2.5 rounded-full ${totalCalls > 0 ? "animate-breathe" : ""}`} style={{ backgroundColor: color }} />
+            <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${totalCalls > 0 ? "animate-breathe" : ""}`} style={{ backgroundColor: color }} />
             <span className="font-sans text-sm font-medium text-charcoal truncate max-w-[140px]">
               {service.name}
             </span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             {fresh && (
               <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full bg-sage/15 text-sage animate-fade-up">
                 NEW
               </span>
             )}
-            <span className="font-mono text-xs text-stone/60">{service.provider ?? "mog"}</span>
+            {evaluation && (() => {
+              const badge = SUPERVISOR_BADGES[evaluation.status]
+              if (!badge) return null
+              return (
+                <span
+                  className="font-mono text-[9px] px-1.5 py-0.5 rounded-full"
+                  style={{ backgroundColor: `${badge.color}15`, color: badge.color }}
+                  title={evaluation.reason}
+                >
+                  {badge.icon}
+                </span>
+              )
+            })()}
           </div>
         </div>
 
-        {/* Price + Surge + Supervisor */}
-        <div className="flex items-center gap-2 mb-3">
-          <span className={`font-mono font-medium ${surge > 1.5 ? "text-rose text-xl" : surge > 1.1 ? "text-gold text-xl" : "text-copper text-lg"}`}>
+        {/* Hero stats: calls + revenue + health */}
+        <div className="flex items-baseline gap-2 mb-2">
+          {totalCalls > 0 ? (
+            <>
+              <span className="font-mono text-lg font-medium text-charcoal">{totalCalls}</span>
+              <span className="font-mono text-xs text-stone/50">calls</span>
+              {revenue > 0 && (
+                <>
+                  <span className="font-mono text-lg font-medium text-sage">{revenue}</span>
+                  <span className="font-mono text-xs text-stone/50">earned</span>
+                </>
+              )}
+            </>
+          ) : (
+            <span className="font-mono text-sm text-stone/40 italic">awaiting first buyer</span>
+          )}
+        </div>
+
+        {/* Health bar + price + surge */}
+        <div className="flex items-center gap-2">
+          {/* Success rate bar */}
+          {stats?.success_rate != null && totalCalls > 0 && (
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+              <div className="flex-1 h-1.5 rounded-full bg-stone/10 overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all"
+                  style={{
+                    width: `${Math.round(stats.success_rate * 100)}%`,
+                    backgroundColor: stats.success_rate > 0.9 ? "#87A878" : stats.success_rate > 0.6 ? "#C5A862" : "#C47A7A",
+                  }}
+                />
+              </div>
+              <span className={`font-mono text-[10px] ${stats.success_rate > 0.9 ? "text-sage" : stats.success_rate > 0.6 ? "text-gold" : "text-rose"}`}>
+                {(stats.success_rate * 100).toFixed(0)}%
+              </span>
+            </div>
+          )}
+
+          {/* Price (small, right-aligned) */}
+          <span className={`font-mono text-xs ml-auto flex-shrink-0 ${surge > 1.5 ? "text-rose font-bold" : surge > 1.1 ? "text-gold font-medium" : "text-stone/50"}`}>
             {service.current_price ?? service.price_credits}cr
           </span>
+
+          {/* Surge badge */}
           {surge > 1.1 && (
             <motion.span
-              className="font-mono text-xs font-bold px-2 py-0.5 rounded-full animate-pulse-copper"
+              className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-pulse-copper flex-shrink-0"
               style={{
                 backgroundColor: surge > 1.5 ? "#C47A7A30" : "#C5A86230",
                 color: surge > 1.5 ? "#C47A7A" : "#C5A862",
@@ -131,32 +182,16 @@ export function ServiceCard({ service, evaluation, onClick }: ServiceCardProps) 
               animate={{ scale: [1, 1.08, 1] }}
               transition={{ repeat: Infinity, duration: 1.5 }}
             >
-              {surge.toFixed(1)}x SURGE
+              {surge.toFixed(1)}x
             </motion.span>
           )}
-          {evaluation && (() => {
-            const badge = SUPERVISOR_BADGES[evaluation.status]
-            if (!badge) return null
-            return (
-              <span
-                className="ml-auto font-mono text-[10px] px-1.5 py-0.5 rounded-full"
-                style={{ backgroundColor: `${badge.color}15`, color: badge.color }}
-                title={evaluation.reason}
-              >
-                {badge.icon} {badge.label}
-              </span>
-            )
-          })()}
         </div>
 
-        {/* Stats row */}
-        <div className="flex items-center gap-3 text-xs font-mono">
-          <span className="text-stone/60">{totalCalls} calls</span>
-          {revenue > 0 && <span className="text-gold">{revenue}cr earned</span>}
-          {stats?.success_rate != null && stats.success_rate < 1 && (
-            <span className={stats.success_rate > 0.9 ? "text-sage" : "text-rose"}>
-              {(stats.success_rate * 100).toFixed(0)}%
-            </span>
+        {/* Provider + latency */}
+        <div className="flex items-center gap-2 mt-2 text-[10px] font-mono text-stone/40">
+          <span>{service.provider ?? "mog"}</span>
+          {stats?.avg_latency_ms != null && stats.avg_latency_ms > 0 && (
+            <span>{stats.avg_latency_ms}ms</span>
           )}
         </div>
 
