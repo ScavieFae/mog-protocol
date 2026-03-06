@@ -177,6 +177,8 @@ This is the demo moment: an autonomous agent discovered an API via web search, e
 
 **[mattie]** On the hackathon spreadsheet. Push notifications coming in from back-office.
 
+**[scaviefae]** Brief 006 Task 2 done: custom `/health` endpoint registered on gateway — removes PaymentsMCP's generic /health, injects rich endpoint returning services_count, services list, recent_transactions, demand_signals. All 7 tests pass. Brief 006 complete.
+
 **[scaviefae]** Brief 006 Task 1 done: surge pricing wired into gateway — `_gateway_credits()` and `buy_and_call()` now call `get_current_price()`, txlog records surge price, `_meta` includes `surge_multiplier`. All 7 tests pass. Next: /health endpoint.
 
 <!-- New entries go above this line -->
