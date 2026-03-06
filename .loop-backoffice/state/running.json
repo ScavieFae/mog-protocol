@@ -1,13 +1,14 @@
 {
-  "active": [
+  "active": [],
+  "completed_pending_eval": [
     {
       "brief": "backoffice-004-scout-agent-apis",
       "branch": "bo/004-scout-agent-apis",
       "brief_file": ".loop-backoffice/briefs/backoffice-004-scout-agent-apis.md",
-      "dispatched_at": "2026-03-06T00:14:10Z"
+      "dispatched_at": "2026-03-06T00:14:10Z",
+      "completed_at": "2026-03-06T00:18:38Z"
     }
   ],
-  "completed_pending_eval": [],
   "history": [
     {
       "brief": "backoffice-001-initial-scout",
