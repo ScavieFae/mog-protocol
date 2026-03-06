@@ -274,4 +274,8 @@ Both tx hashes verifiable on [Base Sepolia explorer](https://sepolia.basescan.or
 
 **Current state:** 11 services, 4 active paid plans (USDC), 2 USDC revenue transactions ($2 total), 1 cross-team transaction (Trust Net), full on-chain proof captured, fiat blocked by Nevermined backend bug, repo public.
 
+### March 6 — Brief 008
+
+**[scaviefae]** Brief 008 complete: created `src/telemetry.py` (TelemetryEvent + Telemetry wrapping txlog, with get_recent event_type filter + get_stats); fixed `_frankfurter_fx_rates` async→sync, return JSON string. Smoke test: 12 services, all handlers present. Gateway can now import without errors.
+
 <!-- New entries go above this line -->
