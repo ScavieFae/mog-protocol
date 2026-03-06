@@ -16,7 +16,46 @@ Read these before starting:
 
 ## Tasks
 
-1. **Create `src/toolkit.py` with four sublayers.** Single file, class-per-layer. Each layer is a module-level singleton.
+1. **Create `src/toolkit.py` with Trace + four sublayers.** Single file, class-per-layer. Each layer is a module-level singleton.
+
+   **Trace** — Lightweight operation trace. Every toolkit method accepts an optional `trace` param and appends one short line. This is how the conductor reconstructs what happened without reading logs.
+   ```python
+   class Trace:
+       def __init__(self, operation: str = ""):
+           self.operation = operation        # e.g. "evaluate openweather"
+           self.steps: list[str] = []
+           self.started_at = datetime.now(timezone.utc).isoformat()
+
+       def log(self, layer: str, action: str, result: str):
+           """Append one trace step. Keep result SHORT — truncate to 80 chars."""
+           result = result[:80]
+           self.steps.append(f"{layer}:{action} -> {result}")
+
+       def summary(self) -> list[str]:
+           """Return last 20 steps (cap to prevent bloat)."""
+           return self.steps[-20:]
+
+       def to_dict(self) -> dict:
+           return {
+               "operation": self.operation,
+               "started_at": self.started_at,
+               "step_count": len(self.steps),
+               "steps": self.summary(),
+           }
+   ```
+
+   Usage pattern — caller creates a trace, passes it through, trace ends up on the right record:
+   ```python
+   trace = Trace("evaluate openweather")
+   results = research.social_comments("twitter.com", "weather API", trace=trace)
+   page = browse.navigate(session, "https://openweathermap.org/signup", trace=trace)
+   # ...if blocked:
+   blockers.report(service_id="openweather", ..., trace=trace)
+   # ...if success:
+   portfolio.update_hypothesis(hyp_id, "validated", validation_trace=trace.summary())
+   ```
+
+   The blocker report stores `trace.to_dict()` in its `trace` field. Hypotheses store `trace.summary()` in `validation_trace`. Short, clean, reconstructable.
 
    **BrowseLayer** — Browserbase headless browser:
    ```python
@@ -25,24 +64,26 @@ Read these before starting:
            self.api_key = os.getenv("BROWSERBASE_API_KEY")
            self.project_id = os.getenv("BROWSERBASE_PROJECT_ID")
 
-       def create_session(self) -> dict:
+       def create_session(self, trace: Trace = None) -> dict:
            """Create a Browserbase session. Returns {session_id, connect_url}."""
-           # Uses browserbase SDK
+           # trace.log("browse", "create_session", f"ok sid={session_id[:8]}")
 
-       def navigate(self, session_id: str, url: str) -> dict:
+       def navigate(self, session_id: str, url: str, trace: Trace = None) -> dict:
            """Navigate to URL, return {title, text, url}."""
-           # Connects via Playwright CDP, navigates, extracts text
+           # trace.log("browse", f"navigate({url})", f"ok title='{title}'")
 
-       def get_text(self, session_id: str, selector: str = "body") -> str:
+       def get_text(self, session_id: str, selector: str = "body", trace: Trace = None) -> str:
            """Get text content from current page or specific selector."""
 
-       def fill_form(self, session_id: str, fields: dict) -> bool:
+       def fill_form(self, session_id: str, fields: dict, trace: Trace = None) -> bool:
            """Fill form fields by name/id/label. Returns success."""
+           # trace.log("browse", f"fill_form({','.join(fields.keys())})", "ok" or "FAIL ...")
 
-       def click(self, session_id: str, selector_or_text: str) -> bool:
+       def click(self, session_id: str, selector_or_text: str, trace: Trace = None) -> bool:
            """Click an element by CSS selector or visible text."""
+           # trace.log("browse", f"click({selector_or_text})", "ok" or "FAIL ...")
 
-       def screenshot(self, session_id: str) -> str:
+       def screenshot(self, session_id: str, trace: Trace = None) -> str:
            """Take screenshot, return base64 data URI."""
 
        def close_session(self, session_id: str) -> None:
@@ -56,20 +97,21 @@ Read these before starting:
        def __init__(self):
            self.api_key = os.getenv("AGENTMAIL_API_KEY")
 
-       def create_inbox(self, label: str) -> dict:
+       def create_inbox(self, label: str, trace: Trace = None) -> dict:
            """Create a named inbox. Returns {inbox_id, address}."""
-           # client_id=f"mog-{label}" for idempotent retries
+           # trace.log("email", f"create_inbox({label})", f"ok {address}")
 
-       def send(self, inbox_id: str, to: str, subject: str, body: str) -> bool:
+       def send(self, inbox_id: str, to: str, subject: str, body: str, trace: Trace = None) -> bool:
            """Send an email from an inbox."""
+           # trace.log("email", f"send(to={to})", "ok" or "FAIL ...")
 
-       def check_inbox(self, inbox_id: str, wait_seconds: int = 0, limit: int = 10) -> list:
+       def check_inbox(self, inbox_id: str, wait_seconds: int = 0, limit: int = 10, trace: Trace = None) -> list:
            """List messages. If wait_seconds > 0, poll until a message arrives or timeout."""
-           # Returns [{from, subject, text, html, received_at}]
+           # trace.log("email", f"check_inbox(wait={wait_seconds})", f"{n} messages")
 
-       def extract_verification(self, message: dict) -> str | None:
+       def extract_verification(self, message: dict, trace: Trace = None) -> str | None:
            """Extract verification code (6-digit) or URL from email body."""
-           # Regex for: 6-digit codes, URLs containing verify/confirm/activate
+           # trace.log("email", "extract_verification", "code found" or "link found" or "FAIL none")
    ```
 
    **VaultLayer** — Credential storage:
@@ -98,11 +140,12 @@ Read these before starting:
        def __init__(self, path="data/blockers.json"):
 
        def report(self, service_id: str, blocker_type: str, description: str,
-                  attempted_steps: list[str] = None, recommendation: str = "SKIP",
+                  trace: Trace = None, recommendation: str = "SKIP",
                   opportunity_value: int = 5) -> str:
-           """File a blocker report. Returns report ID."""
-           # blocker_type: signup_required | api_key_needed | paywall | rate_limited | auth_flow | captcha | other
-           # recommendation: ESCALATE | RETRY_WITH_TOOL | SKIP | DEFER
+           """File a blocker report. Returns report ID.
+           If trace is provided, stores trace.to_dict() on the report.
+           blocker_type: signup_required | api_key_needed | paywall | rate_limited | auth_flow | captcha | other
+           recommendation: ESCALATE | RETRY_WITH_TOOL | SKIP | DEFER"""
 
        def get_recent(self, limit: int = 10) -> list[dict]:
            """Recent blockers, newest first."""
@@ -125,7 +168,9 @@ Read these before starting:
 
 2. **Ensure `data/` directory exists with `.gitkeep`, and add `data/vault.json` and `data/blockers.json` to `.gitignore`.** Portfolio JSON too if not already there.
 
-3. **Create `src/test_toolkit.py` — tests for vault and blockers (no API keys needed).** Test:
+3. **Create `src/test_toolkit.py` — tests for Trace, vault, and blockers (no API keys needed).** Test:
+   - Trace: log steps, summary caps at 20, to_dict includes operation and step_count, result truncation at 80 chars
+   - Trace with blocker: create trace, log steps, pass to blockers.report(), verify trace appears on report
    - Vault: store, get, list_keys (no values exposed), delete, overwrite, persistence round-trip
    - Blockers: report (returns ID), get_recent, get_by_type, get_escalations
    - BrowseLayer: test graceful degradation when no API key (returns error dict)
@@ -134,8 +179,10 @@ Read these before starting:
 
 ## Completion Criteria
 
-- [ ] `src/toolkit.py` exists with BrowseLayer, EmailLayer, VaultLayer, BlockerLayer
-- [ ] All four singletons: `browse`, `email`, `vault`, `blockers`
+- [ ] `src/toolkit.py` exists with Trace, BrowseLayer, EmailLayer, VaultLayer, BlockerLayer
+- [ ] All five exports: `Trace`, `browse`, `email`, `vault`, `blockers`
+- [ ] Every toolkit method accepts optional `trace: Trace` and logs one short line
+- [ ] BlockerLayer.report() stores trace.to_dict() when trace is provided
 - [ ] Graceful degradation: no crashes when API keys are missing
 - [ ] `data/vault.json` and `data/blockers.json` gitignored
 - [ ] `src/test_toolkit.py` passes for vault + blockers + graceful degradation

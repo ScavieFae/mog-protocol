@@ -23,6 +23,8 @@ This also feeds back into what we *sell*. If agents need these capabilities, oth
 ```
 Scout/Worker Agents
        |
+  Trace (lightweight operation log, ~1 line per toolkit call)
+       |
   Agent Toolkit (src/toolkit.py)
        |
   ┌────┼────────┬──────────┬────────────┬──────────────┐
@@ -32,6 +34,32 @@ Browse Email   Vault    Research    Blockers      Wallet
 Browserbase AgentMail  data/     Exa social    data/      Nevermined
               vault.json  archive.ph  blockers.json  (existing)
 ```
+
+### Traces — Lightweight Operation Logs
+
+Every toolkit method accepts an optional `trace` param and appends one short line. This is how the conductor reconstructs what a worker did without reading verbose logs.
+
+```python
+trace = Trace("evaluate openweather")
+browse.navigate(session, "https://openweathermap.org/signup", trace=trace)
+browse.fill_form(session, {"email": addr, "password": pw}, trace=trace)
+email.check_inbox(inbox_id, wait=30, trace=trace)
+# trace.steps:
+# ["browse:navigate(openweathermap.org/signup) -> ok title='Sign Up'",
+#  "browse:fill_form(email,password) -> ok",
+#  "email:check_inbox(wait=30) -> 1 message"]
+```
+
+Traces end up on:
+- **Blocker reports** (`.trace` field) — when the operation fails
+- **Hypotheses** (`.validation_trace` field) — when it succeeds
+- **Discarded** — for routine operations nobody needs to review
+
+Design constraints:
+- Max 20 steps per trace (capped in `summary()`)
+- Result strings truncated to 80 chars
+- No binary data, no full page text — just action + short outcome
+- One `Trace` per logical operation (e.g., "evaluate and wrap OpenWeather")
 
 ### Layer 1: Browse — Browserbase Integration
 

@@ -23,22 +23,23 @@ Read these before starting:
 
    **Social/demand mining via Exa:**
    ```python
-   def social_comments(self, domain: str, query: str, max_results: int = 10) -> list[dict]:
+   def social_comments(self, domain: str, query: str, max_results: int = 10, trace: Trace = None) -> list[dict]:
        """Search a specific social media domain for demand signals.
        Uses Exa with domain filtering to find comments/posts matching query.
        Returns [{title, url, snippet, score}]."""
-       # Wraps _exa_search with include_domains=[domain]
-       # Uses exa_py.Exa search_and_contents with include_domains param
+       # Wraps exa_py.Exa search_and_contents with include_domains=[domain]
+       # trace.log("research", f"social_comments({domain}, {query})", f"{n} results")
    ```
 
    **Archive.ph fetcher:**
    ```python
-   def fetch_archived(self, url: str) -> dict:
+   def fetch_archived(self, url: str, trace: Trace = None) -> dict:
        """Fetch an archived version of a URL via archive.ph.
        Tries archive.ph/latest/{url}, falls back to archive.is/latest/{url}.
        Returns {url, title, text, source} or {error}."""
        # HTTP GET to archive.ph/latest/{url}
        # Parse with BeautifulSoup, extract article text
+       # trace.log("research", f"fetch_archived({url})", "ok" or "FAIL ...")
        # No API key needed
    ```
 
