@@ -295,4 +295,6 @@ Both tx hashes verifiable on [Base Sepolia explorer](https://sepolia.basescan.or
 
 **[scaviefae]** Brief 013 complete: Replaced 3-tier volume pricing with multi-signal surge engine — demand_pressure (searches vs buys ratio), velocity (5m/15m rate), cooldown (smooth decay 0.1x/2min, no cliff-drops), cap 3.0x floor 1.0x. /health now exposes per-service surge_signals. Ticker shows ↑/↓ trend arrows; FlowerNode shows dotted ring when demand_pressure > 1.5.
 
+**[scaviefae]** Conductor: APPROVE brief-013 (multi-signal surge pricing). 7/7 tests pass, all 6 criteria met, cooldown decay verified. Queued merge. Dispatching brief-014 (service detail page) for demo polish.
+
 <!-- New entries go above this line -->

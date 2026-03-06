@@ -7,15 +7,7 @@
       "dispatched_at": "2026-03-06T19:25:05Z"
     }
   ],
-  "completed_pending_eval": [
-    {
-      "brief": "brief-013-surge-pricing-signals",
-      "branch": "brief-013-surge-pricing-signals",
-      "brief_file": ".loop/briefs/brief-013-surge-pricing-signals.md",
-      "dispatched_at": "2026-03-06T19:14:44Z",
-      "completed_at": "2026-03-06T19:25:03Z"
-    }
-  ],
+  "completed_pending_eval": [],
   "history": [
     {
       "brief": "brief-001-phase1-seller",
@@ -94,6 +86,12 @@
       "branch": "brief-012-research-and-services",
       "closed_at": "2026-03-06T19:08:00Z",
       "evaluation": "KILLED \u2014 branch deleted. Work on main. Remaining tasks in brief-013."
+    },
+    {
+      "brief": "brief-013-surge-pricing-signals",
+      "branch": "brief-013-surge-pricing-signals",
+      "merged_at": "2026-03-06T19:25:11Z",
+      "evaluation": ""
     }
   ]
 }

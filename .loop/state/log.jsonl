@@ -3,3 +3,8 @@
 {"ts":"2026-03-06T11:30:00Z","action":"dispatch","brief":"brief-010-autonomous-investment","notes":"Next in Phase 1 sequence. Updates conductor/worker/goals/learnings for portfolio-aware autonomous loop."}
 {"timestamp": "2026-03-06T15:22:59Z", "action": "daemon:move-to-eval", "brief": "brief-009-gateway-revenue"}
 {"timestamp": "2026-03-06T15:23:01Z", "action": "daemon:dispatch", "brief": "brief-010-autonomous-investment", "branch": "brief-010-autonomous-investment", "notes": "Update conductor/worker/goals/learnings for portfolio-aware autonomous loop"}
+{"ts":"2026-03-06T19:30:00Z","action":"eval_complete","brief":"brief-013-surge-pricing-signals","verdict":"MERGE","notes":"All 6 criteria pass. 7/7 tests pass. Multi-signal surge (demand, velocity, cooldown) replaces 3-tier volume. /health has surge_signals. Web: Ticker arrows + FlowerNode demand ring. Backward-compatible get_current_price. No issues."}
+{"ts":"2026-03-06T19:30:00Z","action":"dispatch","brief":"brief-014-service-detail-page","notes":"Demo polish: /service/:id detail page with stats grid, clickable garden flowers, how-to-buy. Safe web-only change for 5:30 PM demo."}
+{"timestamp": "2026-03-06T19:25:03Z", "action": "daemon:move-to-eval", "brief": "brief-013-surge-pricing-signals"}
+{"timestamp": "2026-03-06T19:25:06Z", "action": "daemon:dispatch", "brief": "brief-014-service-detail-page", "branch": "brief-014-service-detail-page", "notes": "Demo polish: /service/:id detail page with stats, clickable garden flowers, how-to-buy snippet"}
+{"timestamp": "2026-03-06T19:25:11Z", "action": "daemon:merge", "brief": "brief-013-surge-pricing-signals", "branch": "brief-013-surge-pricing-signals", "title": "Multi-signal surge pricing with demand/velocity/cooldown + web display"}
