@@ -18,7 +18,7 @@ load_dotenv()
 EXA_API_KEY = os.getenv("EXA_API_KEY")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 NVM_API_KEY = os.getenv("NVM_API_KEY")
-FAL_KEY = os.getenv("FAL_KEY")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 # --- Handler functions ---
 
@@ -85,31 +85,30 @@ def _ip_geolocation(ip: str) -> str:
     return json.dumps(data)
 
 
-def _nano_banana_pro(prompt: str, aspect_ratio: str = "1:1", resolution: str = "1K") -> str:
-    if not FAL_KEY:
-        return json.dumps({"error": "FAL_KEY not set"})
-    import fal_client
-    os.environ["FAL_KEY"] = FAL_KEY
+def _nano_banana_pro(prompt: str, aspect_ratio: str = "1:1") -> str:
+    if not GOOGLE_API_KEY:
+        return json.dumps({"error": "GOOGLE_API_KEY not set"})
+    import base64
+    from google import genai
+    from google.genai import types
     try:
-        result = fal_client.subscribe(
-            "fal-ai/nano-banana-pro",
-            arguments={
-                "prompt": prompt,
-                "aspect_ratio": aspect_ratio,
-                "resolution": resolution,
-                "num_images": 1,
-                "output_format": "png",
-            },
+        client = genai.Client(api_key=GOOGLE_API_KEY)
+        response = client.models.generate_content(
+            model="gemini-3-pro-image-preview",
+            contents=[prompt],
+            config=types.GenerateContentConfig(
+                response_modalities=["IMAGE", "TEXT"],
+            ),
         )
-        images = result.get("images", [])
-        if not images:
-            return json.dumps({"error": "No image returned"})
-        return json.dumps({
-            "image_url": images[0]["url"],
-            "width": images[0].get("width"),
-            "height": images[0].get("height"),
-            "content_type": images[0].get("content_type", "image/png"),
-        })
+        for part in response.candidates[0].content.parts:
+            if part.inline_data is not None:
+                b64 = base64.b64encode(part.inline_data.data).decode("utf-8")
+                mime = part.inline_data.mime_type or "image/png"
+                return json.dumps({
+                    "image_url": f"data:{mime};base64,{b64}",
+                    "content_type": mime,
+                })
+        return json.dumps({"error": "No image returned"})
     except Exception as e:
         return json.dumps({"error": str(e)})
 
@@ -432,9 +431,9 @@ catalog.register(
 catalog.register(
     service_id="nano_banana_pro",
     name="Nano Banana Pro Image Generation",
-    description="Generate images from text prompts using Nano Banana Pro (Gemini 3 Pro Image). Returns a public URL to the generated image. Supports aspect ratios (1:1, 16:9, 4:3, 3:2) and resolutions (1K, 2K, 4K).",
+    description="Generate images from text prompts using Nano Banana Pro (Gemini 3 Pro Image) via Google API. Returns a base64 data URI of the generated image. Params: prompt (required, descriptive text of the image to generate), aspect_ratio (optional, default '1:1', one of '1:1', '16:9', '4:3', '3:2').",
     price_credits=10,
-    example_params={"prompt": "A cyberpunk cat riding a skateboard", "aspect_ratio": "1:1", "resolution": "1K"},
+    example_params={"prompt": "A cyberpunk cat riding a skateboard", "aspect_ratio": "1:1"},
     provider="mog-protocol",
     handler=_nano_banana_pro,
 )
@@ -447,4 +446,35 @@ catalog.register(
     example_params={"latitude": 37.77, "longitude": -122.42, "forecast_days": 1},
     provider="mog-protocol",
     handler=_open_meteo_weather,
+)
+
+
+# --- Frankfurter FX Rates (discovered by mog-scout, wrapped by mog-worker via Trinity) ---
+
+async def _frankfurter_fx_rates(base: str = "USD", symbols: str = "", date: str = "latest") -> dict:
+    """Get live or historical FX rates from Frankfurter (29 major currencies, no auth)."""
+    import httpx
+    try:
+        async with httpx.AsyncClient() as client:
+            params = {"base": base}
+            if symbols:
+                params["symbols"] = symbols
+            resp = await client.get(
+                f"https://api.frankfurter.dev/v1/{date}",
+                params=params,
+            )
+            resp.raise_for_status()
+            return resp.json()
+    except Exception as e:
+        return {"error": str(e)}
+
+
+catalog.register(
+    service_id="frankfurter_fx_rates",
+    name="Frankfurter FX Rates",
+    description="Live and historical foreign exchange rates for 29 major fiat currencies. Supports base currency selection and targeted symbol filtering. Use date='latest' for live rates or 'YYYY-MM-DD' for historical.",
+    price_credits=1,
+    example_params={"base": "USD", "symbols": "EUR,GBP,JPY", "date": "latest"},
+    provider="mog-protocol",
+    handler=_frankfurter_fx_rates,
 )
