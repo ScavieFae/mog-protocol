@@ -27,3 +27,19 @@
 - No-key APIs are the easiest wraps — can deploy immediately without Mattie getting keys
 - Good margin: upstream cost $0 → charge 1-2 credits per call
 - Weather + geolocation are universally useful to hackathon agents (they can enrich data, answer questions about places)
+
+## API Discovery (Scout 004)
+
+### New Wrappable APIs (all free, no key)
+- **MyMemory Translation** — free, no key, 100+ langs, 10k words/day. High demand.
+- **Currency Conversion** (fawazahmed0/exchange-api) — CDN-hosted static JSON, 342 currencies, zero rate limit risk.
+- **REST Countries** — country data (capital, population, currency, language). Good complement to ip_geolocation.
+
+### Skipped
+- **Judge0 CE** — code execution, but needs RapidAPI key. E2B is better path if Mattie gets key.
+- **LibreTranslate** — public instance now requires API key. MyMemory is the free alternative.
+
+### Wrap Queue (priority order)
+1. MyMemory Translation (brief-005, dispatched)
+2. Currency Conversion (next)
+3. REST Countries (after that)

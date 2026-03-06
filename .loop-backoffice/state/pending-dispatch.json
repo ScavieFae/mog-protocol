@@ -1,3 +1,1 @@
-{"brief": "backoffice-002-wrap-open-meteo", "branch": "bo/002-wrap-open-meteo",
- "brief_file": ".loop-backoffice/briefs/backoffice-002-wrap-open-meteo.md",
- "notes": "Wrap Open-Meteo weather API — no key needed, free upstream, 1 credit/call"}
+{"brief": "backoffice-005-wrap-mymemory-translation", "branch": "bo/005-wrap-mymemory-translation", "brief_file": ".loop-backoffice/briefs/backoffice-005-wrap-mymemory-translation.md", "notes": "Wrap MyMemory Translation API — free, no key, verified working. Priority 1 of 3 from scout-004."}
