@@ -1,14 +1,13 @@
 {
-  "active": [],
-  "completed_pending_eval": [
+  "active": [
     {
-      "brief": "backoffice-009-wrap-hacker-news",
-      "branch": "bo/009-wrap-hacker-news",
-      "brief_file": ".loop-backoffice/briefs/backoffice-009-wrap-hacker-news.md",
-      "dispatched_at": "2026-03-06T02:58:50Z",
-      "completed_at": "2026-03-06T03:01:04Z"
+      "brief": "backoffice-010-wrap-random-user",
+      "branch": "bo/010-wrap-random-user",
+      "brief_file": ".loop-backoffice/briefs/backoffice-010-wrap-random-user.md",
+      "dispatched_at": "2026-03-06T03:32:09Z"
     }
   ],
+  "completed_pending_eval": [],
   "history": [
     {
       "brief": "backoffice-001-initial-scout",
@@ -89,6 +88,16 @@
       "evaluated_at": "2026-03-06T02:35:00Z",
       "verdict": "accepted",
       "eval_file": ".loop-backoffice/evaluations/eval-008-scout-utility-apis.md"
+    },
+    {
+      "brief": "backoffice-009-wrap-hacker-news",
+      "branch": "bo/009-wrap-hacker-news",
+      "brief_file": ".loop-backoffice/briefs/backoffice-009-wrap-hacker-news.md",
+      "dispatched_at": "2026-03-06T02:58:50Z",
+      "completed_at": "2026-03-06T03:01:04Z",
+      "evaluated_at": "2026-03-06T03:05:00Z",
+      "verdict": "accepted",
+      "eval_file": ".loop-backoffice/evaluations/eval-009-wrap-hacker-news.md"
     }
   ]
 }
