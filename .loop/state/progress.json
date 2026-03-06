@@ -1,17 +1,9 @@
 {
-  "brief": "brief-008-fix-fx-wire-services",
-  "brief_file": ".loop/briefs/brief-008-fix-fx-wire-services.md",
-  "iteration": 1,
-  "status": "complete",
-  "tasks_completed": [
-    "Create src/telemetry.py (TelemetryEvent + Telemetry singleton wrapping txlog)",
-    "Fix _frankfurter_fx_rates: async→sync, return JSON string",
-    "Smoke test: 12 services registered, all handlers present"
-  ],
+  "brief": "brief-010-autonomous-investment",
+  "brief_file": ".loop/briefs/brief-010-autonomous-investment.md",
+  "iteration": 0,
+  "status": "running",
+  "tasks_completed": [],
   "tasks_remaining": [],
-  "learnings": [
-    "python3 (not python) is the correct interpreter on this machine",
-    "txlog.get_recent() has no event_type filter — telemetry.get_recent() adds that filter on top",
-    "All 12 service handlers confirmed sync and returning JSON strings"
-  ]
+  "learnings": []
 }
