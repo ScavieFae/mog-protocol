@@ -1,15 +1,19 @@
 {
-  "brief": "backoffice-007-wrap-rest-countries",
-  "brief_file": ".loop-backoffice/briefs/backoffice-007-wrap-rest-countries.md",
+  "brief": "backoffice-008-scout-utility-apis",
+  "brief_file": ".loop-backoffice/briefs/backoffice-008-scout-utility-apis.md",
   "iteration": 1,
   "status": "complete",
   "tasks_completed": [
-    "wrap: _rest_countries handler + catalog.register in src/services.py; self-test passed (France lookup); portfolio.json updated"
+    "scout: test and evaluate 5 free no-auth utility APIs"
   ],
   "tasks_remaining": [],
   "learnings": [
-    "restcountries.com returns a list even for single matches — always take [0]",
-    "urllib.error.HTTPError needed for 404 handling (country not found)",
-    "fields param keeps response small; flag URL is in flags.png key"
+    "Numbers API (numbersapi.com) is unreachable — both HTTP and HTTPS time out. Skip.",
+    "Hacker News Firebase API is free, no-auth, structured JSON. Wrap as hacker_news_top. Price 2 credits.",
+    "Free Dictionary API (dictionaryapi.dev) is free, no-auth, English definitions + synonyms. Wrap as word_definition. Price 1 credit.",
+    "Random User API (randomuser.me) is free, no-auth, synthetic user profiles. Wrap as random_user. Price 1 credit.",
+    "Google DNS-over-HTTPS (dns.google/resolve) is free, no-auth, fast, reliable. Wrap as dns_lookup. Price 1 credit.",
+    "Open Library (openlibrary.org/search.json) is free, no-auth, book search. Wrap as book_search. Price 1 credit.",
+    "All 4 recommended APIs verified working via live test requests before evaluation written."
   ]
 }
