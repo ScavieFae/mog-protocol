@@ -39,11 +39,16 @@ class ServiceCatalog:
     def _embed(self, text: str) -> list[float]:
         if self._openai_client is None:
             return []
-        response = self._openai_client.embeddings.create(
-            model="text-embedding-3-small",
-            input=text,
-        )
-        return response.data[0].embedding
+        try:
+            response = self._openai_client.embeddings.create(
+                model="text-embedding-3-small",
+                input=text,
+            )
+            return response.data[0].embedding
+        except Exception as exc:
+            print(f"[catalog] Embedding failed ({exc.__class__.__name__}), falling back to keywords")
+            self._openai_client = None
+            return []
 
     def register(
         self,
