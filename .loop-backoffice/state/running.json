@@ -1,13 +1,14 @@
 {
-  "active": [
+  "active": [],
+  "completed_pending_eval": [
     {
       "brief": "backoffice-011-scout-high-value-apis",
       "branch": "bo/011-scout-high-value-apis",
       "brief_file": ".loop-backoffice/briefs/backoffice-011-scout-high-value-apis.md",
-      "dispatched_at": "2026-03-06T04:04:43Z"
+      "dispatched_at": "2026-03-06T04:04:43Z",
+      "completed_at": "2026-03-06T04:08:44Z"
     }
   ],
-  "completed_pending_eval": [],
   "history": [
     {
       "brief": "backoffice-001-initial-scout",
