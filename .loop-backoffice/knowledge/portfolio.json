@@ -83,6 +83,18 @@
       "discovery_cost_credits": 0,
       "wrapping_cost_credits": 2,
       "status": "active"
+    },
+    "hacker_news_top": {
+      "added_at": "2026-03-05T18:00:00Z",
+      "source": "backoffice-009",
+      "upstream_api": "hacker-news.firebaseio.com",
+      "upstream_cost_per_call_usd": 0,
+      "our_price_credits": 2,
+      "total_calls": 0,
+      "total_revenue_credits": 0,
+      "discovery_cost_credits": 0,
+      "wrapping_cost_credits": 3,
+      "status": "active"
     }
   },
   "budget": {

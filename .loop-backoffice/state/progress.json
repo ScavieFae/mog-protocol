@@ -1,19 +1,18 @@
 {
-  "brief": "backoffice-008-scout-utility-apis",
-  "brief_file": ".loop-backoffice/briefs/backoffice-008-scout-utility-apis.md",
+  "brief": "backoffice-009-wrap-hacker-news",
+  "brief_file": ".loop-backoffice/briefs/backoffice-009-wrap-hacker-news.md",
   "iteration": 1,
   "status": "complete",
   "tasks_completed": [
-    "scout: test and evaluate 5 free no-auth utility APIs"
+    "implement _hacker_news_top handler in src/services.py (count param, fetches top story IDs then item details, returns JSON with title/url/score/author/comments)",
+    "register hacker_news_top in catalog (2 credits, no API key needed)",
+    "self-test: verified returns valid JSON with 3 stories",
+    "update portfolio.json with hacker_news_top entry"
   ],
   "tasks_remaining": [],
   "learnings": [
-    "Numbers API (numbersapi.com) is unreachable — both HTTP and HTTPS time out. Skip.",
-    "Hacker News Firebase API is free, no-auth, structured JSON. Wrap as hacker_news_top. Price 2 credits.",
-    "Free Dictionary API (dictionaryapi.dev) is free, no-auth, English definitions + synonyms. Wrap as word_definition. Price 1 credit.",
-    "Random User API (randomuser.me) is free, no-auth, synthetic user profiles. Wrap as random_user. Price 1 credit.",
-    "Google DNS-over-HTTPS (dns.google/resolve) is free, no-auth, fast, reliable. Wrap as dns_lookup. Price 1 credit.",
-    "Open Library (openlibrary.org/search.json) is free, no-auth, book search. Wrap as book_search. Price 1 credit.",
-    "All 4 recommended APIs verified working via live test requests before evaluation written."
+    "HN Firebase API is public, no auth, no rate limits — fetches sequentially with urllib, no issues",
+    "catalog.register does not accept a tags parameter — fold keywords into description instead",
+    "catalog grew to 11 services after this addition"
   ]
 }

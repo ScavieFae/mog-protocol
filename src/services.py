@@ -361,6 +361,33 @@ def _hackathon_discover(side: str = "all", category: str = "") -> str:
     return json.dumps({"total": data["meta"]["total"], "agents": results})
 
 
+def _hacker_news_top(count: int = 5) -> str:
+    count = max(1, min(count, 20))
+    base_url = "https://hacker-news.firebaseio.com/v0"
+    try:
+        with urllib.request.urlopen(f"{base_url}/topstories.json", timeout=10) as resp:
+            story_ids = json.loads(resp.read().decode())
+    except Exception as e:
+        return json.dumps({"error": f"Failed to fetch top stories: {e}"})
+    stories = []
+    for story_id in story_ids[:count]:
+        try:
+            with urllib.request.urlopen(f"{base_url}/item/{story_id}.json", timeout=10) as resp:
+                item = json.loads(resp.read().decode())
+            if item:
+                stories.append({
+                    "title": item.get("title", ""),
+                    "url": item.get("url", ""),
+                    "score": item.get("score", 0),
+                    "author": item.get("by", ""),
+                    "comments": item.get("descendants", 0),
+                    "id": item.get("id"),
+                })
+        except Exception:
+            continue
+    return json.dumps({"stories": stories, "count": len(stories)})
+
+
 # --- Catalog registration ---
 
 catalog = ServiceCatalog()
@@ -463,4 +490,14 @@ catalog.register(
     example_params={"query": "France", "lookup_type": "name"},
     provider="mog-protocol",
     handler=_rest_countries,
+)
+
+catalog.register(
+    service_id="hacker_news_top",
+    name="Hacker News Top Stories",
+    description="Get the current top stories from Hacker News with title, URL, score, author, and comment count. Covers tech news, startups, science, and programming. Live rankings updated in real time.",
+    price_credits=2,
+    example_params={"count": 5},
+    provider="mog-protocol",
+    handler=_hacker_news_top,
 )
