@@ -1,13 +1,14 @@
 {
-  "active": [
+  "active": [],
+  "completed_pending_eval": [
     {
       "brief": "brief-007-portfolio-core",
       "branch": "brief-007-portfolio-core",
       "brief_file": ".loop/briefs/brief-007-portfolio-core.md",
-      "dispatched_at": "2026-03-06T09:35:20Z"
+      "dispatched_at": "2026-03-06T09:35:20Z",
+      "completed_at": "2026-03-06T09:38:07Z"
     }
   ],
-  "completed_pending_eval": [],
   "history": [
     {
       "brief": "brief-001-phase1-seller",
