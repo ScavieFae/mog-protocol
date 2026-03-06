@@ -65,54 +65,63 @@ Check for a Nevermined API key. Look in `.env` for `NVM_API_KEY`, `NVM_BUYER_API
 
 ## Step 1: Find the Service
 
-Based on what the user gave you, resolve it to a **plan ID** and **MCP endpoint URL**.
+Based on what the user gave you, resolve it to a **plan ID** and **endpoint URL**. Use the methods below in order — the discovery API is the most reliable.
 
-**If they gave a plan ID** (long number): Use it directly. You still need the endpoint URL -- ask the user or search for it.
+### Method A: Discovery API (works for all registered teams — try this first)
 
-**If they gave an endpoint URL**: Try to extract the plan ID from the server's error response. Hit the endpoint without auth and check what comes back:
+The Nevermined hackathon has a discovery API that returns all sellers with plan IDs, endpoints, and pricing. **This is the primary lookup method.** It works even if the team's server is offline.
 
-- **402 + `payment-required` header** (x402 pattern): Decode the base64 header to get plan ID and agent ID
-- **401** (bearer pattern): No plan ID in the response -- you'll need it from the user or marketplace UI
+```python
+import httpx, json, os
+from dotenv import load_dotenv
+load_dotenv()
+
+resp = httpx.get(
+    "https://nevermined.ai/hackathon/register/api/discover",
+    params={"side": "sell"},
+    headers={"x-nvm-api-key": os.getenv("NVM_API_KEY")},
+    timeout=15,
+)
+sellers = resp.json().get("sellers", [])
+
+# Search by name (case-insensitive partial match)
+query = "SEARCH_TERM_HERE".lower()
+matches = [s for s in sellers if query in s.get("name", "").lower() or query in s.get("teamName", "").lower()]
+
+for s in matches:
+    print(f"Name: {s['name']}")
+    print(f"Team: {s['teamName']}")
+    print(f"Endpoint: {s.get('endpointUrl', 'none')}")
+    print(f"Pricing: {s.get('pricing', {}).get('perRequest', '?')}")
+    for p in s.get("planPricing", []):
+        print(f"  Plan ID: {p['planDid']}, price: {p.get('planPrice', '?')}, type: {p.get('paymentType', '?')}")
+    print()
+```
+
+The `planPricing` array has the plan IDs (`planDid`), prices, and payment types. Pick the plan matching the user's preference (free > USDC > card).
+
+### Method B: 402 handshake (if you have an endpoint URL)
+
+If the team's endpoint is behind PaymentsMCP, an unauthenticated request returns `402` with a `payment-required` header containing the plan ID.
 
 ```python
 import httpx, json, base64
 
-# Probe the endpoint — try a simple POST first to trigger 402
 resp = httpx.post("ENDPOINT_URL_HERE", headers={
     "Content-Type": "application/json",
-    "Accept": "application/json, text/event-stream",
 }, json={}, timeout=15)
 
-# If not 402, try as MCP JSON-RPC
-if resp.status_code != 402:
-    resp = httpx.post("ENDPOINT_URL_HERE", headers={
-        "Content-Type": "application/json",
-        "Accept": "application/json, text/event-stream",
-    }, json={
-        "jsonrpc": "2.0",
-        "method": "tools/list",
-        "params": {},
-        "id": 1,
-    }, timeout=15)
-
-print(f"Status: {resp.status_code}")
-
-# Decode the payment-required header
 if resp.status_code == 402 and "payment-required" in resp.headers:
     payment_info = json.loads(base64.b64decode(resp.headers["payment-required"]))
-    print(json.dumps(payment_info, indent=2))
     plan_id = payment_info["accepts"][0]["planId"]
     agent_id = payment_info["accepts"][0]["extra"]["agentId"]
     print(f"Plan ID: {plan_id}")
     print(f"Agent ID: {agent_id}")
 elif resp.status_code == 200:
-    print("Server responds 200 with no auth — no PaymentsMCP gating.")
-    print(f"Response: {resp.text[:500]}")
+    print("Server responds 200 with no auth — no payment gating.")
 ```
 
-The `accepts` array may list multiple plans (card, USDC, free). Pick the one matching the user's preferred payment method.
-
-To see ALL plans for this agent (including free tiers not in the 402):
+### Method C: If you have an agent ID
 
 ```python
 plans = payments.agents.get_agent_plans(agent_id)
@@ -124,11 +133,9 @@ for p in plans.get("plans", []):
     print(f"  {name}: plan_id={p['id']}, free={is_free}, credits={credits.get('amount')}")
 ```
 
-**If they gave a team/service name**: The `payments-py` SDK does NOT have a search method. Instead:
+### Method D: If you have a plan ID already
 
-1. If you have ANY endpoint URL for them, use the 402 method above to get the plan ID
-2. Browse https://nevermined.app and search for the agent in the sandbox environment
-3. Ask the user if the seller gave them a plan ID or endpoint URL
+Use it directly. You still need the endpoint URL — check the discovery API or ask the user.
 
 ## Step 2: Subscribe
 
