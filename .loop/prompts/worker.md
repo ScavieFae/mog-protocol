@@ -10,10 +10,36 @@ You are one iteration of a multi-pass loop. You will do ONE task, verify it, com
    - `CLAUDE.md` if it exists — project conventions
    - `.loop/knowledge/learnings.md` — accumulated project knowledge
    - `docs/hackathon-diary.md` — tail recent entries for context on decisions and current priorities
+   - `data/portfolio.json` — current budget, hypotheses, and P&L (for investment context)
 
 2. **Pick ONE task.** Choose the first incomplete task from `tasks_remaining` in progress.json. If `tasks_remaining` is empty but the brief has more work, add tasks.
 
 3. **Implement it.** Write the code, create the files, do the work.
+
+   **If the brief includes a hypothesis ID** (e.g., `hyp-003`), track your spend and update the hypothesis when done:
+
+   ```python
+   from src.portfolio import PortfolioManager
+   p = PortfolioManager()
+
+   # Before any validation call or external API test:
+   p.spend(1, "service_id", "validation call")
+
+   # After successfully wrapping a service:
+   p.update_hypothesis("hyp-003", "wrapped")
+
+   # After a self-buy test via the gateway:
+   p.spend(1, "service_id", "self-buy test via gateway")
+   ```
+
+   **If your brief wraps a new service** (no explicit hypothesis ID), propose one first:
+   ```python
+   from src.portfolio import PortfolioManager
+   p = PortfolioManager()
+   hyp_id = p.propose("my_service_id", "Free API, expect 5cr in 2hrs", expected_revenue=5, cost_to_validate=1)
+   p.spend(1, "my_service_id", "wrapping cost")
+   p.update_hypothesis(hyp_id, "wrapped")
+   ```
 
 4. **Verify.** If `.loop/config.sh` defines a `VERIFY_CMD`, run it. All checks must pass. If verification fails, fix the issue and rerun. Do not proceed with a failing verification.
 
@@ -39,6 +65,7 @@ You are one iteration of a multi-pass loop. You will do ONE task, verify it, com
 - If you're genuinely stuck, set status to "blocked" rather than spinning.
 - Before writing a new utility or helper, check if it already exists.
 - Keep it simple. Solve the task, don't gold-plate.
+- **Only spend portfolio credits if the brief asks for it or you're running a validation call.** Don't burn credits on unnecessary tests.
 
 ## Important
 

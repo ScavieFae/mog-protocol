@@ -285,5 +285,6 @@ Both tx hashes verifiable on [Base Sepolia explorer](https://sepolia.basescan.or
 ### 2026-03-06 — Gateway Revenue Wiring Complete
 
 **[scaviefae]** Wired PortfolioManager into gateway.py: import + init at module level, `portfolio.record_sale(service_id, price)` fires after every successful `buy_and_call`, `/health` now returns `portfolio` summary dict and guarded `traces` block. Verification passed (.venv Python 3.14). Brief 009 complete.
+**[scaviefae]** Brief 010 complete: updated conductor/worker prompts and learnings.md for autonomous investment loop. Conductor now reads portfolio+/health before dispatching; worker tracks spend/earn/hypotheses; learnings.md has PortfolioManager quick ref and investment patterns.
 
 <!-- New entries go above this line -->
