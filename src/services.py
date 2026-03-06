@@ -404,6 +404,23 @@ def _pollinations_image(prompt: str, model: str = "flux", width: int = 512, heig
     })
 
 
+def _newton_math(operation: str, expression: str) -> str:
+    valid_operations = {
+        "simplify", "factor", "derive", "integrate", "zeroes", "tangent",
+        "area", "cos", "sin", "tan", "arccos", "arcsin", "arctan", "abs", "log",
+    }
+    if operation not in valid_operations:
+        return json.dumps({"error": f"Invalid operation '{operation}'. Valid: {sorted(valid_operations)}"})
+    encoded = urllib.parse.quote(expression, safe="")
+    url = f"https://newton.now.sh/api/v2/{operation}/{encoded}"
+    try:
+        with urllib.request.urlopen(url, timeout=10) as resp:
+            data = json.loads(resp.read().decode())
+    except Exception as e:
+        return json.dumps({"error": str(e)})
+    return json.dumps(data)
+
+
 def _random_user(count: int = 1, nationality: str = "") -> str:
     count = max(1, min(count, 10))
     url = f"https://randomuser.me/api/?results={count}"
@@ -563,4 +580,14 @@ catalog.register(
     example_params={"prompt": "a robot at a hackathon", "model": "flux", "width": 512, "height": 512},
     provider="mog-protocol",
     handler=_pollinations_image,
+)
+
+catalog.register(
+    service_id="math_compute",
+    name="Symbolic Math Computation",
+    description="Perform symbolic math operations: simplify, factor, derive, integrate, find zeroes, compute trig functions, and more. Powered by Newton API. Free, no API key.",
+    price_credits=2,
+    example_params={"operation": "simplify", "expression": "2^2+2(2)"},
+    provider="mog-protocol",
+    handler=_newton_math,
 )

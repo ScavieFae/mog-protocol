@@ -119,14 +119,26 @@
       "discovery_cost_credits": 0,
       "wrapping_cost_credits": 3,
       "status": "active"
+    },
+    "math_compute": {
+      "added_at": "2026-03-05T21:00:00Z",
+      "source": "backoffice-013",
+      "upstream_api": "newton.now.sh",
+      "upstream_cost_per_call_usd": 0,
+      "our_price_credits": 2,
+      "total_calls": 0,
+      "total_revenue_credits": 0,
+      "discovery_cost_credits": 0,
+      "wrapping_cost_credits": 2,
+      "status": "active"
     }
   },
   "budget": {
     "initial_credits": 100,
     "spent_discovery": 0,
-    "spent_wrapping": 12,
+    "spent_wrapping": 14,
     "earned_revenue": 12,
-    "current_balance": 84
+    "current_balance": 82
   },
   "demand_signals": [
     {
