@@ -1,13 +1,14 @@
 {
-  "active": [
+  "active": [],
+  "completed_pending_eval": [
     {
       "brief": "backoffice-013-wrap-newton-math",
       "branch": "bo/013-wrap-newton-math",
       "brief_file": ".loop-backoffice/briefs/backoffice-013-wrap-newton-math.md",
-      "dispatched_at": "2026-03-06T05:09:57Z"
+      "dispatched_at": "2026-03-06T05:09:57Z",
+      "completed_at": "2026-03-06T05:11:44Z"
     }
   ],
-  "completed_pending_eval": [],
   "history": [
     {
       "brief": "backoffice-001-initial-scout",
