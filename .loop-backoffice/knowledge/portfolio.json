@@ -107,12 +107,24 @@
       "discovery_cost_credits": 0,
       "wrapping_cost_credits": 2,
       "status": "active"
+    },
+    "image_generate": {
+      "added_at": "2026-03-05T20:00:00Z",
+      "source": "backoffice-012",
+      "upstream_api": "pollinations.ai",
+      "upstream_cost_per_call_usd": 0,
+      "our_price_credits": 3,
+      "total_calls": 0,
+      "total_revenue_credits": 0,
+      "discovery_cost_credits": 0,
+      "wrapping_cost_credits": 3,
+      "status": "active"
     }
   },
   "budget": {
     "initial_credits": 100,
     "spent_discovery": 0,
-    "spent_wrapping": 9,
+    "spent_wrapping": 12,
     "earned_revenue": 12,
     "current_balance": 84
   },

@@ -1,19 +1,9 @@
 {
-  "brief": "backoffice-011-scout-high-value-apis",
-  "brief_file": ".loop-backoffice/briefs/backoffice-011-scout-high-value-apis.md",
-  "iteration": 1,
-  "status": "complete",
-  "tasks_completed": [
-    "scout-high-value-categories: researched code execution, PDF parsing, image generation, QR/URL utilities, math computation; wrote 4 api-eval files; updated portfolio demand_signals"
-  ],
+  "brief": "backoffice-012-wrap-pollinations-image",
+  "brief_file": ".loop-backoffice/briefs/backoffice-012-wrap-pollinations-image.md",
+  "iteration": 0,
+  "status": "running",
+  "tasks_completed": [],
   "tasks_remaining": [],
-  "learnings": [
-    "Newton API (newton.now.sh/api/v2) is free, no key, 15+ math operations — only free Wolfram-style API available. WRAP.",
-    "QRServer API (api.qrserver.com) is free, no key, returns PNG/SVG image. Wrap by returning constructed URL rather than fetching binary. WRAP.",
-    "Pollinations.ai is free, no key, real AI image generation (Flux/GPT Image/Seedream). Same URL-return pattern. WRAP — highest wow factor.",
-    "Piston code execution closed public access Feb 15 2026 — now needs Discord auth token. Added to demand_signals.",
-    "PDF extraction: all quality options require paid API keys. No free no-key alternative found. Added to demand_signals.",
-    "Email validation: Rapid Email Verifier (fly.dev) is open-source free but unknown reliability for hackathon use. Not worth wrapping now.",
-    "Image and math APIs return URL or JSON — both wrappable with our pattern. For binary-returning APIs, return the constructed URL as a string."
-  ]
+  "learnings": []
 }
