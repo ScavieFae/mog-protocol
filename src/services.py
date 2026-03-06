@@ -18,6 +18,7 @@ load_dotenv()
 EXA_API_KEY = os.getenv("EXA_API_KEY")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 NVM_API_KEY = os.getenv("NVM_API_KEY")
+FAL_KEY = os.getenv("FAL_KEY")
 
 # --- Handler functions ---
 
@@ -82,6 +83,35 @@ def _ip_geolocation(ip: str) -> str:
     if data.get("status") != "success":
         return json.dumps({"error": data.get("message", "Unknown error"), "query": ip})
     return json.dumps(data)
+
+
+def _nano_banana_pro(prompt: str, aspect_ratio: str = "1:1", resolution: str = "1K") -> str:
+    if not FAL_KEY:
+        return json.dumps({"error": "FAL_KEY not set"})
+    import fal_client
+    os.environ["FAL_KEY"] = FAL_KEY
+    try:
+        result = fal_client.subscribe(
+            "fal-ai/nano-banana-pro",
+            arguments={
+                "prompt": prompt,
+                "aspect_ratio": aspect_ratio,
+                "resolution": resolution,
+                "num_images": 1,
+                "output_format": "png",
+            },
+        )
+        images = result.get("images", [])
+        if not images:
+            return json.dumps({"error": "No image returned"})
+        return json.dumps({
+            "image_url": images[0]["url"],
+            "width": images[0].get("width"),
+            "height": images[0].get("height"),
+            "content_type": images[0].get("content_type", "image/png"),
+        })
+    except Exception as e:
+        return json.dumps({"error": str(e)})
 
 
 def _open_meteo_weather(latitude: float, longitude: float, forecast_days: int = 1) -> str:
@@ -397,6 +427,16 @@ catalog.register(
     example_params={},
     provider="mog-protocol",
     handler=_hackathon_all,
+)
+
+catalog.register(
+    service_id="nano_banana_pro",
+    name="Nano Banana Pro Image Generation",
+    description="Generate images from text prompts using Nano Banana Pro (Gemini 3 Pro Image). Returns a public URL to the generated image. Supports aspect ratios (1:1, 16:9, 4:3, 3:2) and resolutions (1K, 2K, 4K).",
+    price_credits=10,
+    example_params={"prompt": "A cyberpunk cat riding a skateboard", "aspect_ratio": "1:1", "resolution": "1K"},
+    provider="mog-protocol",
+    handler=_nano_banana_pro,
 )
 
 catalog.register(
