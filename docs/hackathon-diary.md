@@ -278,4 +278,8 @@ Both tx hashes verifiable on [Base Sepolia explorer](https://sepolia.basescan.or
 
 **[scaviefae]** Built `src/portfolio.py`: PortfolioManager with budget/P&L tracking, investment hypotheses, JSON persistence to `data/portfolio.json`. Thread-safe (Lock). 16 tests pass. Brief 007 complete — gateway revenue wiring (brief 009) can now connect.
 
+### 2026-03-06 — Brief 009: Gateway Revenue Wiring Complete
+
+**[scaviefae]** Wired PortfolioManager into gateway.py: import + init at module level, `portfolio.record_sale(service_id, price)` fires after every successful `buy_and_call`, `/health` now returns `portfolio` summary dict and guarded `traces` block. Verification passed (.venv Python 3.14). Brief 009 complete.
+
 <!-- New entries go above this line -->
