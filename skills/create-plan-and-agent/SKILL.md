@@ -157,9 +157,11 @@ Each registration creates a new plan ID. You can also offer both USDC and fiat f
 Check that the agent appears on the marketplace:
 
 ```python
-# Search for your own agent
-results = payments.agents.search(query="YOUR_SERVICE_NAME")
-print(results)
+# Verify your agent exists
+agent = payments.agents.get_agent(agent_id)
+plans = payments.agents.get_agent_plans(agent_id)
+print(f"Agent: {agent}")
+print(f"Plans: {len(plans.get('plans', []))}")
 ```
 
 Or browse https://nevermined.app and look under your account.
