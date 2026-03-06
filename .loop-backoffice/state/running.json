@@ -1,13 +1,14 @@
 {
-  "active": [
+  "active": [],
+  "completed_pending_eval": [
     {
       "brief": "backoffice-010-wrap-random-user",
       "branch": "bo/010-wrap-random-user",
       "brief_file": ".loop-backoffice/briefs/backoffice-010-wrap-random-user.md",
-      "dispatched_at": "2026-03-06T03:32:09Z"
+      "dispatched_at": "2026-03-06T03:32:09Z",
+      "completed_at": "2026-03-06T03:33:58Z"
     }
   ],
-  "completed_pending_eval": [],
   "history": [
     {
       "brief": "backoffice-001-initial-scout",
