@@ -1,15 +1,9 @@
 {
-  "brief": "backoffice-007-wrap-rest-countries",
-  "brief_file": ".loop-backoffice/briefs/backoffice-007-wrap-rest-countries.md",
-  "iteration": 1,
-  "status": "complete",
-  "tasks_completed": [
-    "wrap: _rest_countries handler + catalog.register in src/services.py; self-test passed (France lookup); portfolio.json updated"
-  ],
+  "brief": "backoffice-008-scout-utility-apis",
+  "brief_file": ".loop-backoffice/briefs/backoffice-008-scout-utility-apis.md",
+  "iteration": 0,
+  "status": "running",
+  "tasks_completed": [],
   "tasks_remaining": [],
-  "learnings": [
-    "restcountries.com returns a list even for single matches — always take [0]",
-    "urllib.error.HTTPError needed for 404 handling (country not found)",
-    "fields param keeps response small; flag URL is in flags.png key"
-  ]
+  "learnings": []
 }
