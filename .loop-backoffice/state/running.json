@@ -1,14 +1,13 @@
 {
-  "active": [],
-  "completed_pending_eval": [
+  "active": [
     {
-      "brief": "backoffice-012-wrap-pollinations-image",
-      "branch": "bo/012-wrap-pollinations-image",
-      "brief_file": ".loop-backoffice/briefs/backoffice-012-wrap-pollinations-image.md",
-      "dispatched_at": "2026-03-06T04:37:19Z",
-      "completed_at": "2026-03-06T04:38:59Z"
+      "brief": "backoffice-013-wrap-newton-math",
+      "branch": "bo/013-wrap-newton-math",
+      "brief_file": ".loop-backoffice/briefs/backoffice-013-wrap-newton-math.md",
+      "dispatched_at": "2026-03-06T05:09:57Z"
     }
   ],
+  "completed_pending_eval": [],
   "history": [
     {
       "brief": "backoffice-001-initial-scout",
@@ -119,6 +118,16 @@
       "evaluated_at": "2026-03-06T04:15:00Z",
       "verdict": "accepted",
       "eval_file": ".loop-backoffice/evaluations/eval-011-scout-high-value-apis.md"
+    },
+    {
+      "brief": "backoffice-012-wrap-pollinations-image",
+      "branch": "bo/012-wrap-pollinations-image",
+      "brief_file": ".loop-backoffice/briefs/backoffice-012-wrap-pollinations-image.md",
+      "dispatched_at": "2026-03-06T04:37:19Z",
+      "completed_at": "2026-03-06T04:38:59Z",
+      "evaluated_at": "2026-03-06T04:45:00Z",
+      "verdict": "accepted",
+      "eval_file": ".loop-backoffice/evaluations/eval-012-wrap-pollinations-image.md"
     }
   ]
 }
