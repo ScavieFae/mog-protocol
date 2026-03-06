@@ -42,4 +42,18 @@
 ### Wrap Queue (priority order)
 1. ~~MyMemory Translation (brief-005, accepted)~~
 2. ~~Currency Conversion (brief-006, accepted)~~
-3. REST Countries (brief-007, dispatched)
+3. ~~REST Countries (brief-007, accepted)~~
+
+## API Discovery (Scout 008)
+
+### New Wrappable APIs (all free, no key)
+- **Hacker News** — Firebase API, top/new/best stories, zero rate limits. High demand for tech news.
+- **Random User** — synthetic user profiles for test data, demos. Medium-high demand.
+- **Dictionary API** — word definitions, phonetics, synonyms. Medium demand for language tasks.
+- **Google DNS-over-HTTPS** — DNS lookups via `dns.google/resolve`. Medium demand for infra agents.
+- **Open Library** — book search from Internet Archive. Medium demand for research.
+
+### Wrap Queue (priority order)
+1. Hacker News (brief-009, dispatched) — highest demand, 2 credits
+2. Random User — next up
+3. Dictionary / DNS / Open Library — if budget allows

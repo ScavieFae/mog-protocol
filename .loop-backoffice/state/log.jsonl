@@ -8,3 +8,4 @@
 {"ts":"2026-03-06T00:52:30Z","action":"dispatch","brief":"backoffice-006-wrap-currency-conversion","notes":"Wrap fawazahmed0 currency-api. Free CDN, no key. 1 credit/call."}
 {"ts":"2026-03-06T01:25:00Z","action":"eval","brief":"backoffice-006-wrap-currency-conversion","verdict":"accepted","notes":"Clean wrap of currency conversion. Handler follows pattern, self-test passed. Free upstream, 1 credit/call. Portfolio now 7 services."}
 {"ts":"2026-03-06T01:25:30Z","action":"dispatch","brief":"backoffice-007-wrap-rest-countries","notes":"Wrap REST Countries API. Free, no key, country data. Last in current wrap queue from scout-004."}
+{"ts":"2026-03-06T02:35:00Z","action":"eval","brief":"backoffice-008-scout-utility-apis","verdict":"accepted","notes":"5 API evals produced (HN, random-user, dictionary, dns, open-library), all WRAP. Merged. Dispatching brief-009 to wrap Hacker News."}
