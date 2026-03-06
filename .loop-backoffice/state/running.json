@@ -1,13 +1,14 @@
 {
-  "active": [
+  "active": [],
+  "completed_pending_eval": [
     {
       "brief": "backoffice-009-wrap-hacker-news",
       "branch": "bo/009-wrap-hacker-news",
       "brief_file": ".loop-backoffice/briefs/backoffice-009-wrap-hacker-news.md",
-      "dispatched_at": "2026-03-06T02:58:50Z"
+      "dispatched_at": "2026-03-06T02:58:50Z",
+      "completed_at": "2026-03-06T03:01:04Z"
     }
   ],
-  "completed_pending_eval": [],
   "history": [
     {
       "brief": "backoffice-001-initial-scout",
