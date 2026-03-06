@@ -388,6 +388,33 @@ def _hacker_news_top(count: int = 5) -> str:
     return json.dumps({"stories": stories, "count": len(stories)})
 
 
+def _random_user(count: int = 1, nationality: str = "") -> str:
+    count = max(1, min(count, 10))
+    url = f"https://randomuser.me/api/?results={count}"
+    if nationality:
+        url += f"&nat={urllib.parse.quote(nationality)}"
+    try:
+        with urllib.request.urlopen(url, timeout=10) as resp:
+            data = json.loads(resp.read().decode())
+    except Exception as e:
+        return json.dumps({"error": str(e)})
+    users = []
+    for u in data.get("results", []):
+        name = u.get("name", {})
+        location = u.get("location", {})
+        dob = u.get("dob", {})
+        users.append({
+            "name": f"{name.get('first', '')} {name.get('last', '')}".strip(),
+            "gender": u.get("gender", ""),
+            "email": u.get("email", ""),
+            "phone": u.get("phone", ""),
+            "age": dob.get("age", 0),
+            "city": location.get("city", ""),
+            "country": location.get("country", ""),
+        })
+    return json.dumps({"users": users, "count": len(users)})
+
+
 # --- Catalog registration ---
 
 catalog = ServiceCatalog()
@@ -500,4 +527,14 @@ catalog.register(
     example_params={"count": 5},
     provider="mog-protocol",
     handler=_hacker_news_top,
+)
+
+catalog.register(
+    service_id="random_user",
+    name="Random User Generator",
+    description="Generate synthetic user profiles with realistic names, emails, locations, and demographics. Useful for test data, demos, personas, and simulations.",
+    price_credits=1,
+    example_params={"count": 3, "nationality": "us"},
+    provider="mog-protocol",
+    handler=_random_user,
 )
