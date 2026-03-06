@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react"
 import { motion, AnimatePresence } from "motion/react"
-import { type ColonyData, type ColonyAgent, type ActivityEntry } from "@/hooks/useHealth"
+import { type ColonyData, type ActivityEntry } from "@/hooks/useHealth"
 
 // Tool → sponsor/category mapping for badges
 const TOOL_META: Record<string, { label: string; color: string; sponsor?: string }> = {
@@ -21,13 +21,6 @@ const AGENT_COLORS: Record<string, string> = {
   "mog-scout": "#6B8DAE",
   "mog-worker": "#87A878",
   "mog-supervisor": "#C5A862",
-}
-
-const STATUS_COLORS: Record<string, string> = {
-  working: "#87A878",
-  scouting: "#6B8DAE",
-  evaluating: "#C5A862",
-  idle: "#78716C",
 }
 
 function timeAgo(timestamp: string): string {
@@ -165,12 +158,12 @@ export function HivePanel({ colony, expanded, onToggle }: HivePanelProps) {
               key={a.name}
               onClick={() => setFilterAgent(isFiltered ? null : a.name)}
               className={`inline-flex items-center gap-1.5 text-[10px] font-mono px-2 py-1 rounded-full transition-colors ${
-                isFiltered ? "ring-1" : "hover:bg-stone/10"
+                isFiltered ? "" : "hover:bg-stone/10"
               }`}
               style={{
                 backgroundColor: isFiltered ? `${color}20` : undefined,
                 color: isFiltered ? color : "#78716C",
-                ringColor: isFiltered ? color : undefined,
+                border: isFiltered ? `1px solid ${color}40` : "1px solid transparent",
               }}
               title={a.current_task ?? a.status}
             >
