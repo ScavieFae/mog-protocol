@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "trinity": {
+      "type": "http",
+      "url": "https://us14.abilityai.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer trinity_mcp_1JDHB-pD8OkqfjZZpMCPgParuGPCruNK1xQd6XI5-cI"
+      }
+    }
+  }
+}

@@ -1,0 +1,373 @@
+#!/usr/bin/env python3
+"""Colony CLI — monitor and control the autonomous agent colony.
+
+Usage:
+  colony status     — Live dashboard of all agents + recent messages
+  colony tick       — Run one tick manually (scout → worker → supervisor)
+  colony messages   — Show inter-agent message log
+  colony agents     — Show detailed agent state
+  colony proposals  — Show service proposals queue
+  colony health     — Fetch gateway /health summary
+  colony config     — Show current colony configuration
+"""
+
+import json
+import os
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+# Ensure project root is on path
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+os.chdir(ROOT)
+
+from dotenv import load_dotenv
+load_dotenv()
+
+# ── ANSI styling ──────────────────────────────────────────────
+
+BOLD = "\033[1m"
+DIM = "\033[2m"
+RESET = "\033[0m"
+RED = "\033[31m"
+GREEN = "\033[32m"
+YELLOW = "\033[33m"
+BLUE = "\033[34m"
+MAGENTA = "\033[35m"
+CYAN = "\033[36m"
+WHITE = "\033[37m"
+
+# Status colors
+STATUS_STYLE = {
+    "idle": f"{DIM}●{RESET} {DIM}idle{RESET}",
+    "thinking": f"{YELLOW}◐{RESET} {YELLOW}thinking{RESET}",
+    "error": f"{RED}✕{RESET} {RED}error{RESET}",
+    "greenlit": f"{GREEN}●{RESET} {GREEN}greenlit{RESET}",
+    "under_review": f"{YELLOW}◐{RESET} {YELLOW}reviewing{RESET}",
+    "killed": f"{RED}✕{RESET} {RED}killed{RESET}",
+    "pending": f"{DIM}○{RESET} {DIM}pending{RESET}",
+}
+
+ROLE_STYLE = {
+    "discovery": f"{CYAN}scout{RESET}",
+    "builder": f"{MAGENTA}worker{RESET}",
+    "review": f"{YELLOW}supervisor{RESET}",
+}
+
+
+def styled_status(status):
+    if status.startswith("using "):
+        tool = status.replace("using ", "")
+        return f"{GREEN}▶{RESET} {GREEN}{tool}{RESET}"
+    return STATUS_STYLE.get(status, f"{DIM}{status}{RESET}")
+
+
+def box(title, content, width=72):
+    """Draw a Unicode box around content."""
+    print(f"\n{BOLD}{'─' * width}{RESET}")
+    print(f"{BOLD}  {title}{RESET}")
+    print(f"{'─' * width}")
+    print(content)
+
+
+def hr(char="─", width=72):
+    print(f"{DIM}{char * width}{RESET}")
+
+
+# ── Commands ──────────────────────────────────────────────────
+
+def cmd_status():
+    """Live dashboard — the money shot."""
+    from src.agents.loop import colony
+    from src.agents.bus import bus
+
+    state = colony.get_state()
+    agents = state["agents"]
+    messages = state["messages"]
+    now = datetime.now(timezone.utc).strftime("%H:%M:%S UTC")
+
+    print(f"\n{BOLD}{CYAN}  ╔══════════════════════════════════════════════════════════════╗{RESET}")
+    print(f"{BOLD}{CYAN}  ║{RESET}  {BOLD}MOG COLONY{RESET}  {DIM}autonomous agent marketplace{RESET}             {DIM}{now}{RESET}  {BOLD}{CYAN}║{RESET}")
+    print(f"{BOLD}{CYAN}  ╚══════════════════════════════════════════════════════════════╝{RESET}")
+
+    running = state.get("running", False)
+    tick_interval = state.get("tick_interval", 120)
+    status_str = f"{GREEN}▶ RUNNING{RESET}" if running else f"{DIM}■ STOPPED{RESET}"
+    print(f"\n  {status_str}  {DIM}tick every {tick_interval}s{RESET}")
+
+    # Agents
+    print(f"\n  {BOLD}AGENTS{RESET}")
+    hr("─", 66)
+
+    for a in agents:
+        role = ROLE_STYLE.get(a["role"], a["role"])
+        status = styled_status(a["status"])
+        tick = a.get("tick_count", 0)
+        msgs = a.get("conversation_length", 0)
+        mem = " 🧠" if a.get("has_memory") else ""
+
+        print(f"  {BOLD}{a['name']:<18}{RESET} {role:<22} {status}")
+        if a.get("current_task"):
+            print(f"  {DIM}  └─ {a['current_task']}{RESET}")
+        print(f"  {DIM}  ticks: {tick}  msgs: {msgs}{mem}  tools: {', '.join(a.get('tools', []))}{RESET}")
+
+        # Recent actions (last 3)
+        actions = a.get("recent_actions", [])
+        if actions:
+            for act in actions[-3:]:
+                # Truncate and color tool name
+                if ":" in act:
+                    tool, rest = act.split(":", 1)
+                    print(f"  {DIM}  │ {GREEN}{tool}{RESET}{DIM}:{rest[:60]}{RESET}")
+                else:
+                    print(f"  {DIM}  │ {act[:70]}{RESET}")
+        print()
+
+    # Recent messages
+    if messages:
+        print(f"  {BOLD}COMMS{RESET}")
+        hr("─", 66)
+        for m in messages[-6:]:
+            fr = m["from"].replace("mog-", "")
+            to = m["to"].replace("mog-", "")
+            content = m["content"][:80].replace("\n", " ")
+            ts = m.get("timestamp", "")[-8:]  # HH:MM:SS
+            print(f"  {DIM}{ts}{RESET}  {CYAN}{fr}{RESET} → {MAGENTA}{to}{RESET}  {content}")
+        print()
+
+    # Proposals
+    proposals_path = "data/agent_proposals.json"
+    if os.path.exists(proposals_path):
+        try:
+            with open(proposals_path) as f:
+                proposals = json.load(f)
+            if proposals:
+                print(f"  {BOLD}PROPOSALS{RESET}")
+                hr("─", 66)
+                for p in proposals[-5:]:
+                    status_icon = f"{GREEN}●{RESET}" if p.get("status") == "live" else f"{YELLOW}○{RESET}"
+                    print(f"  {status_icon} {BOLD}{p['service_id']}{RESET}  {p['name']}  {DIM}{p.get('price_credits', '?')}cr  {p.get('status', '?')}{RESET}")
+                print()
+        except (json.JSONDecodeError, OSError):
+            pass
+
+
+def cmd_tick():
+    """Run one colony tick manually."""
+    from src.agents.loop import colony
+
+    print(f"\n{BOLD}Running colony tick...{RESET}\n")
+    t0 = time.monotonic()
+    results = colony.tick()
+    elapsed = time.monotonic() - t0
+
+    for name, r in results.items():
+        if name.startswith("_"):
+            continue
+        status = r.get("status", "?")
+        icon = f"{GREEN}✓{RESET}" if status == "ok" else f"{RED}✕{RESET}"
+        summary = r.get("summary", r.get("error", ""))
+        print(f"  {icon} {BOLD}{name}{RESET}")
+        # Word-wrap summary
+        for i in range(0, min(len(summary), 300), 70):
+            prefix = "    " if i > 0 else "    "
+            print(f"{prefix}{DIM}{summary[i:i+70]}{RESET}")
+        print()
+
+    print(f"  {DIM}Completed in {elapsed:.1f}s{RESET}\n")
+
+
+def cmd_messages():
+    """Show full message log."""
+    from src.agents.bus import bus
+
+    messages = bus.get_recent(50)
+    if not messages:
+        print(f"\n  {DIM}No messages yet.{RESET}\n")
+        return
+
+    print(f"\n  {BOLD}INTER-AGENT MESSAGE LOG{RESET} ({len(messages)} messages)")
+    hr("─", 72)
+
+    for m in messages:
+        fr = m["from"].replace("mog-", "")
+        to = m["to"].replace("mog-", "")
+        ts = m.get("timestamp", "")[:19]
+        print(f"\n  {DIM}{ts}{RESET}  {CYAN}{fr}{RESET} → {MAGENTA}{to}{RESET}")
+        # Wrap content
+        content = m["content"]
+        for line in content.split("\n")[:8]:
+            print(f"  {DIM}  {line[:70]}{RESET}")
+        if content.count("\n") > 8:
+            print(f"  {DIM}  ...({content.count(chr(10)) - 8} more lines){RESET}")
+    print()
+
+
+def cmd_agents():
+    """Detailed agent state dump."""
+    from src.agents.loop import colony
+
+    for agent in colony._agents:
+        s = agent.get_state()
+        role = ROLE_STYLE.get(s["role"], s["role"])
+        status = styled_status(s["status"])
+
+        box(f"{s['name']}  {role}", "")
+        print(f"  Status:       {status}")
+        print(f"  Tick count:   {s['tick_count']}")
+        print(f"  Last tick:    {s.get('last_tick', 'never')}")
+        print(f"  Conversation: {s['conversation_length']} messages")
+        print(f"  Has memory:   {'yes' if s.get('has_memory') else 'no'}")
+        print(f"  Tools:        {', '.join(s.get('tools', []))}")
+        if s.get("current_task"):
+            print(f"  Current task: {BOLD}{s['current_task']}{RESET}")
+        print(f"\n  {BOLD}Recent Actions:{RESET}")
+        for act in s.get("recent_actions", []):
+            if ":" in act:
+                tool, rest = act.split(":", 1)
+                print(f"    {GREEN}{tool}{RESET}:{DIM}{rest[:90]}{RESET}")
+            else:
+                print(f"    {DIM}{act[:100]}{RESET}")
+    print()
+
+
+def cmd_proposals():
+    """Show service proposals queue."""
+    proposals_path = "data/agent_proposals.json"
+    if not os.path.exists(proposals_path):
+        print(f"\n  {DIM}No proposals yet.{RESET}\n")
+        return
+
+    try:
+        with open(proposals_path) as f:
+            proposals = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        print(f"\n  {RED}Error reading proposals.{RESET}\n")
+        return
+
+    print(f"\n  {BOLD}SERVICE PROPOSALS{RESET} ({len(proposals)} total)")
+    hr("─", 72)
+
+    for p in proposals:
+        if p.get("status") == "live":
+            icon = f"{GREEN}● LIVE{RESET}"
+        elif p.get("status") == "proposed":
+            icon = f"{YELLOW}○ PENDING{RESET}"
+        else:
+            icon = f"{DIM}  {p.get('status', '?')}{RESET}"
+
+        print(f"\n  {icon}  {BOLD}{p['service_id']}{RESET}")
+        print(f"  Name:     {p.get('name', '?')}")
+        print(f"  URL:      {DIM}{p.get('url', '?')}{RESET}")
+        print(f"  Method:   {p.get('method', '?')}  Price: {p.get('price_credits', '?')}cr")
+        if p.get("rationale"):
+            print(f"  Reason:   {DIM}{p['rationale'][:80]}{RESET}")
+    print()
+
+
+def cmd_health():
+    """Fetch and display gateway health summary."""
+    import urllib.request
+
+    url = os.getenv("GATEWAY_URL", "https://beneficial-essence-production-99c7.up.railway.app")
+    try:
+        req = urllib.request.Request(f"{url}/health")
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read())
+    except Exception as e:
+        print(f"\n  {RED}Failed to reach gateway: {e}{RESET}\n")
+        return
+
+    svc_count = data.get("services_count", 0)
+    portfolio = data.get("portfolio", {})
+    supervisor = data.get("supervisor", {})
+    colony = data.get("colony", {})
+
+    print(f"\n{BOLD}{CYAN}  ╔══════════════════════════════════════════════════════════════╗{RESET}")
+    print(f"{BOLD}{CYAN}  ║{RESET}  {BOLD}MOG GATEWAY HEALTH{RESET}                                        {BOLD}{CYAN}║{RESET}")
+    print(f"{BOLD}{CYAN}  ╚══════════════════════════════════════════════════════════════╝{RESET}")
+
+    print(f"\n  {BOLD}Marketplace{RESET}")
+    print(f"  Services:     {BOLD}{svc_count}{RESET}")
+    print(f"  Earned:       {GREEN}{portfolio.get('total_earned', 0)}cr{RESET}")
+    print(f"  Balance:      {portfolio.get('balance', 0)}cr")
+    print(f"  ROI:          {portfolio.get('roi', 0):.1%}")
+
+    if supervisor:
+        counts = supervisor.get("counts", {})
+        print(f"\n  {BOLD}Supervisor{RESET}")
+        print(f"  Greenlit:     {GREEN}{counts.get('greenlit', 0)}{RESET}")
+        print(f"  Under review: {YELLOW}{counts.get('under_review', 0)}{RESET}")
+        print(f"  Killed:       {RED}{counts.get('killed', 0)}{RESET}")
+        print(f"  Pending:      {DIM}{counts.get('pending', 0)}{RESET}")
+
+    if colony:
+        running = colony.get("running", False)
+        agents = colony.get("agents", [])
+        print(f"\n  {BOLD}Colony{RESET}")
+        print(f"  Status:       {GREEN}▶ RUNNING{RESET}" if running else f"  Status:       {DIM}■ STOPPED{RESET}")
+        for a in agents:
+            status = styled_status(a["status"])
+            print(f"  {a['name']:<18} {status}  tick #{a.get('tick_count', 0)}")
+
+    # Top services by revenue
+    services = data.get("services", [])
+    earners = sorted(services, key=lambda s: (s.get("stats", {}) or {}).get("revenue_credits", 0), reverse=True)
+    earners = [s for s in earners if (s.get("stats", {}) or {}).get("revenue_credits", 0) > 0]
+    if earners:
+        print(f"\n  {BOLD}Top Earners{RESET}")
+        for s in earners[:5]:
+            stats = s.get("stats", {})
+            print(f"  {BOLD}{s['service_id']:<24}{RESET} {GREEN}{stats.get('revenue_credits', 0)}cr{RESET}  {stats.get('total_calls', 0)} calls  {stats.get('success_rate', 0):.0%}")
+
+    print()
+
+
+def cmd_config():
+    """Show colony configuration."""
+    from src.agents.agent import MODEL, COMPACTION_MODEL, MAX_RECENT_TURNS, MAX_TOOL_ROUNDS, COMPACT_AFTER
+    from src.agents.tools import MAX_AGENT_SERVICES, MAX_PROPOSALS_PER_TICK, PROXY_TIMEOUT
+    from src.agents.loop import TICK_INTERVAL
+
+    print(f"\n  {BOLD}COLONY CONFIGURATION{RESET}")
+    hr("─", 50)
+    print(f"  Agent model:       {BOLD}{MODEL}{RESET}")
+    print(f"  Compaction model:  {COMPACTION_MODEL}")
+    print(f"  Tick interval:     {TICK_INTERVAL}s")
+    print(f"  Max tool rounds:   {MAX_TOOL_ROUNDS}")
+    print(f"  Recent turns kept: {MAX_RECENT_TURNS}")
+    print(f"  Compact after:     {COMPACT_AFTER} messages")
+    print(f"  Max agent services:{MAX_AGENT_SERVICES}")
+    print(f"  Proposals per tick:{MAX_PROPOSALS_PER_TICK}")
+    print(f"  Proxy timeout:     {PROXY_TIMEOUT}s")
+    print(f"  Colony enabled:    {os.getenv('MOG_COLONY_ENABLED', 'false')}")
+    print()
+
+
+def cmd_help():
+    print(__doc__)
+
+
+# ── Main ──────────────────────────────────────────────────────
+
+COMMANDS = {
+    "status": cmd_status,
+    "tick": cmd_tick,
+    "messages": cmd_messages,
+    "agents": cmd_agents,
+    "proposals": cmd_proposals,
+    "health": cmd_health,
+    "config": cmd_config,
+    "help": cmd_help,
+}
+
+def main():
+    if len(sys.argv) < 2 or sys.argv[1] not in COMMANDS:
+        cmd_status()  # Default to status dashboard
+        return
+    COMMANDS[sys.argv[1]]()
+
+if __name__ == "__main__":
+    main()
