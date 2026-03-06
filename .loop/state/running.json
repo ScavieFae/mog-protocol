@@ -5,6 +5,12 @@
       "branch": "brief-008-fix-fx-wire-services",
       "brief_file": ".loop/briefs/brief-008-fix-fx-wire-services.md",
       "dispatched_at": "2026-03-06T10:40:16Z"
+    },
+    {
+      "brief": "brief-007-portfolio-core",
+      "branch": "brief-007-portfolio-core",
+      "brief_file": ".loop/briefs/brief-007-portfolio-core.md",
+      "dispatched_at": "2026-03-06T10:41:34Z"
     }
   ],
   "completed_pending_eval": [],
