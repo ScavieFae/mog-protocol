@@ -1,5 +1,12 @@
 {
-  "active": [],
+  "active": [
+    {
+      "brief": "backoffice-006-wrap-currency-conversion",
+      "branch": "bo/006-wrap-currency-conversion",
+      "brief_file": ".loop-backoffice/briefs/backoffice-006-wrap-currency-conversion.md",
+      "dispatched_at": "2026-03-06T01:19:07Z"
+    }
+  ],
   "completed_pending_eval": [],
   "history": [
     {
