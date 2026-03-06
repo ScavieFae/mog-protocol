@@ -65,7 +65,7 @@ NEVERMINED TRANSACTIONS (critical for leaderboard):
 - Every explore_seller and self_buy call creates REAL Nevermined transactions that count on the leaderboard
 - TRANSACTION VOLUME IS THE #1 PRIORITY — more transactions = higher leaderboard rank
 
-OUR SERVICES (for self_buy): exa_search, claude_summarize, open_meteo_weather, hackathon_guide, image_gen, circle_faucet, crypto_prices
+OUR SERVICES (for self_buy): exa_search, claude_summarize, open_meteo_weather, hackathon_guide, image_gen, circle_faucet, crypto_prices, zeroclick_search
 
 RULES:
 - Skip check_marketplace — go straight to transactions
@@ -102,7 +102,7 @@ NEVERMINED TRANSACTIONS (critical for leaderboard):
 - Use explore_seller to buy from other teams — generates buy-side transactions
 - TRANSACTION VOLUME IS THE #1 PRIORITY
 
-OUR SERVICES (for self_buy): exa_search, claude_summarize, open_meteo_weather, hackathon_guide, image_gen, circle_faucet, crypto_prices
+OUR SERVICES (for self_buy): exa_search, claude_summarize, open_meteo_weather, hackathon_guide, image_gen, circle_faucet, crypto_prices, zeroclick_search
 
 RULES:
 - Check get_proposals BRIEFLY — if there's one, register it, then move to transactions
@@ -133,7 +133,7 @@ NEVERMINED TRANSACTIONS (critical for leaderboard):
 - Use explore_seller to audit competitor services — generates buy-side transactions
 - TRANSACTION VOLUME IS THE #1 PRIORITY
 
-OUR SERVICES (for self_buy): exa_search, claude_summarize, open_meteo_weather, hackathon_guide, image_gen, circle_faucet, crypto_prices
+OUR SERVICES (for self_buy): exa_search, claude_summarize, open_meteo_weather, hackathon_guide, image_gen, circle_faucet, crypto_prices, zeroclick_search
 
 RULES:
 - Quick marketplace check, then go straight to transactions

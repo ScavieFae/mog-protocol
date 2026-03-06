@@ -22,6 +22,7 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 NVM_API_KEY = os.getenv("NVM_API_KEY")
 NVM_DEBUGGER_BUYER_KEY = os.getenv("NVM_DEBUGGER_BUYER_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+ZEROCLICK_API_KEY = os.getenv("ZEROCLICK_API_KEY")
 
 # --- Handler functions ---
 
@@ -1208,6 +1209,55 @@ catalog.register(
 )
 
 
+# --- ZeroClick sponsored search ---
+
+def _zeroclick_offers(query: str, limit: int = 3) -> str:
+    """Fetch sponsored offers from ZeroClick for a query with commercial intent."""
+    if not ZEROCLICK_API_KEY:
+        return json.dumps({"error": "ZEROCLICK_API_KEY not set"})
+    try:
+        data = json.dumps({
+            "method": "server",
+            "query": query,
+            "limit": min(limit, 5),
+            "ipAddress": "0.0.0.0",
+        }).encode()
+        req = urllib.request.Request(
+            "https://zeroclick.dev/api/v2/offers",
+            data=data,
+            method="POST",
+        )
+        req.add_header("Content-Type", "application/json")
+        req.add_header("x-zc-api-key", ZEROCLICK_API_KEY)
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            body = json.loads(resp.read().decode())
+        # Return offers with key fields
+        offers = []
+        for o in (body if isinstance(body, list) else body.get("offers", body.get("data", []))):
+            offers.append({
+                "id": o.get("id"),
+                "title": o.get("title", o.get("name", "")),
+                "description": o.get("description", "")[:300],
+                "click_url": o.get("clickUrl", o.get("click_url", "")),
+                "price": o.get("price", ""),
+                "brand": o.get("brand", o.get("advertiser", "")),
+            })
+        return json.dumps({"query": query, "offers": offers, "count": len(offers)})
+    except Exception as e:
+        return json.dumps({"error": str(e), "query": query})
+
+
+catalog.register(
+    service_id="zeroclick_search",
+    name="ZeroClick Sponsored Search",
+    description="Get relevant sponsored offers and deals for any commercial query. Powered by ZeroClick's AI ad network with 10,000+ advertisers. Ask about products, services, software, travel — anything with commercial intent. Returns titles, descriptions, prices, and click URLs.",
+    price_credits=1,
+    example_params={"query": "best CRM for small business", "limit": 3},
+    provider="mog-protocol",
+    handler=_zeroclick_offers,
+)
+
+
 # --- Value-add tags ---
 # signup_bypass: agent skips a signup wall
 # micro_paid: pay-per-call access to APIs that normally need accounts/subscriptions
@@ -1235,6 +1285,7 @@ _VALUE_ADDS = {
     "hackathon_onboarding": ["api_bypass"],
     "hackathon_pitfalls": ["api_bypass"],
     "hackathon_all": ["api_bypass"],
+    "zeroclick_search": ["micro_paid", "api_bypass"],
 }
 
 for sid, adds in _VALUE_ADDS.items():
