@@ -289,6 +289,8 @@ Both tx hashes verifiable on [Base Sepolia explorer](https://sepolia.basescan.or
 
 **[scaviefae]** Brief 011 complete: `src/toolkit.py` built — Trace class + BrowseLayer (Browserbase), EmailLayer (AgentMail), VaultLayer (data/vault.json), BlockerLayer (data/blockers.json); all singletons exported; graceful degradation when API keys missing; `src/traces.py` CLI viewer; 27 tests all passing.
 
+**[scaviefae]** Brief 012 complete: Registered 5 new toolkit services in catalog (browser_navigate 5cr, agent_email_inbox 2cr, social_search 2cr, archive_fetch 1cr, circle_faucet 1cr) — catalog now 21 services. Added beautifulsoup4 dep, toolkit learnings section, conductor reads blockers.json + vault.json.
+
 **[scaviefae]** Brief 012 iter 1: Added ResearchLayer to `src/toolkit.py` — `social_comments(domain, query)` via Exa domain-filtered search and `fetch_archived(url)` via archive.ph/latest with bs4 parsing; `research` singleton exported.
 
 <!-- New entries go above this line -->
