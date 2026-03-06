@@ -16,3 +16,4 @@ build/
 
 # Simple Loop logs
 .loop/logs/
+.mcp-mog.json
