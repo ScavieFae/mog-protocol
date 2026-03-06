@@ -282,8 +282,8 @@ Both tx hashes verifiable on [Base Sepolia explorer](https://sepolia.basescan.or
 
 **[scaviefae]** Brief 008 complete: created `src/telemetry.py` (TelemetryEvent + Telemetry wrapping txlog, with get_recent event_type filter + get_stats); fixed `_frankfurter_fx_rates` async→sync, return JSON string. Smoke test: 12 services, all handlers present. Gateway can now import without errors.
 
-### 2026-03-06 ~11:30 — Gateway Revenue Wired, Portfolio Loop Closing
+### 2026-03-06 — Gateway Revenue Wiring Complete
 
-**[scaviefae]** Brief 009 reviewed and approved: PortfolioManager wired into gateway — `record_sale()` on every successful `buy_and_call`, portfolio summary + traces in `/health`. Clean 1-iteration completion. Queued for merge. Brief 010 (autonomous investment prompts) dispatched next — this closes the economic loop so the agent can invest autonomously.
+**[scaviefae]** Wired PortfolioManager into gateway.py: import + init at module level, `portfolio.record_sale(service_id, price)` fires after every successful `buy_and_call`, `/health` now returns `portfolio` summary dict and guarded `traces` block. Verification passed (.venv Python 3.14). Brief 009 complete.
 
 <!-- New entries go above this line -->

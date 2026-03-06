@@ -24,6 +24,7 @@ if not NVM_API_KEY or not NVM_AGENT_ID:
 from payments_py import Payments, PaymentOptions
 from payments_py.mcp import PaymentsMCP
 
+from src.portfolio import PortfolioManager
 from src.pricing import get_current_price
 from src.services import catalog
 from src.telemetry import telemetry, TelemetryEvent
@@ -42,6 +43,8 @@ mcp = PaymentsMCP(
     version="1.0.0",
     description="API marketplace. Two tools: find_service (free discovery) and buy_and_call (pay per use).",
 )
+
+portfolio = PortfolioManager()
 
 
 def _gateway_credits(ctx: dict) -> int:
@@ -124,6 +127,7 @@ def buy_and_call(service_id: str, params: dict) -> str:
         latency_ms=latency_ms, agent_id=NVM_AGENT_ID,
         plan_id=os.getenv("NVM_GATEWAY_PLAN_ID", ""),
     ))
+    portfolio.record_sale(service_id, price)
     return json.dumps({
         "result": result,
         "_meta": {
@@ -154,7 +158,7 @@ async def main():
             stats = telemetry.get_stats()
             recent = telemetry.get_recent(10, event_type="buy_and_call")
             demand = telemetry.get_recent(10, event_type="unmet_demand")
-            return _JSONResponse({
+            health = {
                 "status": "ok",
                 "services_count": len(services),
                 "services": [
@@ -164,7 +168,22 @@ async def main():
                 "stats": stats,
                 "recent_transactions": recent,
                 "demand_signals": demand,
-            })
+                "portfolio": portfolio.get_summary(),
+            }
+            try:
+                from src.toolkit import blockers
+                recent_blockers = blockers.get_recent(5)
+                health["traces"] = {
+                    "recent_blockers": [
+                        {"service_id": b.get("service_id"), "type": b.get("blocker_type"),
+                         "recommendation": b.get("recommendation"),
+                         "steps": (b.get("trace", {}).get("steps", []))}
+                        for b in recent_blockers
+                    ]
+                }
+            except ImportError:
+                pass  # toolkit not yet built
+            return _JSONResponse(health)
 
         app.add_api_route("/health", _health, methods=["GET"])
         print("Custom /health endpoint registered")
