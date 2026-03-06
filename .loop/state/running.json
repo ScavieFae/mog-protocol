@@ -1,5 +1,12 @@
 {
-  "active": [],
+  "active": [
+    {
+      "brief": "brief-012-research-and-services",
+      "branch": "brief-012-research-and-services",
+      "brief_file": ".loop/briefs/brief-012-research-and-services.md",
+      "dispatched_at": "2026-03-06T19:09:44Z"
+    }
+  ],
   "completed_pending_eval": [],
   "history": [
     {
@@ -78,7 +85,7 @@
       "brief": "brief-012-research-and-services",
       "branch": "brief-012-research-and-services",
       "closed_at": "2026-03-06T19:08:00Z",
-      "evaluation": "KILLED — branch deleted. Work on main. Remaining tasks in brief-013."
+      "evaluation": "KILLED \u2014 branch deleted. Work on main. Remaining tasks in brief-013."
     }
   ]
 }
