@@ -47,14 +47,26 @@
       "discovery_cost_credits": 0,
       "wrapping_cost_credits": 3,
       "status": "active"
+    },
+    "mymemory_translate": {
+      "added_at": "2026-03-05T15:00:00Z",
+      "source": "backoffice-005",
+      "upstream_api": "api.mymemory.translated.net",
+      "upstream_cost_per_call_usd": 0,
+      "our_price_credits": 2,
+      "total_calls": 0,
+      "total_revenue_credits": 0,
+      "discovery_cost_credits": 0,
+      "wrapping_cost_credits": 2,
+      "status": "active"
     }
   },
   "budget": {
     "initial_credits": 100,
     "spent_discovery": 0,
-    "spent_wrapping": 3,
+    "spent_wrapping": 5,
     "earned_revenue": 12,
-    "current_balance": 90
+    "current_balance": 88
   },
   "demand_signals": []
 }
