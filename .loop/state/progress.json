@@ -1,22 +1,9 @@
 {
-  "brief": "brief-011-toolkit-foundation",
-  "brief_file": ".loop/briefs/brief-011-toolkit-foundation.md",
-  "iteration": 1,
-  "status": "complete",
-  "tasks_completed": [
-    "Create src/toolkit.py with Trace + four sublayers (BrowseLayer, EmailLayer, VaultLayer, BlockerLayer)",
-    "Ensure data/ dir has .gitkeep and add vault.json/blockers.json/portfolio.json to .gitignore",
-    "Create src/traces.py CLI viewer (python -m src.traces)",
-    "Create src/test_toolkit.py — 27 passing tests (no API keys needed)"
-  ],
+  "brief": "brief-012-research-and-services",
+  "brief_file": ".loop/briefs/brief-012-research-and-services.md",
+  "iteration": 0,
+  "status": "running",
+  "tasks_completed": [],
   "tasks_remaining": [],
-  "learnings": [
-    "Toolkit follows same threading.Lock + JSON persistence pattern as PortfolioManager",
-    "BrowseLayer uses Playwright over CDP to connect to Browserbase sessions",
-    "Graceful degradation: all methods return error dict / False / empty string / empty list when API keys missing",
-    "VaultLayer.list_keys() explicitly excludes 'value' field — never expose secrets",
-    "Trace.summary() returns last 20 steps; result strings truncated to 80 chars at log() time",
-    "BlockerLayer.report() stores trace.to_dict() verbatim on the report record",
-    "python -m src.traces reads both data/blockers.json and data/portfolio.json for traced operations"
-  ]
+  "learnings": []
 }
