@@ -150,8 +150,9 @@ def dispatch(paths):
     git(project_dir, "checkout", main_branch, check=False)
     git(project_dir, "pull", "--ff-only", remote, main_branch, check=False)
 
-    # Create branch (delete stale local branch if it exists)
+    # Delete stale branch (local + remote) from previous failed dispatch
     git(project_dir, "branch", "-D", branch, check=False)
+    git(project_dir, "push", remote, "--delete", branch, check=False)
     git(project_dir, "checkout", "-b", branch, main_branch)
 
     # Initialize progress.json
