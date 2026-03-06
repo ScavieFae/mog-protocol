@@ -34,7 +34,7 @@ What's the situation?
 
 ## Step 4: Dispatch (if no active brief)
 
-If there's a brief file in `.loop/briefs/` ready to go:
+If there's a brief file in `.loop/briefs/` ready to go (and NOT already in the `history` array of running.json):
 1. Write `.loop/state/pending-dispatch.json` with:
    ```json
    {"brief": "brief-NNN-slug", "branch": "brief-NNN-slug",
