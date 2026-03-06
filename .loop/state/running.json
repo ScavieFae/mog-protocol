@@ -1,5 +1,12 @@
 {
-  "active": [],
+  "active": [
+    {
+      "brief": "brief-011-toolkit-foundation",
+      "branch": "brief-011-toolkit-foundation",
+      "brief_file": ".loop/briefs/brief-011-toolkit-foundation.md",
+      "dispatched_at": "2026-03-06T15:36:45Z"
+    }
+  ],
   "completed_pending_eval": [
     {
       "brief": "brief-010-autonomous-investment",
