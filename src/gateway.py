@@ -151,66 +151,13 @@ def buy_and_call(service_id: str, params: dict) -> str:
     })
 
 
-class _BuyerCompat:
-    """ASGI wrapper: translates payment-signature → Bearer, defaults Accept header."""
-
-    def __init__(self, app):
-        self.app = app
-
-    async def __call__(self, scope, receive, send):
-        if scope["type"] == "http":
-            headers = list(scope.get("headers", []))
-            header_names = {k for k, v in headers}
-
-            if b"accept" not in header_names:
-                headers.append((b"accept", b"application/json"))
-
-            if b"payment-signature" in header_names and b"authorization" not in header_names:
-                sig_value = None
-                new_headers = []
-                for k, v in headers:
-                    if k == b"payment-signature":
-                        sig_value = v
-                    else:
-                        new_headers.append((k, v))
-                if sig_value:
-                    new_headers.append((b"authorization", b"Bearer " + sig_value))
-                    headers = new_headers
-
-            scope = {**scope, "headers": headers}
-
-        await self.app(scope, receive, send)
-
-
 async def main():
     port = int(os.getenv("PORT", os.getenv("GATEWAY_PORT", "4000")))
     print(f"Starting Mog Gateway MCP server on port {port}")
-
-    # Patch the manager's start to wrap the FastAPI app BEFORE uvicorn launches.
-    _original_start = mcp._manager.start
-
-    async def _patched_start(config):
-        result = await _original_start(config)
-        return result
-
-    # Instead of patching start (which is complex), we patch uvicorn.Config
-    # to intercept the app before the server binds to it.
-    import uvicorn as _uvicorn
-    _OrigConfig = _uvicorn.Config
-
-    class _WrappedConfig(_OrigConfig):
-        def __init__(self, app=None, **kwargs):
-            wrapped = _BuyerCompat(app) if app is not None else app
-            super().__init__(app=wrapped, **kwargs)
-
-    _uvicorn.Config = _WrappedConfig
-    try:
-        result = await mcp.start(port=port)
-    finally:
-        _uvicorn.Config = _OrigConfig
-    print("Buyer compat layer active (Accept default + payment-signature → Bearer)")
+    result = await mcp.start(port=port)
 
     # Replace the default /health with our richer marketplace health endpoint.
+    app = mcp._manager._fastapi_app
     if app is not None:
         from fastapi.responses import JSONResponse as _JSONResponse
 
