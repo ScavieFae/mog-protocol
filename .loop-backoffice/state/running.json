@@ -1,14 +1,13 @@
 {
-  "active": [],
-  "completed_pending_eval": [
+  "active": [
     {
-      "brief": "backoffice-011-scout-high-value-apis",
-      "branch": "bo/011-scout-high-value-apis",
-      "brief_file": ".loop-backoffice/briefs/backoffice-011-scout-high-value-apis.md",
-      "dispatched_at": "2026-03-06T04:04:43Z",
-      "completed_at": "2026-03-06T04:08:44Z"
+      "brief": "backoffice-012-wrap-pollinations-image",
+      "branch": "bo/012-wrap-pollinations-image",
+      "brief_file": ".loop-backoffice/briefs/backoffice-012-wrap-pollinations-image.md",
+      "dispatched_at": "2026-03-06T04:37:19Z"
     }
   ],
+  "completed_pending_eval": [],
   "history": [
     {
       "brief": "backoffice-001-initial-scout",
@@ -109,6 +108,16 @@
       "evaluated_at": "2026-03-06T03:36:00Z",
       "verdict": "accepted",
       "eval_file": ".loop-backoffice/evaluations/eval-010-wrap-random-user.md"
+    },
+    {
+      "brief": "backoffice-011-scout-high-value-apis",
+      "branch": "bo/011-scout-high-value-apis",
+      "brief_file": ".loop-backoffice/briefs/backoffice-011-scout-high-value-apis.md",
+      "dispatched_at": "2026-03-06T04:04:43Z",
+      "completed_at": "2026-03-06T04:08:44Z",
+      "evaluated_at": "2026-03-06T04:15:00Z",
+      "verdict": "accepted",
+      "eval_file": ".loop-backoffice/evaluations/eval-011-scout-high-value-apis.md"
     }
   ]
 }
