@@ -1,9 +1,18 @@
 {
   "brief": "backoffice-005-wrap-mymemory-translation",
   "brief_file": ".loop-backoffice/briefs/backoffice-005-wrap-mymemory-translation.md",
-  "iteration": 0,
-  "status": "running",
-  "tasks_completed": [],
+  "iteration": 1,
+  "status": "complete",
+  "tasks_completed": [
+    "Add _mymemory_translate handler to src/services.py",
+    "Add catalog.register for mymemory_translate",
+    "Self-test: 'Hello world' -> 'Hola mundo' (en->es)",
+    "Update portfolio.json with mymemory_translate entry (price=2, upstream_cost=0)"
+  ],
   "tasks_remaining": [],
-  "learnings": []
+  "learnings": [
+    "MyMemory API returns responseStatus=200 (int) on success, not a 'success' string like ip-api.",
+    "URL: https://api.mymemory.translated.net/get?q={encoded}&langpair={src}|{tgt}",
+    "No API key needed. 10k words/day anonymous. Reliable."
+  ]
 }
