@@ -1,13 +1,14 @@
 {
-  "active": [
+  "active": [],
+  "completed_pending_eval": [
     {
       "brief": "backoffice-014-wrap-qr-code",
       "branch": "bo/014-wrap-qr-code",
       "brief_file": ".loop-backoffice/briefs/backoffice-014-wrap-qr-code.md",
-      "dispatched_at": "2026-03-06T05:42:30Z"
+      "dispatched_at": "2026-03-06T05:42:30Z",
+      "completed_at": "2026-03-06T05:44:13Z"
     }
   ],
-  "completed_pending_eval": [],
   "history": [
     {
       "brief": "backoffice-001-initial-scout",
