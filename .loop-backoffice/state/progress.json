@@ -1,18 +1,9 @@
 {
-  "brief": "backoffice-004-scout-agent-apis",
-  "brief_file": ".loop-backoffice/briefs/backoffice-004-scout-agent-apis.md",
-  "iteration": 1,
-  "status": "complete",
-  "tasks_completed": [
-    "search_and_evaluate: ran 3 Exa searches + targeted follow-ups, tested APIs live, wrote 5 eval files (3 WRAP, 2 SKIP)"
-  ],
+  "brief": "backoffice-005-wrap-mymemory-translation",
+  "brief_file": ".loop-backoffice/briefs/backoffice-005-wrap-mymemory-translation.md",
+  "iteration": 0,
+  "status": "running",
+  "tasks_completed": [],
   "tasks_remaining": [],
-  "learnings": [
-    "Currency API (fawazahmed0): CDN-hosted via jsDelivr, no key, 342 currencies, updated daily. WRAP immediately.",
-    "MyMemory Translation: no key, 10K words/day free, clean REST, 100+ language pairs, verified working. WRAP immediately.",
-    "REST Countries: no key, structured data for 250 countries (capital, currency, language, timezone). WRAP as geo enrichment companion.",
-    "Judge0 CE: public endpoint 403 Forbidden without RapidAPI key. SKIP — blocked.",
-    "LibreTranslate: public instance now requires key. SKIP — use MyMemory instead.",
-    "Next briefs should target WRAP tasks: currency_conversion, translation, rest_countries — all three are ready to wrap."
-  ]
+  "learnings": []
 }
