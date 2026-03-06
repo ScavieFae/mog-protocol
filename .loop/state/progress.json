@@ -1,18 +1,17 @@
 {
-  "brief": "brief-006-surge-health",
-  "brief_file": ".loop/briefs/brief-006-surge-health.md",
-  "iteration": 2,
+  "brief": "brief-007-portfolio-core",
+  "brief_file": ".loop/briefs/brief-007-portfolio-core.md",
+  "iteration": 1,
   "status": "complete",
   "tasks_completed": [
-    "Wire surge pricing into gateway (_gateway_credits + buy_and_call)",
-    "Add /health endpoint to gateway"
+    "Create src/portfolio.py — PortfolioManager class with all required methods",
+    "Create data/ directory with .gitkeep",
+    "Create src/test_portfolio.py — 16 tests, all passing"
   ],
   "tasks_remaining": [],
   "learnings": [
-    "PaymentsMCP already registers a /health route via oauth_router (returns generic {status,service,timestamp}). To add custom /health, manipulate mcp._manager._fastapi_app.router.routes after mcp.start() — remove existing /health then add_api_route. Or insert before it using route list manipulation.",
-    "mcp._manager._fastapi_app is the FastAPI app instance, available after mcp.start() returns",
-    "tests at 0 call volume still pass after surge pricing because get_current_price returns base_price at low volume",
-    "app.router.routes is a plain list traversed on every request — safe to filter+append after server start without recompile",
-    "app.add_api_route('/health', fn, methods=['GET']) appends to end of routes; removing old route first is required since first-match wins"
+    "Project uses .venv/bin/python (Python 3.14) — use that for tests, not system python3",
+    "pytest is installed in .venv; run with: .venv/bin/python -m pytest",
+    "Portfolio uses threading.Lock for thread safety; earn() calls _save() internally via the lock, so record_sale() must not hold the lock when calling earn()"
   ]
 }

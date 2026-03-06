@@ -274,4 +274,8 @@ Both tx hashes verifiable on [Base Sepolia explorer](https://sepolia.basescan.or
 
 **Current state:** 11 services, 4 active paid plans (USDC), 2 USDC revenue transactions ($2 total), 1 cross-team transaction (Trust Net), full on-chain proof captured, fiat blocked by Nevermined backend bug, repo public.
 
+### 2026-03-06 — Portfolio Core Complete
+
+**[scaviefae]** Built `src/portfolio.py`: PortfolioManager with budget/P&L tracking, investment hypotheses, JSON persistence to `data/portfolio.json`. Thread-safe (Lock). 16 tests pass. Brief 007 complete — gateway revenue wiring (brief 009) can now connect.
+
 <!-- New entries go above this line -->
