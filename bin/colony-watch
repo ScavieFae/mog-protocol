@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+# colony-watch — live tail of colony activity from Railway logs
+# Usage: colony-watch [interval]
+#   interval: refresh seconds (default 10)
+
+set -uo pipefail
+
+INTERVAL="${1:-10}"
+GATEWAY="https://beneficial-essence-production-99c7.up.railway.app"
+
+BOLD="\033[1m"
+DIM="\033[2m"
+RESET="\033[0m"
+RED="\033[31m"
+GREEN="\033[32m"
+YELLOW="\033[33m"
+CYAN="\033[36m"
+MAGENTA="\033[35m"
+
+clear
+while true; do
+    DATA=$(curl -s --max-time 8 "$GATEWAY/health" 2>/dev/null)
+    if [ -z "$DATA" ]; then
+        printf "\033[H\033[J"
+        echo -e "  ${RED}Gateway unreachable${RESET}"
+        sleep "$INTERVAL"
+        continue
+    fi
+
+    # Move cursor to top, clear screen
+    printf "\033[H\033[J"
+
+    echo "$DATA" | python3 -c "
+import json, sys
+from datetime import datetime, timezone
+
+BOLD='\\033[1m'
+DIM='\\033[2m'
+RESET='\\033[0m'
+RED='\\033[31m'
+GREEN='\\033[32m'
+YELLOW='\\033[33m'
+CYAN='\\033[36m'
+MAGENTA='\\033[35m'
+
+data = json.load(sys.stdin)
+now = datetime.now(timezone.utc).strftime('%H:%M:%S')
+colony = data.get('colony', {})
+agents = colony.get('agents', [])
+messages = colony.get('messages', [])
+services = data.get('services', [])
+portfolio = data.get('portfolio', {})
+supervisor = data.get('supervisor', {})
+counts = supervisor.get('counts', {})
+running = colony.get('running', False)
+agent_svcs = [s for s in services if s.get('provider') == 'mog-agent']
+
+status = f'{GREEN}▶ LIVE{RESET}' if running else f'{DIM}■ OFF{RESET}'
+
+print(f'''
+{BOLD}{CYAN}  MOG COLONY{RESET}  {status}  {DIM}{now} UTC  refresh {int(sys.argv[1]) if len(sys.argv)>1 else 10}s{RESET}
+{DIM}{'─'*66}{RESET}''')
+
+# Agents row
+for a in agents:
+    name = a['name'].replace('mog-', '')
+    tick = a.get('tick_count', 0)
+    s = a.get('status', 'idle')
+    if s == 'idle':
+        icon = f'{DIM}●{RESET}'
+    elif s.startswith('using '):
+        tool = s.replace('using ', '')
+        icon = f'{GREEN}▶ {tool}{RESET}'
+    elif s == 'thinking':
+        icon = f'{YELLOW}◐{RESET}'
+    else:
+        icon = f'{DIM}{s}{RESET}'
+
+    task = a.get('current_task') or ''
+    if task:
+        task = f'  {DIM}{task[:50]}{RESET}'
+    mem = '🧠' if a.get('has_memory') else ''
+    print(f'  {BOLD}{name:<14}{RESET} {icon:<30} tick {tick}  {mem}{task}')
+
+# Stats bar
+earned = portfolio.get('total_earned', 0)
+balance = portfolio.get('balance', 0)
+gl = counts.get('greenlit', 0)
+ur = counts.get('under_review', 0)
+kl = counts.get('killed', 0)
+print(f'''
+{DIM}{'─'*66}{RESET}
+  {BOLD}{len(services)}{RESET} services  {GREEN}{earned}cr{RESET} earned  {DIM}{balance}cr bal{RESET}  {GREEN}{gl}{RESET}ok {YELLOW}{ur}{RESET}rev {RED}{kl}{RESET}kill  {CYAN}{len(agent_svcs)}{RESET} agent-built
+{DIM}{'─'*66}{RESET}''')
+
+# Agent-built services
+if agent_svcs:
+    print(f'  {BOLD}AGENT SERVICES{RESET}')
+    for s in agent_svcs:
+        stats = s.get('stats') or {}
+        calls = stats.get('total_calls', 0)
+        rev = stats.get('revenue_credits', 0)
+        sr = stats.get('success_rate')
+        sr_str = f'{sr:.0%}' if sr is not None else '-'
+        print(f'  {GREEN}●{RESET} {s[\"service_id\"]:<28} {s[\"price_credits\"]}cr  {calls} calls  {rev}cr  {sr_str}')
+    print()
+
+# Recent actions (last 2 per agent)
+print(f'  {BOLD}RECENT ACTIONS{RESET}')
+for a in agents:
+    name = a['name'].replace('mog-', '')
+    color = {\"mog-scout\": CYAN, \"mog-worker\": MAGENTA, \"mog-supervisor\": YELLOW}.get(a['name'], DIM)
+    for act in a.get('recent_actions', [])[-2:]:
+        if ':' in act:
+            tool, rest = act.split(':', 1)
+            rest = rest[:55]
+        else:
+            tool, rest = '', act[:55]
+        print(f'  {color}{name:<12}{RESET} {GREEN}{tool}{RESET}{DIM}{rest}{RESET}')
+print()
+
+# Messages (last 5)
+if messages:
+    print(f'  {BOLD}COMMS{RESET}')
+    for m in messages[-5:]:
+        fr = m['from'].replace('mog-', '')
+        to = m['to'].replace('mog-', '')
+        ts = m.get('timestamp', '')[-8:]
+        content = m['content'].replace(chr(10), ' ')[:65]
+        print(f'  {DIM}{ts}{RESET} {CYAN}{fr}{RESET}→{MAGENTA}{to}{RESET} {DIM}{content}{RESET}')
+" "$INTERVAL" 2>/dev/null
+
+    sleep "$INTERVAL"
+done

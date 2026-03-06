@@ -30,9 +30,7 @@ class ServiceCatalog:
                 self._openai_client = openai.OpenAI(api_key=api_key)
                 print(f"[catalog] OpenAI embeddings enabled")
             except ImportError:
-                print(f"[catalog] openai package not installed, using keyword fallback")
-        else:
-            print(f"[catalog] No OPENAI_API_KEY, using keyword fallback")
+                pass  # keyword fallback works fine
 
     @property
     def services(self) -> list[ServiceEntry]:
