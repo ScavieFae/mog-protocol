@@ -189,9 +189,27 @@ class AgentColony:
 
     def get_state(self) -> dict:
         """Get colony state for /health endpoint."""
+        # Build unified activity feed: tool calls + inter-agent messages
+        activities: list[dict] = []
+        for a in self._agents:
+            activities.extend(a.activity_log[-20:])
+        # Add messages as activities too
+        for m in bus.get_recent(20):
+            activities.append({
+                "agent": m["from"],
+                "tool": "send_message",
+                "args": f"to={m['to']}",
+                "result": m["content"][:200],
+                "timestamp": m.get("timestamp", ""),
+                "is_nvm": False,
+            })
+        # Sort by timestamp, newest first
+        activities.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+
         return {
             "agents": [a.get_state() for a in self._agents],
             "messages": bus.get_recent(20),
+            "activity_feed": activities[:50],
             "running": self._running,
             "tick_interval": TICK_INTERVAL,
         }

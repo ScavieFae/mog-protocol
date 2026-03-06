@@ -35,6 +35,7 @@ class Agent:
         self.status = "idle"
         self.current_task: str | None = None
         self.recent_actions: list[str] = []
+        self.activity_log: list[dict] = []  # Structured: {tool, args, result, timestamp, is_nvm}
         self.last_tick: str | None = None
         self.tick_count = 0
         self._client = anthropic.Anthropic()
@@ -112,6 +113,14 @@ class Agent:
                 result = execute_tool(self.name, tu.name, tu.input)
                 action = f"{tu.name}: {result[:120]}"
                 self.recent_actions.append(action)
+                self.activity_log.append({
+                    "agent": self.name,
+                    "tool": tu.name,
+                    "args": _brief_args(tu.input),
+                    "result": result[:200],
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "is_nvm": tu.name in ("self_buy", "explore_seller", "discover_sellers"),
+                })
                 tool_results.append({
                     "type": "tool_result",
                     "tool_use_id": tu.id,
@@ -125,8 +134,9 @@ class Agent:
         self.current_task = None
         summary = "\n".join(summary_parts) if summary_parts else "(no text output)"
 
-        # Keep recent_actions bounded
+        # Keep recent_actions and activity_log bounded
         self.recent_actions = self.recent_actions[-20:]
+        self.activity_log = self.activity_log[-50:]
 
         return summary
 
@@ -187,6 +197,7 @@ class Agent:
             "tick_count": self.tick_count,
             "conversation_length": len(self.messages),
             "has_memory": bool(self._memory),
+            "activity_log": self.activity_log[-20:],
         }
 
 

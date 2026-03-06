@@ -1,113 +1,10 @@
 import { useState, useMemo } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "motion/react"
-import { useHealth, type SupervisorEvaluation, type ColonyData } from "@/hooks/useHealth"
+import { useHealth, type SupervisorEvaluation } from "@/hooks/useHealth"
 import { ServiceCard } from "@/components/ServiceCard"
-import { AgentSidebar, type AgentState } from "@/components/AgentSidebar"
+import { HivePanel } from "@/components/HivePanel"
 import { Ticker } from "@/components/Ticker"
-
-const STATUS_MAP: Record<string, AgentState["status"]> = {
-  idle: "idle",
-  thinking: "working",
-  error: "idle",
-}
-
-// Use real colony data when available, fall back to derived state.
-function deriveAgents(data: ReturnType<typeof useHealth>["data"]): AgentState[] {
-  if (!data) return []
-
-  // Real colony agents — live from the agent loop
-  if (data.colony?.agents?.length) {
-    return data.colony.agents.map((a) => ({
-      name: a.name,
-      role: a.role,
-      status: a.status.startsWith("using ")
-        ? "working" as const
-        : (STATUS_MAP[a.status] ?? "working" as const),
-      currentTask: a.current_task ?? (a.status === "idle" ? "waiting for next tick" : a.status),
-      tools: a.tools,
-      recentActions: a.recent_actions,
-    }))
-  }
-
-  // Fallback: derive from telemetry (pre-colony mode)
-  const recentTxServices = new Set(
-    data.recent_transactions.slice(0, 5).map((t) => t.service_id)
-  )
-  const hasUnmetDemand = (data.demand_signals?.length ?? 0) > 0
-
-  return [
-    {
-      name: "mog-scout",
-      role: "discovery",
-      status: hasUnmetDemand ? "scouting" : "idle",
-      currentTask: hasUnmetDemand
-        ? `researching: "${data.demand_signals[0]?.query}"`
-        : "monitoring demand signals",
-      tools: ["exa", "browserbase"],
-      recentActions: [
-        ...(data.demand_signals?.slice(0, 3).map((d) => `demand: "${d.query}"`) ?? []),
-        "scanned marketplace for gaps",
-      ],
-    },
-    {
-      name: "mog-worker",
-      role: "builder",
-      status: recentTxServices.size > 0 ? "working" : "idle",
-      currentTask: "maintaining live services",
-      currentService: data.services[0]?.service_id,
-      tools: ["exa", "anthropic", "browserbase"],
-      recentActions: [
-        `${data.services_count} services live`,
-        ...data.recent_transactions.slice(0, 3).map(
-          (t) => `${t.success ? "sold" : "failed"} ${t.service_id} (${t.credits_charged}cr)`
-        ),
-      ],
-    },
-    {
-      name: "mog-supervisor",
-      role: "review",
-      status: "evaluating",
-      currentTask: data.supervisor
-        ? `evaluated ${data.supervisor.total_evaluated} services — ${data.supervisor.counts?.greenlit ?? 0} greenlit, ${data.supervisor.counts?.killed ?? 0} killed`
-        : `reviewing ${data.services_count} services`,
-      tools: ["nevermined"],
-      recentActions: [
-        ...(data.supervisor?.recent_actions?.slice(0, 5) ?? [
-          `portfolio: ${data.portfolio?.total_earned ?? 0}cr earned`,
-          `${data.portfolio?.active_hypotheses ?? 0} active hypotheses`,
-        ]),
-      ],
-    },
-  ]
-}
-
-// Inter-agent message feed
-function ColonyMessages({ colony }: { colony?: ColonyData }) {
-  if (!colony?.messages?.length) return null
-  return (
-    <div className="border-t border-sage/10 mt-4 pt-3">
-      <h3 className="font-sans text-[10px] uppercase tracking-wider text-stone/40 mb-2">
-        Agent Comms {colony.running && <span className="text-sage">LIVE</span>}
-      </h3>
-      <div className="space-y-1.5 max-h-32 overflow-y-auto">
-        {colony.messages.slice(-8).reverse().map((m) => (
-          <motion.div
-            key={m.id}
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="font-mono text-[11px] leading-tight animate-fade-up"
-          >
-            <span className="text-copper">{m.from.replace("mog-", "")}</span>
-            <span className="text-stone/30"> → </span>
-            <span className="text-sage/80">{m.to.replace("mog-", "")}</span>
-            <span className="text-stone/50">: {m.content.slice(0, 80)}{m.content.length > 80 ? "..." : ""}</span>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  )
-}
 
 function PortfolioBar({ data }: { data: ReturnType<typeof useHealth>["data"] }) {
   if (!data) return null
@@ -129,11 +26,11 @@ function PortfolioBar({ data }: { data: ReturnType<typeof useHealth>["data"] }) 
         </span>
       )}
       <div className="ml-auto flex gap-4">
-        <Link to="/connect" className="font-mono text-xs text-sage/60 hover:text-sage transition-colors">
-          connect &rarr;
+        <Link to="/colony" className="font-mono text-xs text-sage/60 hover:text-sage transition-colors">
+          colony &rarr;
         </Link>
-        <Link to="/garden" className="font-mono text-xs text-copper/60 hover:text-copper transition-colors">
-          garden &rarr;
+        <Link to="/connect" className="font-mono text-xs text-stone/40 hover:text-stone transition-colors">
+          connect &rarr;
         </Link>
       </div>
     </div>
@@ -165,10 +62,8 @@ function TransactionStream({ transactions }: { transactions: ReturnType<typeof u
 
 export function BoardPage() {
   const { data, error, loading } = useHealth(5000)
-  const [selectedAgent, setSelectedAgent] = useState<string | undefined>()
+  const [hiveExpanded, setHiveExpanded] = useState(true)
   const navigate = useNavigate()
-
-  const agents = useMemo(() => deriveAgents(data), [data])
 
   // Build evaluation lookup from supervisor data
   const evaluationMap = useMemo(() => {
@@ -251,15 +146,13 @@ export function BoardPage() {
             </div>
           )}
 
-          {/* Inter-agent communications */}
-          <ColonyMessages colony={data.colony} />
         </div>
 
-        {/* Agent sidebar */}
-        <AgentSidebar
-          agents={agents}
-          selectedAgent={selectedAgent}
-          onSelectAgent={(name) => setSelectedAgent(name === selectedAgent ? undefined : name)}
+        {/* Hive panel */}
+        <HivePanel
+          colony={data.colony}
+          expanded={hiveExpanded}
+          onToggle={() => setHiveExpanded(!hiveExpanded)}
         />
       </div>
 

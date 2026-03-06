@@ -76,12 +76,22 @@ export interface SupervisorData {
   evaluations: SupervisorEvaluation[]
 }
 
+export interface ActivityEntry {
+  agent: string
+  tool: string
+  args: string
+  result: string
+  timestamp: string
+  is_nvm: boolean
+}
+
 export interface ColonyAgent {
   name: string
   role: string
   status: string
   current_task: string | null
   recent_actions: string[]
+  activity_log: ActivityEntry[]
   tools: string[]
   last_tick: string | null
   tick_count: number
@@ -99,6 +109,7 @@ export interface ColonyMessage {
 export interface ColonyData {
   agents: ColonyAgent[]
   messages: ColonyMessage[]
+  activity_feed: ActivityEntry[]
   running: boolean
   tick_interval: number
 }
