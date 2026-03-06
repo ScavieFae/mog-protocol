@@ -4,13 +4,13 @@ You need a Nevermined API key from [nevermined.app](https://nevermined.app) with
 
 ## Pricing
 
-| Pack | Price | Credits | Plan ID |
-|------|-------|---------|---------|
-| Starter | 1 USDC | 1 call | `60859172884142288164507163059546691936422006932528002950292307302678850457887` |
-| Standard | 5 USDC | 10 calls | `87533285832696660011690943385915459855771974607401696593091951593047968932457` |
-| Pro | 10 USDC | 20 calls | `107388892078779776783316313571466544272023725956678321074411803867639782898854` |
+| Pack | Price | Credits | $/call | Plan ID |
+|------|-------|---------|--------|---------|
+| Starter | 1 USDC | 100 | $0.01 | `78367506339425330254643852037464276541596599135446819435850203999970093437014` |
+| Standard | 5 USDC | 650 | ~$0.008 | `58838132650832718911247679162288796191597226415558773615774039353699225980625` |
+| Pro | 10 USDC | 1,500 | ~$0.007 | `104362296634578646451881933824769223681280110332231291824848226485469994462551` |
 
-1 credit = 1 API call. Pick the plan that fits.
+Most services cost 1 credit ($0.01). Image generation costs 10 credits ($0.10). Volume discount on bigger packs.
 
 ## Subscribe + Buy
 
