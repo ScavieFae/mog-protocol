@@ -1,14 +1,13 @@
 {
-  "active": [],
-  "completed_pending_eval": [
+  "active": [
     {
-      "brief": "backoffice-013-wrap-newton-math",
-      "branch": "bo/013-wrap-newton-math",
-      "brief_file": ".loop-backoffice/briefs/backoffice-013-wrap-newton-math.md",
-      "dispatched_at": "2026-03-06T05:09:57Z",
-      "completed_at": "2026-03-06T05:11:44Z"
+      "brief": "backoffice-014-wrap-qr-code",
+      "branch": "bo/014-wrap-qr-code",
+      "brief_file": ".loop-backoffice/briefs/backoffice-014-wrap-qr-code.md",
+      "dispatched_at": "2026-03-06T05:42:30Z"
     }
   ],
+  "completed_pending_eval": [],
   "history": [
     {
       "brief": "backoffice-001-initial-scout",
@@ -129,6 +128,16 @@
       "evaluated_at": "2026-03-06T04:45:00Z",
       "verdict": "accepted",
       "eval_file": ".loop-backoffice/evaluations/eval-012-wrap-pollinations-image.md"
+    },
+    {
+      "brief": "backoffice-013-wrap-newton-math",
+      "branch": "bo/013-wrap-newton-math",
+      "brief_file": ".loop-backoffice/briefs/backoffice-013-wrap-newton-math.md",
+      "dispatched_at": "2026-03-06T05:09:57Z",
+      "completed_at": "2026-03-06T05:11:44Z",
+      "evaluated_at": "2026-03-06T05:15:00Z",
+      "verdict": "accepted",
+      "eval_file": ".loop-backoffice/evaluations/eval-013-wrap-newton-math.md"
     }
   ]
 }
