@@ -1,5 +1,12 @@
 {
-  "active": [],
+  "active": [
+    {
+      "brief": "brief-012-research-and-services",
+      "branch": "brief-012-research-and-services",
+      "brief_file": ".loop/briefs/brief-012-research-and-services.md",
+      "dispatched_at": "2026-03-06T18:51:45Z"
+    }
+  ],
   "completed_pending_eval": [],
   "history": [
     {
@@ -30,13 +37,13 @@
       "brief": "brief-004-txlog-pricing",
       "branch": "brief-004-txlog-pricing",
       "merged_at": "2026-03-05T21:50:00Z",
-      "evaluation": "MERGE — 13/13 tests pass, txlog+pricing wired into all tools, surge-adjusted _meta in responses"
+      "evaluation": "MERGE \u2014 13/13 tests pass, txlog+pricing wired into all tools, surge-adjusted _meta in responses"
     },
     {
       "brief": "brief-005-gateway-surge-deploy",
       "branch": "brief-005-gateway-surge-deploy",
       "closed_at": "2026-03-05T23:37:00Z",
-      "evaluation": "STALLED — 1/3 tasks done (surge pricing only), branch diverged from main, no worker running. Replaced by brief-006."
+      "evaluation": "STALLED \u2014 1/3 tasks done (surge pricing only), branch diverged from main, no worker running. Replaced by brief-006."
     },
     {
       "brief": "brief-006-surge-health",
@@ -54,31 +61,31 @@
       "brief": "brief-008-fix-fx-wire-services",
       "branch": "brief-008-fix-fx-wire-services",
       "merged_at": "2026-03-06T15:18:21Z",
-      "evaluation": "APPROVE — telemetry.py created, FX handler fixed, 12 services verified."
+      "evaluation": "APPROVE \u2014 telemetry.py created, FX handler fixed, 12 services verified."
     },
     {
       "brief": "brief-009-gateway-revenue",
       "branch": "brief-009-gateway-revenue",
       "merged_at": "2026-03-06T15:27:00Z",
-      "evaluation": "APPROVE — portfolio wired into gateway, record_sale on buy_and_call, /health has portfolio+traces"
+      "evaluation": "APPROVE \u2014 portfolio wired into gateway, record_sale on buy_and_call, /health has portfolio+traces"
     },
     {
       "brief": "brief-010-autonomous-investment",
       "branch": "brief-010-autonomous-investment",
       "merged_at": "2026-03-06T15:40:00Z",
-      "evaluation": "APPROVE — conductor/worker prompts updated for portfolio-aware autonomous loop"
+      "evaluation": "APPROVE \u2014 conductor/worker prompts updated for portfolio-aware autonomous loop"
     },
     {
       "brief": "brief-011-toolkit-foundation",
       "branch": "brief-011-toolkit-foundation",
       "merged_at": "2026-03-06T15:50:00Z",
-      "evaluation": "APPROVE — toolkit foundation merged"
+      "evaluation": "APPROVE \u2014 toolkit foundation merged"
     },
     {
       "brief": "brief-012-research-and-services",
       "branch": "brief-012-research-and-services",
       "closed_at": "2026-03-06T18:45:00Z",
-      "evaluation": "KILLED — work landed on main (ResearchLayer), branch stuck in empty dispatch loop. Remaining 4 tasks moved to brief-013."
+      "evaluation": "KILLED \u2014 work landed on main (ResearchLayer), branch stuck in empty dispatch loop. Remaining 4 tasks moved to brief-013."
     }
   ]
 }
