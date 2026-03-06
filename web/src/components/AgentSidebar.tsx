@@ -51,7 +51,7 @@ export function AgentSidebar({ agents, selectedAgent, onSelectAgent }: AgentSide
             {/* Agent header */}
             <div className="flex items-center gap-2 mb-1.5">
               <motion.div
-                className="w-2 h-2 rounded-full"
+                className={`w-2 h-2 rounded-full ${agent.status === "working" ? "animate-pulse-sage" : agent.status === "scouting" ? "animate-pulse-gold" : ""}`}
                 style={{ backgroundColor: STATUS_COLORS[agent.status] }}
                 animate={agent.status !== "idle" ? { scale: [1, 1.3, 1] } : {}}
                 transition={{ repeat: Infinity, duration: 2 }}
@@ -93,9 +93,9 @@ export function AgentSidebar({ agents, selectedAgent, onSelectAgent }: AgentSide
                 className="mt-3 pt-2 border-t border-sage/10"
               >
                 <p className="font-sans text-[10px] uppercase tracking-wider text-stone/40 mb-1">Recent</p>
-                <div className="space-y-1">
+                <div className="space-y-1 stagger-children">
                   {agent.recentActions.slice(0, 5).map((action, i) => (
-                    <p key={i} className="font-mono text-[11px] text-stone/60 leading-tight">
+                    <p key={i} className="font-mono text-[11px] text-stone/60 leading-tight animate-slide-in">
                       {action}
                     </p>
                   ))}

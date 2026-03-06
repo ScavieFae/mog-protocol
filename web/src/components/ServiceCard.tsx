@@ -85,13 +85,13 @@ export function ServiceCard({ service, evaluation, onClick }: ServiceCardProps) 
       </AnimatePresence>
 
       <div
-        className="rounded-xl p-4 border bg-white/60 hover:bg-white/80 transition-all"
+        className={`rounded-xl p-4 border bg-white/60 hover:bg-white/80 transition-all ${flash ? "animate-shimmer" : ""}`}
         style={{ borderColor: `${color}30` }}
       >
         {/* Header */}
         <div className="flex items-start justify-between mb-2">
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+            <div className={`w-2.5 h-2.5 rounded-full ${totalCalls > 0 ? "animate-breathe" : ""}`} style={{ backgroundColor: color }} />
             <span className="font-sans text-sm font-medium text-charcoal truncate max-w-[140px]">
               {service.name}
             </span>
@@ -105,7 +105,7 @@ export function ServiceCard({ service, evaluation, onClick }: ServiceCardProps) 
             {service.current_price ?? service.price_credits}cr
           </span>
           {surge > 1.1 && (
-            <span className="font-mono text-xs px-1.5 py-0.5 rounded-full"
+            <span className="font-mono text-xs px-1.5 py-0.5 rounded-full animate-pulse-copper"
               style={{ backgroundColor: `${surge > 1.5 ? "#C47A7A" : "#C5A862"}20`, color: surge > 1.5 ? "#C47A7A" : "#C5A862" }}>
               {surge.toFixed(1)}x
             </span>

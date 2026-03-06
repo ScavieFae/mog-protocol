@@ -35,7 +35,7 @@ export function Ticker({ services }: TickerProps) {
                   : `${s.price_credits}cr`}
               </span>
               {s.surge_multiplier && s.surge_multiplier > 1 && (
-                <span className="font-mono text-rose text-base">
+                <span className="font-mono text-rose text-base animate-pulse-copper">
                   {s.surge_multiplier.toFixed(1)}x
                 </span>
               )}

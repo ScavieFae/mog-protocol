@@ -96,7 +96,7 @@ function ColonyMessages({ colony }: { colony?: ColonyData }) {
             key={m.id}
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
-            className="font-mono text-[11px] leading-tight"
+            className="font-mono text-[11px] leading-tight animate-fade-up"
           >
             <span className="text-copper">{m.from.replace("mog-", "")}</span>
             <span className="text-stone/30"> → </span>
@@ -115,7 +115,7 @@ function PortfolioBar({ data }: { data: ReturnType<typeof useHealth>["data"] }) 
   return (
     <div className="border-b border-sage/15 bg-white/40 px-6 py-2.5 flex items-center gap-6 text-sm">
       <span className="font-sans text-stone/60">
-        <span className={`inline-block w-2 h-2 rounded-full mr-2 align-middle ${data.colony?.running ? "bg-sage" : "bg-stone/30"}`} />
+        <span className={`inline-block w-2 h-2 rounded-full mr-2 align-middle ${data.colony?.running ? "bg-sage animate-pulse-sage" : "bg-stone/30"}`} />
         {data.colony?.running ? "colony live" : data.status}
       </span>
       <span className="font-mono text-copper">{data.services_count} services</span>
@@ -218,7 +218,7 @@ export function BoardPage() {
       <div className="flex flex-1 overflow-hidden">
         {/* Service cards grid */}
         <div className="flex-1 p-6 overflow-y-auto">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 stagger-children">
             {sortedServices.map((service) => (
               <ServiceCard
                 key={service.service_id}
