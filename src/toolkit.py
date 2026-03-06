@@ -440,6 +440,76 @@ class BlockerLayer:
 
 
 # ---------------------------------------------------------------------------
+# ResearchLayer — social demand mining + archive fetching
+# ---------------------------------------------------------------------------
+
+class ResearchLayer:
+    def social_comments(self, domain: str, query: str, max_results: int = 10, trace: Trace = None) -> list[dict]:
+        """Search a specific social media domain for demand signals.
+        Uses Exa with domain filtering to find comments/posts matching query.
+        Returns [{title, url, snippet, score}]."""
+        api_key = os.getenv("EXA_API_KEY")
+        if not api_key:
+            return [{"error": "EXA_API_KEY not set"}]
+        try:
+            import exa_py
+            client = exa_py.Exa(api_key=api_key)
+            result = client.search_and_contents(
+                query,
+                num_results=max_results,
+                include_domains=[domain],
+                text=True,
+            )
+            items = [
+                {
+                    "title": r.title,
+                    "url": r.url,
+                    "snippet": (r.text or "")[:400],
+                    "score": getattr(r, "score", None),
+                }
+                for r in result.results
+            ]
+            if trace:
+                trace.log("research", f"social_comments({domain}, {query})", f"{len(items)} results")
+            return items
+        except Exception as e:
+            if trace:
+                trace.log("research", f"social_comments({domain}, {query})", f"FAIL {str(e)[:60]}")
+            return [{"error": str(e)}]
+
+    def fetch_archived(self, url: str, trace: Trace = None) -> dict:
+        """Fetch an archived version of a URL via archive.ph.
+        Tries archive.ph/latest/{url}, falls back to archive.is/latest/{url}.
+        Returns {url, title, text, source} or {error}."""
+        import urllib.request as _req
+        for base in ["https://archive.ph/latest", "https://archive.is/latest"]:
+            try:
+                archive_url = f"{base}/{url}"
+                request = _req.Request(archive_url, headers={"User-Agent": "Mozilla/5.0"})
+                with _req.urlopen(request, timeout=15) as resp:
+                    html = resp.read().decode("utf-8", errors="ignore")
+                    final_url = resp.url
+                try:
+                    from bs4 import BeautifulSoup
+                    soup = BeautifulSoup(html, "html.parser")
+                    title = soup.title.string.strip() if soup.title else ""
+                    for tag in soup(["script", "style", "nav", "header", "footer"]):
+                        tag.decompose()
+                    text = soup.get_text(separator="\n", strip=True)[:3000]
+                except ImportError:
+                    title = ""
+                    text = html[:3000]
+                if trace:
+                    trace.log("research", f"fetch_archived({url})", f"ok {len(text)} chars from {base}")
+                return {"url": final_url, "title": title, "text": text, "source": base}
+            except Exception as e:
+                if trace:
+                    trace.log("research", f"fetch_archived({url})", f"FAIL {base}: {str(e)[:50]}")
+                continue
+        return {"error": f"Could not fetch archived version of {url}"}
+
+
+# ---------------------------------------------------------------------------
 # Module-level singletons
 # ---------------------------------------------------------------------------
 
@@ -447,3 +517,4 @@ browse = BrowseLayer()
 email = EmailLayer()
 vault = VaultLayer()
 blockers = BlockerLayer()
+research = ResearchLayer()
