@@ -1,14 +1,6 @@
 {
   "active": [],
-  "completed_pending_eval": [
-    {
-      "brief": "backoffice-005-wrap-mymemory-translation",
-      "branch": "bo/005-wrap-mymemory-translation",
-      "brief_file": ".loop-backoffice/briefs/backoffice-005-wrap-mymemory-translation.md",
-      "dispatched_at": "2026-03-06T00:46:49Z",
-      "completed_at": "2026-03-06T00:48:54Z"
-    }
-  ],
+  "completed_pending_eval": [],
   "history": [
     {
       "brief": "backoffice-001-initial-scout",
@@ -49,6 +41,16 @@
       "evaluated_at": "2026-03-06T00:25:00Z",
       "verdict": "accepted",
       "eval_file": ".loop-backoffice/evaluations/eval-004-scout-agent-apis.md"
+    },
+    {
+      "brief": "backoffice-005-wrap-mymemory-translation",
+      "branch": "bo/005-wrap-mymemory-translation",
+      "brief_file": ".loop-backoffice/briefs/backoffice-005-wrap-mymemory-translation.md",
+      "dispatched_at": "2026-03-06T00:46:49Z",
+      "completed_at": "2026-03-06T00:48:54Z",
+      "evaluated_at": "2026-03-06T00:52:00Z",
+      "verdict": "accepted",
+      "eval_file": ".loop-backoffice/evaluations/eval-005-wrap-mymemory-translation.md"
     }
   ]
 }
