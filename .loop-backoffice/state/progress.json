@@ -1,9 +1,18 @@
 {
   "brief": "backoffice-009-wrap-hacker-news",
   "brief_file": ".loop-backoffice/briefs/backoffice-009-wrap-hacker-news.md",
-  "iteration": 0,
-  "status": "running",
-  "tasks_completed": [],
+  "iteration": 1,
+  "status": "complete",
+  "tasks_completed": [
+    "implement _hacker_news_top handler in src/services.py (count param, fetches top story IDs then item details, returns JSON with title/url/score/author/comments)",
+    "register hacker_news_top in catalog (2 credits, no API key needed)",
+    "self-test: verified returns valid JSON with 3 stories",
+    "update portfolio.json with hacker_news_top entry"
+  ],
   "tasks_remaining": [],
-  "learnings": []
+  "learnings": [
+    "HN Firebase API is public, no auth, no rate limits — fetches sequentially with urllib, no issues",
+    "catalog.register does not accept a tags parameter — fold keywords into description instead",
+    "catalog grew to 11 services after this addition"
+  ]
 }
