@@ -150,7 +150,8 @@ def dispatch(paths):
     git(project_dir, "checkout", main_branch, check=False)
     git(project_dir, "pull", "--ff-only", remote, main_branch, check=False)
 
-    # Create branch
+    # Create branch (delete stale local branch if it exists)
+    git(project_dir, "branch", "-D", branch, check=False)
     git(project_dir, "checkout", "-b", branch, main_branch)
 
     # Initialize progress.json
