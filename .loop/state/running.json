@@ -1,12 +1,5 @@
 {
-  "active": [
-    {
-      "brief": "brief-012-research-and-services",
-      "branch": "brief-012-research-and-services",
-      "brief_file": ".loop/briefs/brief-012-research-and-services.md",
-      "dispatched_at": "2026-03-06T18:34:09Z"
-    }
-  ],
+  "active": [],
   "completed_pending_eval": [
     {
       "brief": "brief-012-research-and-services",
@@ -56,6 +49,13 @@
       "brief_file": ".loop/briefs/brief-012-research-and-services.md",
       "dispatched_at": "2026-03-06T18:25:07Z",
       "completed_at": "2026-03-06T18:30:20Z"
+    },
+    {
+      "brief": "brief-012-research-and-services",
+      "branch": "brief-012-research-and-services",
+      "brief_file": ".loop/briefs/brief-012-research-and-services.md",
+      "dispatched_at": "2026-03-06T18:34:09Z",
+      "completed_at": "2026-03-06T18:38:03Z"
     }
   ],
   "history": [
