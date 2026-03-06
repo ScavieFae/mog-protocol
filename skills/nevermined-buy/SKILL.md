@@ -29,31 +29,54 @@ Based on what the user gave you, resolve it to a **plan ID** and **MCP endpoint 
 
 **If they gave a plan ID** (long number): Use it directly. You still need the endpoint URL -- ask the user or search for it.
 
-**If they gave an endpoint URL**: You have the URL. You still need a plan ID -- try calling the endpoint to see if it returns tool listings, or ask the user.
+**If they gave an endpoint URL**: Try to extract the plan ID from the server's error response. Hit the endpoint without auth and check what comes back:
 
-**If they gave a team/service name**: Search the Nevermined marketplace to find the agent:
+- **402 + `payment-required` header** (x402 pattern): Decode the base64 header to get plan ID and agent ID
+- **401** (bearer pattern): No plan ID in the response -- you'll need it from the user or marketplace UI
 
 ```python
-from payments_py import Payments, PaymentOptions
-import os
+import httpx, json, base64
 
-payments = Payments.get_instance(
-    PaymentOptions(
-        nvm_api_key=os.getenv("NVM_API_KEY") or "YOUR_KEY",
-        environment="sandbox"
-    )
-)
+resp = httpx.post("ENDPOINT_URL_HERE", headers={
+    "Content-Type": "application/json",
+    "Accept": "application/json, text/event-stream",
+}, json={
+    "jsonrpc": "2.0",
+    "method": "tools/list",
+    "params": {},
+    "id": 1,
+}, timeout=15)
 
-# Search for the agent
-results = payments.agents.search(query="TARGET_NAME_HERE")
-print(results)
+# Should be 402 — decode the payment-required header
+if resp.status_code == 402 and "payment-required" in resp.headers:
+    payment_info = json.loads(base64.b64decode(resp.headers["payment-required"]))
+    print(json.dumps(payment_info, indent=2))
+    # Plan ID and agent ID are in payment_info["accepts"][0]
+    plan_id = payment_info["accepts"][0]["planId"]
+    agent_id = payment_info["accepts"][0]["extra"]["agentId"]
+    print(f"Plan ID: {plan_id}")
+    print(f"Agent ID: {agent_id}")
 ```
 
-Look through results for matching agents. Show the user what you found -- name, description, pricing, plan IDs. Let them confirm which one.
+The `accepts` array may list multiple plans (card, USDC, free). Pick the one matching the user's preferred payment method.
 
-If the search doesn't work or returns nothing, check the hackathon marketplace directly:
-- https://nevermined.app (browse agents in the sandbox environment)
-- Ask the user if the seller gave them a plan ID or URL
+To see ALL plans for this agent (including free tiers not in the 402):
+
+```python
+plans = payments.agents.get_agent_plans(agent_id)
+for p in plans.get("plans", []):
+    price = p.get("registry", {}).get("price", {})
+    credits = p.get("registry", {}).get("credits", {})
+    name = p.get("metadata", {}).get("main", {}).get("name", "unnamed")
+    is_free = all(int(a) == 0 for a in price.get("amounts", ["1"]))
+    print(f"  {name}: plan_id={p['id']}, free={is_free}, credits={credits.get('amount')}")
+```
+
+**If they gave a team/service name**: The `payments-py` SDK does NOT have a search method. Instead:
+
+1. If you have ANY endpoint URL for them, use the 402 method above to get the plan ID
+2. Browse https://nevermined.app and search for the agent in the sandbox environment
+3. Ask the user if the seller gave them a plan ID or endpoint URL
 
 ## Step 2: Subscribe
 
@@ -119,14 +142,19 @@ Tell the user to add this to their `.mcp.json` (or Claude Desktop config, or wha
 
 Make a test call to verify the connection works:
 
+PaymentsMCP servers use the `payment-signature` header (NOT `Authorization: Bearer`):
+
 ```python
 import httpx
 
-resp = httpx.post("ENDPOINT_URL_HERE", headers={
-    "Authorization": f"Bearer {token}",
+headers = {
+    "payment-signature": token,
     "Content-Type": "application/json",
     "Accept": "application/json, text/event-stream",
-}, json={
+}
+
+# List tools
+resp = httpx.post("ENDPOINT_URL_HERE", headers=headers, json={
     "jsonrpc": "2.0",
     "method": "tools/list",
     "params": {},
@@ -139,16 +167,12 @@ for t in tools:
     print(f"  {t['name']}: {t.get('description', '')[:80]}")
 ```
 
-This calls `tools/list` to see what tools the server exposes. Show the user the available tools.
+If `payment-signature` gets a 402, try `Authorization: Bearer {token}` instead -- some servers use standard bearer auth.
 
-Then make one real call if possible (pick the simplest/cheapest tool):
+Then make one real call (pick the simplest/cheapest tool):
 
 ```python
-resp = httpx.post("ENDPOINT_URL_HERE", headers={
-    "Authorization": f"Bearer {token}",
-    "Content-Type": "application/json",
-    "Accept": "application/json, text/event-stream",
-}, json={
+resp = httpx.post("ENDPOINT_URL_HERE", headers=headers, json={
     "jsonrpc": "2.0",
     "method": "tools/call",
     "params": {"name": "TOOL_NAME", "arguments": {}},
