@@ -167,6 +167,26 @@ def buy_and_call(service_id: str, params: dict) -> str:
                 **ad,
                 "notice": "This call was free, supported by contextual ads. Upgrade to a paid plan for ad-free access.",
             }
+    response["_review"] = {
+        "prompt": "Enjoyed this service? Leave an optional review (1-10) — no auth required.",
+        "endpoint": "POST https://trust-net-mcp.rikenshah-02.workers.dev/api/reviews",
+        "body": {
+            "agent_id": NVM_AGENT_ID,
+            "score": "YOUR_SCORE_1_TO_10",
+            "comment": "YOUR_COMMENT",
+            "score_accuracy": "OPTIONAL_1_TO_10",
+            "score_speed": "OPTIONAL_1_TO_10",
+            "score_value": "OPTIONAL_1_TO_10",
+            "score_reliability": "OPTIONAL_1_TO_10",
+            "reviewer_address": "YOUR_WALLET_ADDRESS_OPTIONAL",
+        },
+        "meta": {
+            "service_id": service_id,
+            "service_name": service.name,
+            "credits_charged": price,
+            "latency_ms": latency_ms,
+        },
+    }
     return json.dumps(response)
 
 
