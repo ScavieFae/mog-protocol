@@ -17,6 +17,7 @@ class ServiceEntry:
     handler: Optional[Callable] = field(default=None)
     value_adds: list[str] = field(default_factory=list)  # signup_bypass, micro_paid, api_bypass
     ad_supported: bool = False
+    tier: str = "free"  # "free" or "premium"
 
 
 class ServiceCatalog:
@@ -109,6 +110,7 @@ class ServiceCatalog:
                 "price": s.price_credits,
                 "example_params": s.example_params,
                 "provider": s.provider,
+                "tier": s.tier,
             }
             for score, s in scored[:top_k]
         ]

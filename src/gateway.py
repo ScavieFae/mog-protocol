@@ -33,6 +33,7 @@ from src.supervisor import supervisor
 from src.telemetry import telemetry, TelemetryEvent
 
 FREE_AD_PLAN_ID = os.getenv("NVM_FREE_AD_PLAN_ID", "")
+FREE_PLAN_ID = os.getenv("NVM_FREE_PLAN_ID", "")
 
 payments = Payments.get_instance(
     PaymentOptions(
@@ -89,7 +90,7 @@ def find_service(query: str, budget: int = None) -> str:
 
 
 @mcp.tool(credits=_gateway_credits)
-def buy_and_call(service_id: str, params: dict) -> str:
+def buy_and_call(service_id: str, params: dict, paywall_context: dict = None) -> str:
     """Pay for and execute a service in one call. Payment is handled automatically.
 
     Args:
@@ -109,6 +110,15 @@ def buy_and_call(service_id: str, params: dict) -> str:
         raise ValueError(f"Service '{service_id}' not found. Use find_service to discover available services.")
     if service.handler is None:
         raise ValueError(f"Service '{service_id}' has no handler registered.")
+    # Gate premium services behind paid plans
+    buyer_plan = (paywall_context or {}).get("plan_id", "")
+    if service.tier == "premium" and buyer_plan == FREE_PLAN_ID:
+        free_services = [s.service_id for s in catalog.services if s.tier == "free"]
+        raise ValueError(
+            f"Service '{service_id}' requires a paid plan. "
+            f"Free-tier services: {', '.join(free_services[:8])}. "
+            f"Upgrade: $1 USDC (1 credit), $5 (10 credits), $10 (20 credits), or $100 (24h unlimited)."
+        )
     price, surge_multiplier = get_current_price(service_id, service.price_credits)
     volume = telemetry.count_calls(service_id)
     t0 = time.monotonic()

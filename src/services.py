@@ -1288,7 +1288,19 @@ _VALUE_ADDS = {
     "zeroclick_search": ["micro_paid", "api_bypass"],
 }
 
+# Premium services — require a paid plan. Everything else is free tier.
+_PREMIUM_SERVICES = {
+    "exa_search", "exa_get_contents", "claude_summarize",
+    "nano_banana_pro", "browser_navigate", "agent_email_inbox",
+    "social_search", "debug_seller",
+}
+
 for sid, adds in _VALUE_ADDS.items():
     entry = catalog.get(sid)
     if entry:
         entry.value_adds = adds
+
+for sid in _PREMIUM_SERVICES:
+    entry = catalog.get(sid)
+    if entry:
+        entry.tier = "premium"
