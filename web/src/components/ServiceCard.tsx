@@ -41,12 +41,19 @@ interface ServiceCardProps {
   onClick?: () => void
 }
 
+function isNew(stats?: { first_seen?: string }): boolean {
+  if (!stats?.first_seen) return true // no calls = brand new
+  const age = Date.now() - new Date(stats.first_seen).getTime()
+  return age < 60 * 60 * 1000 // less than 1 hour old
+}
+
 export function ServiceCard({ service, evaluation, onClick }: ServiceCardProps) {
   const cat = getCategory(service.service_id)
   const color = CATEGORY_COLORS[cat] ?? CATEGORY_COLORS.default
   const surge = service.surge_multiplier ?? 1
   const stats = service.stats
   const totalCalls = stats?.total_calls ?? 0
+  const fresh = isNew(stats)
   const revenue = stats?.revenue_credits ?? 0
   const [flash, setFlash] = useState(false)
   const [prevCalls, setPrevCalls] = useState(totalCalls)
@@ -99,7 +106,14 @@ export function ServiceCard({ service, evaluation, onClick }: ServiceCardProps) 
               {service.name}
             </span>
           </div>
-          <span className="font-mono text-xs text-stone/60">{service.provider ?? "mog"}</span>
+          <div className="flex items-center gap-1.5">
+            {fresh && (
+              <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full bg-sage/15 text-sage animate-fade-up">
+                NEW
+              </span>
+            )}
+            <span className="font-mono text-xs text-stone/60">{service.provider ?? "mog"}</span>
+          </div>
         </div>
 
         {/* Price + Surge + Supervisor */}

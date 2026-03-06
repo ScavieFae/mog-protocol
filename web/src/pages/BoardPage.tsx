@@ -146,6 +146,33 @@ export function BoardPage() {
             </div>
           )}
 
+          {/* Service graveyard */}
+          {data.graveyard && data.graveyard.length > 0 && (
+            <div className="mt-6 pt-4 border-t border-rose/10">
+              <h3 className="font-sans text-xs uppercase tracking-wider text-stone/40 mb-3">
+                Graveyard — {data.graveyard.length} killed
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {data.graveyard.map((g) => (
+                  <div
+                    key={g.service_id}
+                    className="rounded-lg px-3 py-2 border border-rose/15 bg-rose/5 opacity-50"
+                    title={g.reason}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-rose/60 text-xs">&#x2717;</span>
+                      <span className="font-mono text-xs text-stone/50 line-through">{g.name}</span>
+                      <span className="font-mono text-[10px] text-stone/30">{g.provider}</span>
+                    </div>
+                    <p className="font-mono text-[10px] text-stone/40 mt-0.5 max-w-[200px] truncate">
+                      {g.reason}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
         </div>
 
         {/* Hive panel */}

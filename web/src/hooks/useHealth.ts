@@ -114,6 +114,14 @@ export interface ColonyData {
   tick_interval: number
 }
 
+export interface GraveyardEntry {
+  service_id: string
+  name: string
+  provider: string
+  reason: string
+  killed_at: string
+}
+
 export interface HealthData {
   status: string
   services_count: number
@@ -125,6 +133,7 @@ export interface HealthData {
   portfolio?: Portfolio
   supervisor?: SupervisorData
   colony?: ColonyData
+  graveyard?: GraveyardEntry[]
 }
 
 export function useHealth(intervalMs = 5000) {

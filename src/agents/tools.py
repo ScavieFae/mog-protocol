@@ -598,6 +598,31 @@ def _patch_service(
     return result
 
 
+def _add_to_graveyard(service_id: str, name: str, provider: str, reason: str) -> None:
+    """Persist a killed service to the graveyard for display."""
+    from datetime import datetime, timezone
+    graveyard_path = "data/graveyard.json"
+    os.makedirs("data", exist_ok=True)
+    existing = []
+    if os.path.exists(graveyard_path):
+        try:
+            with open(graveyard_path) as f:
+                existing = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            pass
+    # Don't duplicate
+    if not any(g["service_id"] == service_id for g in existing):
+        existing.append({
+            "service_id": service_id,
+            "name": name,
+            "provider": provider,
+            "reason": reason,
+            "killed_at": datetime.now(timezone.utc).isoformat(),
+        })
+        with open(graveyard_path, "w") as f:
+            json.dump(existing[-50:], f, indent=2)  # Keep last 50
+
+
 def _evaluate_service(service_id: str, verdict: str, reason: str = "", **kwargs) -> str:
     """Supervisor evaluates a service: greenlit, under_review, or killed.
     Killed services are removed from search results."""
@@ -610,10 +635,11 @@ def _evaluate_service(service_id: str, verdict: str, reason: str = "", **kwargs)
 
     sup.override(service_id, verdict, reason)
 
-    # If killed, remove from catalog so it's no longer searchable/buyable
+    # If killed, remove from catalog and persist to graveyard
     if verdict == "killed":
         entry = catalog.get(service_id)
         if entry:
+            _add_to_graveyard(service_id, entry.name, entry.provider, reason)
             catalog._services.pop(service_id, None)
             return json.dumps({"evaluated": True, "service_id": service_id, "verdict": "killed",
                                "reason": reason, "removed_from_catalog": True})

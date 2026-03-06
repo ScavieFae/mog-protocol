@@ -285,6 +285,15 @@ async def main():
             evaluations = supervisor.evaluate_all(services, per_service_stats)
             health["supervisor"] = supervisor.get_summary(evaluations)
 
+            # Service graveyard
+            graveyard_path = "data/graveyard.json"
+            if os.path.exists(graveyard_path):
+                try:
+                    with open(graveyard_path) as f:
+                        health["graveyard"] = json.load(f)
+                except (json.JSONDecodeError, OSError):
+                    pass
+
             # Agent colony state (live autonomous agents)
             try:
                 from src.agents.loop import colony
