@@ -1,9 +1,14 @@
 {
-  "brief": "backoffice-013-wrap-newton-math",
-  "brief_file": ".loop-backoffice/briefs/backoffice-013-wrap-newton-math.md",
-  "iteration": 0,
-  "status": "running",
-  "tasks_completed": [],
+  "brief": "backoffice-014-wrap-qr-code",
+  "brief_file": ".loop-backoffice/briefs/backoffice-014-wrap-qr-code.md",
+  "iteration": 1,
+  "status": "complete",
+  "tasks_completed": [
+    "wrap qr_code handler in src/services.py with catalog registration, self-tested OK (15 services)"
+  ],
   "tasks_remaining": [],
-  "learnings": []
+  "learnings": [
+    "QRServer API (api.qrserver.com) is free, no key, returns binary image. Return URL pattern (not base64) is correct — trivial to wrap, 1 credit price.",
+    "catalog.register() does not accept a tags parameter — brief spec was wrong, omit tags."
+  ]
 }

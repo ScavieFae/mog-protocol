@@ -131,14 +131,26 @@
       "discovery_cost_credits": 0,
       "wrapping_cost_credits": 2,
       "status": "active"
+    },
+    "qr_code": {
+      "added_at": "2026-03-05T22:00:00Z",
+      "source": "backoffice-014",
+      "upstream_api": "api.qrserver.com",
+      "upstream_cost_per_call_usd": 0,
+      "our_price_credits": 1,
+      "total_calls": 0,
+      "total_revenue_credits": 0,
+      "discovery_cost_credits": 0,
+      "wrapping_cost_credits": 2,
+      "status": "active"
     }
   },
   "budget": {
     "initial_credits": 100,
     "spent_discovery": 0,
-    "spent_wrapping": 14,
+    "spent_wrapping": 16,
     "earned_revenue": 12,
-    "current_balance": 82
+    "current_balance": 80
   },
   "demand_signals": [
     {
