@@ -17,3 +17,8 @@ build/
 # Simple Loop logs
 .loop/logs/
 .mcp-mog.json
+
+# Data files with secrets
+data/vault.json
+data/blockers.json
+data/portfolio.json
