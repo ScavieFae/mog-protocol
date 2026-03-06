@@ -12,6 +12,20 @@ Read these files now:
 - `.loop/knowledge/learnings.md` — accumulated knowledge
 - `docs/hackathon-diary.md` — tail recent entries for director decisions and venue updates
 
+## Step 1b: Read Portfolio State
+
+Read the investment state now:
+```bash
+python -c "from src.portfolio import PortfolioManager; import json; print(json.dumps(PortfolioManager().get_summary(), indent=2))"
+```
+
+Read demand signals and surge data from the gateway:
+```bash
+curl -s https://beneficial-essence-production-99c7.up.railway.app/health | python -m json.tool
+```
+
+Note: which services are surging, which have zero recent transactions, what the current balance/ROI is.
+
 ## Step 2: Assess
 
 What's the situation?
@@ -20,6 +34,7 @@ What's the situation?
 - **Brief active and running?** → The daemon handles worker iterations. No action needed unless it's blocked.
 - **Brief blocked?** → Read the learnings. Can you unblock it, or does the human need to intervene? If stuck, write `.loop/state/signals/escalate.json`.
 - **No active brief?** → Check goals.md for what to do next. If there are queued briefs in `.loop/briefs/` that haven't been dispatched, dispatch the highest priority one.
+- **Portfolio review needed?** → If any hypothesis has been in "wrapped" status for >1hr with zero actual_revenue, generate a KILL or REPRICE brief. If balance is healthy (>20cr) and demand signals exist, propose a new scout brief.
 - **Nothing to do?** → Idle. That's fine.
 
 ## Step 3: Review + Evaluate (if brief complete)
@@ -53,6 +68,16 @@ If there's a brief file in `.loop/briefs/` ready to go:
    ```
    The daemon handles branch creation, progress init, and state updates.
 
+When dispatching investment briefs (scout or wrap), include the hypothesis ID in the brief so the worker can update it:
+```json
+{
+  "brief": "brief-NNN-slug",
+  "branch": "brief-NNN-slug",
+  "brief_file": ".loop/briefs/brief-NNN-slug.md",
+  "notes": "Wrap hypothesis hyp-003: weather_api, expected 8cr revenue"
+}
+```
+
 **Do NOT create branches or modify running.json directly.** The daemon processes queue files.
 
 ## Step 5: Update Hackathon Diary
@@ -61,6 +86,7 @@ Append a timestamped `[scaviefae]` entry to `docs/hackathon-diary.md` if anythin
 - Brief dispatched, completed, merged, or blocked
 - Escalations or errors
 - Key learnings from worker output
+- Portfolio milestones: first revenue, ROI positive, hypothesis killed
 
 Keep entries brief (1-3 lines). Don't log idle ticks. Insert new entries above the `<!-- New entries go above this line -->` marker.
 
@@ -77,3 +103,4 @@ Keep entries brief (1-3 lines). Don't log idle ticks. Insert new entries above t
 - **Be efficient.** You're spending the user's money.
 - **Don't go deep.** If investigation pulls you into code details, note it and move on. Stay operational.
 - **When in doubt, escalate.** Writing escalate.json costs nothing. A bad autonomous decision costs a brief.
+- **Investment discipline.** Only dispatch a scout/wrap brief if `should_invest()` would return True (expected ROI > 2x, budget > 5cr). Don't spend credits on services nobody is asking for.
