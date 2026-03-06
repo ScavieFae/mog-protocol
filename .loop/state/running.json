@@ -1,13 +1,14 @@
 {
-  "active": [
+  "active": [],
+  "completed_pending_eval": [
     {
       "brief": "brief-012-research-and-services",
       "branch": "brief-012-research-and-services",
       "brief_file": ".loop/briefs/brief-012-research-and-services.md",
-      "dispatched_at": "2026-03-06T18:51:45Z"
+      "dispatched_at": "2026-03-06T18:51:45Z",
+      "completed_at": "2026-03-06T18:53:41Z"
     }
   ],
-  "completed_pending_eval": [],
   "history": [
     {
       "brief": "brief-001-phase1-seller",
