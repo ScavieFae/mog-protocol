@@ -3,8 +3,11 @@ import { motion, AnimatePresence } from "motion/react"
 import { type ColonyData, type ActivityEntry } from "@/hooks/useHealth"
 
 // Tool → sponsor/category mapping for badges
-const TOOL_META: Record<string, { label: string; color: string; sponsor?: string }> = {
+const TOOL_META: Record<string, { label: string; color: string; sponsor?: string; bright?: boolean }> = {
   search_web: { label: "Exa", color: "#6B8DAE", sponsor: "exa" },
+  scout_exa: { label: "SCOUT:EXA", color: "#4A90D9", sponsor: "exa", bright: true },
+  scout_apify: { label: "SCOUT:APIFY", color: "#FF6B35", bright: true },
+  scout_trustnet: { label: "SCOUT:TRUST", color: "#E056A0", bright: true },
   self_buy: { label: "NVM", color: "#87A878", sponsor: "nevermined" },
   explore_seller: { label: "NVM", color: "#87A878", sponsor: "nevermined" },
   discover_sellers: { label: "NVM", color: "#87A878", sponsor: "nevermined" },
@@ -43,6 +46,9 @@ function summarizeResult(tool: string, result: string): string {
     const data = JSON.parse(result)
     if (data.error) return `error: ${data.error.slice(0, 60)}`
     if (tool === "search_web" && Array.isArray(data)) return `found ${data.length} results`
+    if (tool === "scout_exa") return `${data.query} [${data.focus}] ${data.results?.length ?? 0} hits`
+    if (tool === "scout_apify") return `${data.query} ${data.actors_found ?? 0} actors`
+    if (tool === "scout_trustnet") return `${Array.isArray(data.trust_net_agents) ? data.trust_net_agents.length : "?"} participants vs ${data.our_service_count ?? "?"} ours`
     if (tool === "self_buy") return `${data.service_id} ${data.status === 200 ? "ok" : `status ${data.status}`}`
     if (tool === "explore_seller") return `${data.subscribed ?? "explored"} ${data.team ?? data.plan_id?.slice(0, 12) ?? ""}`
     if (tool === "discover_sellers" && Array.isArray(data)) return `${data.length} sellers found`
@@ -79,9 +85,10 @@ export function HivePanel({ colony, expanded, onToggle }: HivePanelProps) {
   // Stats
   const stats = useMemo(() => {
     const nvmCount = feed.filter((a) => a.is_nvm).length
-    const exaCount = feed.filter((a) => a.tool === "search_web").length
+    const exaCount = feed.filter((a) => a.tool === "search_web" || a.tool === "scout_exa").length
+    const scoutCount = feed.filter((a) => a.is_scout).length
     const msgCount = feed.filter((a) => a.tool === "send_message").length
-    return { nvmCount, exaCount, msgCount }
+    return { nvmCount, exaCount, scoutCount, msgCount }
   }, [feed])
 
   // Collapsed rail
@@ -129,6 +136,7 @@ export function HivePanel({ colony, expanded, onToggle }: HivePanelProps) {
         <div className="flex items-center gap-3">
           <div className="flex gap-2 text-[10px] font-mono text-stone/50">
             {stats.nvmCount > 0 && <span className="text-sage">{stats.nvmCount} nvm</span>}
+            {stats.scoutCount > 0 && <span style={{ color: "#E056A0" }}>{stats.scoutCount} scout</span>}
             {stats.exaCount > 0 && <span className="text-blue-muted">{stats.exaCount} exa</span>}
             {stats.msgCount > 0 && <span className="text-purple">{stats.msgCount} msg</span>}
           </div>
@@ -207,17 +215,21 @@ function ActivityRow({ activity }: { activity: ActivityEntry }) {
   const shortAgent = activity.agent.replace("mog-", "")
   const summary = summarizeResult(activity.tool, activity.result)
   const age = timeAgo(activity.timestamp)
+  const isScout = activity.is_scout || meta.bright
 
   return (
     <motion.div
       initial={{ opacity: 0, x: 12 }}
       animate={{ opacity: 1, x: 0 }}
-      className="flex items-start gap-2 py-1.5 px-1 rounded hover:bg-white/40 transition-colors group"
+      className={`flex items-start gap-2 py-1.5 px-1 rounded transition-colors group ${
+        isScout ? "bg-gradient-to-r from-transparent via-pink-50/40 to-transparent" : "hover:bg-white/40"
+      }`}
+      style={isScout ? { boxShadow: `inset 0 0 12px ${meta.color}15` } : undefined}
     >
       {/* Agent dot */}
       <span
-        className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0"
-        style={{ backgroundColor: agentColor }}
+        className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${isScout ? "animate-ping" : ""}`}
+        style={{ backgroundColor: isScout ? meta.color : agentColor }}
       />
 
       <div className="flex-1 min-w-0">
@@ -227,19 +239,30 @@ function ActivityRow({ activity }: { activity: ActivityEntry }) {
             {shortAgent}
           </span>
           <span
-            className={`text-[9px] font-mono px-1.5 py-0 rounded-full ${activity.is_nvm ? "animate-pulse-sage" : ""}`}
-            style={{ backgroundColor: `${meta.color}18`, color: meta.color }}
+            className={`text-[9px] font-mono px-1.5 py-0 rounded-full font-bold ${
+              isScout ? "animate-pulse" : activity.is_nvm ? "animate-pulse-sage" : ""
+            }`}
+            style={{
+              backgroundColor: isScout ? `${meta.color}30` : `${meta.color}18`,
+              color: meta.color,
+              border: isScout ? `1px solid ${meta.color}50` : undefined,
+            }}
           >
             {meta.label}
           </span>
           {activity.is_nvm && (
             <span className="text-[9px] font-mono text-sage/80">$</span>
           )}
+          {isScout && (
+            <span className="text-[9px] font-mono" style={{ color: meta.color }}>*</span>
+          )}
           <span className="text-[9px] font-mono text-stone/30 ml-auto flex-shrink-0">{age}</span>
         </div>
 
         {/* Result summary */}
-        <p className="text-[11px] font-mono text-stone/60 leading-tight truncate">
+        <p className={`text-[11px] font-mono leading-tight truncate ${
+          isScout ? "text-stone/80 font-medium" : "text-stone/60"
+        }`}>
           {summary}
         </p>
       </div>

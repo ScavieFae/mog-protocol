@@ -83,6 +83,7 @@ export interface ActivityEntry {
   result: string
   timestamp: string
   is_nvm: boolean
+  is_scout?: boolean
 }
 
 export interface ColonyAgent {

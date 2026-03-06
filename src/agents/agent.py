@@ -120,6 +120,7 @@ class Agent:
                     "result": result[:200],
                     "timestamp": datetime.now(timezone.utc).isoformat(),
                     "is_nvm": tu.name in ("self_buy", "explore_seller", "discover_sellers"),
+                    "is_scout": tu.name in ("scout_exa", "scout_apify", "scout_trustnet"),
                 })
                 tool_results.append({
                     "type": "tool_result",

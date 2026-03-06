@@ -1027,6 +1027,11 @@ SUPERVISOR_TOOLS = COMMON_TOOLS + NVM_TOOLS + [
             "required": ["service_id", "verdict", "reason"],
         },
     },
+    {
+        "name": "scout_trustnet",
+        "description": "FIRE EVERY TICK: Scan Trust-Net for hackathon participant trust scores and purchasing signals. Cross-references against our catalog to find gaps and arbitrage opportunities. Use this data to inform evaluation decisions.",
+        "input_schema": {"type": "object", "properties": {}, "required": []},
+    },
 ]
 
 

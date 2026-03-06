@@ -21,6 +21,7 @@ All timing/limits configurable via env vars for demo tuning:
   MOG_MAX_RECENT_TURNS    - conversation turns to keep before compaction (default 8)
 """
 
+import concurrent.futures
 import json
 import os
 import threading
@@ -34,7 +35,7 @@ from src.agents.tools import (
     _check_marketplace, reset_tick_counters,
 )
 
-TICK_INTERVAL = int(os.getenv("MOG_AGENT_TICK_SECONDS", "120"))
+TICK_INTERVAL = int(os.getenv("MOG_AGENT_TICK_SECONDS", "45"))
 
 # ---------------------------------------------------------------------------
 # System prompts — drawn from Trinity designs (trinity/*.md), adapted for
@@ -129,22 +130,29 @@ YOUR JOB:
 2. Evaluate services — use evaluate_service to greenlight, review, or kill services
 3. Report status — send summary to mog-scout about portfolio performance
 4. Flag issues — tell mog-worker about services with high failure rates
+5. Intelligence — call scout_trustnet EVERY tick to scan competitor trust scores and purchasing signals
 
 EVALUATION CRITERIA:
 - greenlit: success rate > 80%%, generating revenue — keep live
 - under_review: mediocre performance or no revenue yet — needs attention
 - killed: persistent failures (< 30%% success rate after 3+ calls) — REMOVE from catalog
 
+TRUSTNET INTELLIGENCE (do this every tick):
+- Call scout_trustnet to get all hackathon participants and their trust scores
+- Look for: which teams are active buyers, which services get most reviews
+- Cross-reference against our catalog — if a competitor has a popular service we don't, tell scout
+- If a competitor's trust score is rising fast, explore_seller them to understand why
+
 NEVERMINED TRANSACTIONS (critical for leaderboard):
 - Use self_buy to verify services through the payment flow — each is a REAL leaderboard transaction
 - Use explore_seller to audit competitor services — generates buy-side transactions
 - TRANSACTION VOLUME IS THE #1 PRIORITY
 
-OUR SERVICES (for self_buy): exa_search, claude_summarize, open_meteo_weather, hackathon_guide, image_gen, circle_faucet, crypto_prices, zeroclick_search
+OUR SERVICES (for self_buy): exa_search, claude_summarize, open_meteo_weather, hackathon_guide, image_gen, crypto_prices, zeroclick_search
 
 RULES:
-- Quick marketplace check, then go straight to transactions
-- Do 3-5 tool calls per tick: mix of self_buy and explore_seller
+- Start each tick: scout_trustnet for intelligence, then transactions
+- Do 4-6 tool calls per tick: trustnet + self_buy + explore_seller
 - self_buy different services each tick (rotate through the list)
 - explore_seller different teams each tick
 - Only evaluate services if you already did 2+ transactions this tick
@@ -218,6 +226,8 @@ class AgentColony:
         # Get marketplace context directly (no HTTP self-call)
         context = _check_marketplace()
 
+        agent_timeout = int(os.getenv("MOG_AGENT_TIMEOUT", "60"))
+
         for agent in self._agents:
             # Reset per-tick counters (proposal limits etc)
             reset_tick_counters()
@@ -226,8 +236,14 @@ class AgentColony:
             incoming = bus.get_unread(agent.name)
 
             try:
-                summary = agent.tick(context, incoming)
+                # Run each agent with a timeout so one hanging agent can't block the colony
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                    future = executor.submit(agent.tick, context, incoming)
+                    summary = future.result(timeout=agent_timeout)
                 results[agent.name] = {"status": "ok", "summary": summary[:500]}
+            except concurrent.futures.TimeoutError:
+                results[agent.name] = {"status": "timeout", "error": f"Agent timed out after {agent_timeout}s"}
+                print(f"[colony] {agent.name} timed out after {agent_timeout}s")
             except Exception as e:
                 results[agent.name] = {"status": "error", "error": str(e)}
 
