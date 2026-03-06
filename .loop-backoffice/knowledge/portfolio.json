@@ -116,5 +116,18 @@
     "earned_revenue": 12,
     "current_balance": 84
   },
-  "demand_signals": []
+  "demand_signals": [
+    {
+      "category": "code_execution",
+      "note": "Piston API closed public access Feb 15 2026, now needs auth token. E2B key also needed. Highest demand gap in catalog — would command 5-10 credits/call.",
+      "blocker": "Need Piston Discord auth token OR E2B API key from Mattie",
+      "priority": "high"
+    },
+    {
+      "category": "pdf_extraction",
+      "note": "All quality PDF parsing APIs require keys (PDF.co, Adobe PDF Services, ConvertAPI). No viable free no-key option found.",
+      "blocker": "Need API key from Mattie",
+      "priority": "medium"
+    }
+  ]
 }
