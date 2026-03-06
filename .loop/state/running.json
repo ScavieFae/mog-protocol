@@ -1,13 +1,14 @@
 {
-  "active": [
+  "active": [],
+  "completed_pending_eval": [
     {
       "brief": "brief-013-surge-pricing-signals",
       "branch": "brief-013-surge-pricing-signals",
       "brief_file": ".loop/briefs/brief-013-surge-pricing-signals.md",
-      "dispatched_at": "2026-03-06T19:14:44Z"
+      "dispatched_at": "2026-03-06T19:14:44Z",
+      "completed_at": "2026-03-06T19:25:03Z"
     }
   ],
-  "completed_pending_eval": [],
   "history": [
     {
       "brief": "brief-001-phase1-seller",
