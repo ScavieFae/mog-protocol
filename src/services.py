@@ -111,6 +111,35 @@ def _mymemory_translate(text: str, source_lang: str = "en", target_lang: str = "
     return json.dumps({"translated_text": translated, "source": source_lang, "target": target_lang, "original": text})
 
 
+def _rest_countries(query: str, lookup_type: str = "name") -> str:
+    fields = "name,capital,population,currencies,languages,flags,region,timezones"
+    if lookup_type == "code":
+        url = f"https://restcountries.com/v3.1/alpha/{urllib.parse.quote(query)}?fields={fields}"
+    else:
+        url = f"https://restcountries.com/v3.1/name/{urllib.parse.quote(query)}?fields={fields}"
+    try:
+        with urllib.request.urlopen(url, timeout=10) as resp:
+            data = json.loads(resp.read().decode())
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return json.dumps({"error": f"Country not found: '{query}'"})
+        return json.dumps({"error": f"HTTP {e.code}: {e.reason}"})
+    except Exception as e:
+        return json.dumps({"error": str(e)})
+    country = data[0] if isinstance(data, list) else data
+    return json.dumps({
+        "name": country.get("name", {}).get("common", ""),
+        "official_name": country.get("name", {}).get("official", ""),
+        "capital": country.get("capital", []),
+        "region": country.get("region", ""),
+        "population": country.get("population", 0),
+        "currencies": country.get("currencies", {}),
+        "languages": country.get("languages", {}),
+        "timezones": country.get("timezones", []),
+        "flag": country.get("flags", {}).get("png", ""),
+    })
+
+
 def _currency_convert(from_currency: str = "usd", to_currency: str = "eur", amount: float = 1.0) -> str:
     from_currency = from_currency.lower()
     to_currency = to_currency.lower()
@@ -424,4 +453,14 @@ catalog.register(
     example_params={"from_currency": "usd", "to_currency": "eur", "amount": 100},
     provider="mog-protocol",
     handler=_currency_convert,
+)
+
+catalog.register(
+    service_id="rest_countries",
+    name="Country Info",
+    description="Look up detailed information about any country: capital, population, currencies, languages, timezones, and flag. Search by name or ISO code. No API key needed.",
+    price_credits=1,
+    example_params={"query": "France", "lookup_type": "name"},
+    provider="mog-protocol",
+    handler=_rest_countries,
 )
