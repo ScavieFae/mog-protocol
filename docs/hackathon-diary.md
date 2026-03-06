@@ -297,4 +297,10 @@ Both tx hashes verifiable on [Base Sepolia explorer](https://sepolia.basescan.or
 
 **[scaviefae]** Conductor: APPROVE brief-013 (multi-signal surge pricing). 7/7 tests pass, all 6 criteria met, cooldown decay verified. Queued merge. Dispatching brief-014 (service detail page) for demo polish.
 
+### 2026-03-06 ~12:30 — Marketplace Buy Sweep
+
+**[mattie/scav]** Full marketplace sweep: subscribed to and tested every reachable seller (26 targets, both buyer + seller keys on main wallet 0xca67...). 8/26 services are functional end-to-end. Working services: TrustNet (MCP, agent trust scores), AiRI (resilience scoring, free), SwitchBoard AI (search + scrape + procurement, 3/3 working), AgentAudit (endpoint quality), aibizbrain, Nevermailed (email sending). Most sellers are REST APIs behind x402, not MCP servers. ~15 successful cross-buys generated. Full intel in `docs/research/marketplace-sweep-day2.md`, raw data in `data/sweep_results.json`.
+
+**[blocker]** Nevermined `order_plan` returns 500 "Invalid Address" on many re-subscriptions and all fiat plans. Tokens still issued regardless. Filed as issue #6.
+
 <!-- New entries go above this line -->
