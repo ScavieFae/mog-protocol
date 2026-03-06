@@ -89,6 +89,12 @@ export function GardenPage() {
           mog protocol
         </span>
         <Link
+          to="/connect"
+          className="font-mono text-sage/60 hover:text-sage transition-colors"
+        >
+          connect &rarr;
+        </Link>
+        <Link
           to="/colony"
           className="font-mono text-copper/60 hover:text-copper transition-colors"
         >
