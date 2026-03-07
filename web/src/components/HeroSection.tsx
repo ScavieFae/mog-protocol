@@ -21,84 +21,99 @@ export function HeroSection({ data }: HeroProps) {
   const agentBuilt = data.services.filter(s => s.provider === "mog-agent").length
 
   return (
-    <div className="px-8 pt-8 pb-6">
-      {/* Tagline */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <h1 className="font-sans text-3xl font-semibold text-charcoal tracking-tight">
-          Autonomous API Proving Ground
-        </h1>
-        <p className="font-sans text-base text-stone/70 mt-1.5 max-w-xl">
-          Agents discover APIs, evaluate ROI, wrap them as paid services, price dynamically, and sell to other agents — no humans in the loop.
-        </p>
-      </motion.div>
-
-      {/* Stats row */}
-      <motion.div
-        className="flex items-end gap-10 mt-6"
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.15 }}
-      >
-        <StatBlock
-          value={data.services_count}
-          label="services live"
-          color="#B87333"
-        />
-        <StatBlock
-          value={totalCalls}
-          label="total calls"
-          color="#87A878"
-        />
-        <StatBlock
-          value={totalRevenue}
-          label="credits earned"
-          suffix="cr"
-          color="#C5A862"
-        />
-        {agentBuilt > 0 && (
-          <StatBlock
-            value={agentBuilt}
-            label="agent-built"
-            color="#9B8EC2"
-          />
-        )}
-        <StatBlock
-          value={data.portfolio?.balance ?? 0}
-          label="balance"
-          suffix="cr"
-          color="#78716C"
+    <div className="px-8 pt-6 pb-5">
+      {/* Logo + tagline row */}
+      <div className="flex items-start gap-6">
+        {/* Logo — large, left-aligned */}
+        <motion.img
+          src="/mog-mascot.svg"
+          alt="Mog"
+          className="w-28 h-28 flex-shrink-0 -mt-1"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
         />
 
-        {/* How it works — the loop */}
-        <div className="ml-auto flex items-center gap-1">
-          {LOOP_STEPS.map((step, i) => (
-            <div key={step.label} className="flex items-center">
-              <motion.div
-                className="flex flex-col items-center"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.3 + i * 0.08 }}
-              >
-                <span
-                  className="font-mono text-[11px] font-semibold px-2 py-1 rounded-md"
-                  style={{ backgroundColor: `${step.color}15`, color: step.color }}
-                >
-                  {step.label}
-                </span>
-                <span className="font-sans text-[9px] text-stone/40 mt-0.5">{step.desc}</span>
-              </motion.div>
-              {i < LOOP_STEPS.length - 1 && (
-                <span className="text-stone/20 mx-0.5 text-xs">→</span>
-              )}
+        {/* Tagline + stats */}
+        <div className="flex-1 min-w-0">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <h1 className="font-sans text-3xl font-semibold text-charcoal tracking-tight">
+              Autonomous API Proving Ground
+            </h1>
+            <p className="font-sans text-base text-stone/70 mt-1 max-w-xl">
+              Agents discover APIs, evaluate ROI, wrap them as paid services, price dynamically, and sell to other agents — no humans in the loop.
+            </p>
+          </motion.div>
+
+          {/* Stats row */}
+          <motion.div
+            className="flex items-end gap-8 mt-4"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.15 }}
+          >
+            <StatBlock
+              value={data.services_count}
+              label="services live"
+              color="#B87333"
+            />
+            <StatBlock
+              value={totalCalls}
+              label="total calls"
+              color="#87A878"
+            />
+            <StatBlock
+              value={totalRevenue}
+              label="credits earned"
+              suffix="cr"
+              color="#C5A862"
+            />
+            {agentBuilt > 0 && (
+              <StatBlock
+                value={agentBuilt}
+                label="agent-built"
+                color="#9B8EC2"
+              />
+            )}
+            <StatBlock
+              value={data.portfolio?.balance ?? 0}
+              label="balance"
+              suffix="cr"
+              color="#78716C"
+            />
+
+            {/* How it works — the loop */}
+            <div className="ml-auto flex items-center gap-1">
+              {LOOP_STEPS.map((step, i) => (
+                <div key={step.label} className="flex items-center">
+                  <motion.div
+                    className="flex flex-col items-center"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.3 + i * 0.08 }}
+                  >
+                    <span
+                      className="font-mono text-[11px] font-semibold px-2 py-1 rounded-md"
+                      style={{ backgroundColor: `${step.color}15`, color: step.color }}
+                    >
+                      {step.label}
+                    </span>
+                    <span className="font-sans text-[9px] text-stone/40 mt-0.5">{step.desc}</span>
+                  </motion.div>
+                  {i < LOOP_STEPS.length - 1 && (
+                    <span className="text-stone/20 mx-0.5 text-xs">→</span>
+                  )}
+                </div>
+              ))}
+              <span className="text-stone/20 mx-0.5 text-xs">↺</span>
             </div>
-          ))}
-          <span className="text-stone/20 mx-0.5 text-xs">↺</span>
+          </motion.div>
         </div>
-      </motion.div>
+      </div>
     </div>
   )
 }
