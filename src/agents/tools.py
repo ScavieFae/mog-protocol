@@ -505,6 +505,29 @@ def _discover_sellers(agent_name: str, **kwargs) -> str:
         return json.dumps({"error": str(e)[:200]})
 
 
+def _use_browser(url: str, **kwargs) -> str:
+    """Navigate a URL with headless browser. Returns page title and text content."""
+    try:
+        from src.services import _browser_navigate
+        return _browser_navigate(url)
+    except Exception as e:
+        return json.dumps({"error": str(e)[:300]})
+
+
+def _use_email(label: str = "agent", **kwargs) -> str:
+    """Create a disposable email inbox. Returns email address and inbox_id."""
+    try:
+        from src.services import _agent_email_inbox
+        return _agent_email_inbox(label)
+    except Exception as e:
+        return json.dumps({"error": str(e)[:300]})
+
+
+def _use_search(query: str, max_results: int = 5, **kwargs) -> str:
+    """Deep web search via Exa. Returns titles, URLs, and text snippets."""
+    return _search_web(query, max_results)
+
+
 def _scout_exa(query: str, focus: str = "api", max_results: int = 5, **kwargs) -> str:
     """Exa-powered API discovery — finds wrappable APIs matching a demand signal.
 
@@ -926,7 +949,44 @@ SCOUT_TOOLS = COMMON_TOOLS + NVM_TOOLS + [
     },
 ]
 
-WORKER_TOOLS = COMMON_TOOLS + NVM_TOOLS + [
+POWER_TOOLS = [
+    {
+        "name": "use_browser",
+        "description": "Navigate any URL with a headless browser (Browserbase). Returns page title and text. Use for: reading JS pages, testing signup flows, checking API docs, scraping data sources.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "url": {"type": "string", "description": "URL to navigate to"},
+            },
+            "required": ["url"],
+        },
+    },
+    {
+        "name": "use_email",
+        "description": "Create a disposable email inbox (AgentMail). Returns email address and inbox_id. Use for: signing up for services, receiving verification emails, getting API keys.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "label": {"type": "string", "description": "Label for the inbox (e.g. 'notion-signup')"},
+            },
+            "required": ["label"],
+        },
+    },
+    {
+        "name": "use_search",
+        "description": "Deep web search via Exa. Returns titles, URLs, and text snippets. Use for: finding API endpoints, documentation, signup pages.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "Search query"},
+                "max_results": {"type": "integer", "description": "Max results (default 5)"},
+            },
+            "required": ["query"],
+        },
+    },
+]
+
+WORKER_TOOLS = COMMON_TOOLS + NVM_TOOLS + POWER_TOOLS + [
     {
         "name": "get_proposals",
         "description": "Get pending service proposals from the scout.",
@@ -1059,6 +1119,9 @@ def execute_tool(agent_name: str, tool_name: str, tool_input: dict) -> str:
         "self_buy": lambda **kw: _self_buy(agent_name=agent_name, **kw),
         "explore_seller": lambda **kw: _explore_seller(agent_name=agent_name, **kw),
         "discover_sellers": lambda **kw: _discover_sellers(agent_name=agent_name, **kw),
+        "use_browser": lambda **kw: _use_browser(**kw),
+        "use_email": lambda **kw: _use_email(**kw),
+        "use_search": lambda **kw: _use_search(**kw),
     }
     fn = dispatch.get(tool_name)
     if not fn:
