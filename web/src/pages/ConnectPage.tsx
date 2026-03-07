@@ -27,6 +27,44 @@ const PLANS = [
   { name: "Pro", price: "$10", credits: 20, perCall: "$0.50" },
 ]
 
+const SKILLS = [
+  {
+    command: "/nevermined-buy",
+    name: "Buy from Marketplace",
+    description: "Subscribe to any Nevermined marketplace agent. Finds the service, subscribes, gets a token, configures MCP, and verifies with a test call.",
+    example: "/nevermined-buy Trust Net",
+    color: "#87A878",
+  },
+  {
+    command: "/nevermined-sell",
+    name: "Sell on Marketplace",
+    description: "List your API or service on Nevermined. Sets up a PaymentsMCP server, creates pricing plans, and deploys a paid MCP endpoint.",
+    example: "/nevermined-sell my-weather-api",
+    color: "#C5A862",
+  },
+  {
+    command: "/buy-from-mog",
+    name: "Buy from Mog",
+    description: "Generate a complete, copy-paste-ready connection guide for your agent to connect to Mog Markets.",
+    example: "/buy-from-mog",
+    color: "#B87333",
+  },
+  {
+    command: "/scout-api",
+    name: "Scout API",
+    description: "Research agent that evaluates whether an API is worth wrapping and selling. Checks viability, cost, margin, demand, and integration difficulty.",
+    example: "/scout-api openweathermap",
+    color: "#6B8DAE",
+  },
+  {
+    command: "/wrap-api",
+    name: "Wrap API",
+    description: "Takes a scouted API and wraps it into the marketplace. Writes the handler, registers it in the catalog, and tests it end-to-end.",
+    example: "/wrap-api openweathermap",
+    color: "#9B8EC2",
+  },
+]
+
 export function ConnectPage() {
   const { data } = useHealth(10000)
   const [manualOpen, setManualOpen] = useState(false)
@@ -36,7 +74,7 @@ export function ConnectPage() {
       <div className="max-w-3xl mx-auto px-6 py-8">
         {/* Back link */}
         <Link to="/" className="font-mono text-sm text-copper/60 hover:text-copper transition-colors">
-          &larr; back to garden
+          &larr; back to board
         </Link>
 
         {/* Hero */}
@@ -130,6 +168,35 @@ export function ConnectPage() {
           )}
         </div>
 
+        {/* Skills / Slash Commands */}
+        <div className="mb-8">
+          <h2 className="font-sans text-lg text-charcoal mb-2">Claude Code Skills</h2>
+          <p className="font-sans text-stone mb-4">
+            Clone our repo and use these slash commands in Claude Code to buy, sell, and manage services on the Nevermined marketplace.
+          </p>
+          <div className="space-y-3">
+            {SKILLS.map((skill) => (
+              <div
+                key={skill.command}
+                className="bg-white/50 rounded-lg border px-4 py-3"
+                style={{ borderColor: `${skill.color}30` }}
+              >
+                <div className="flex items-center gap-3 mb-1">
+                  <code
+                    className="font-mono text-sm font-semibold px-2 py-0.5 rounded"
+                    style={{ backgroundColor: `${skill.color}15`, color: skill.color }}
+                  >
+                    {skill.command}
+                  </code>
+                  <span className="font-sans text-sm font-medium text-charcoal">{skill.name}</span>
+                </div>
+                <p className="font-sans text-sm text-stone/70 mb-1.5">{skill.description}</p>
+                <code className="font-mono text-xs text-stone/50">{skill.example}</code>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Pricing cards */}
         <div className="mb-8">
           <h2 className="font-sans text-lg text-charcoal mb-3">Pricing</h2>
@@ -163,7 +230,7 @@ export function ConnectPage() {
             Full docs on GitHub &rarr;
           </a>
           <Link to="/" className="font-mono text-sm text-stone/50 hover:text-stone transition-colors">
-            mog protocol
+            mog markets
           </Link>
         </div>
       </div>
