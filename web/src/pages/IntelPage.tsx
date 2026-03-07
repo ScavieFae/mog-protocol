@@ -84,11 +84,16 @@ export function IntelPage() {
     )
   }, [trustNetAgents])
 
-  // Filter
+  // Filter (hide our own zero-activity registrations from the list)
   const filtered = useMemo(() => {
-    if (!filter) return sortedAgents
+    const base = sortedAgents.filter((a) => {
+      const isMog = a.team_name?.toLowerCase().includes("mog")
+      if (isMog && parseInt(a.total_orders || "0") === 0) return false
+      return true
+    })
+    if (!filter) return base
     const q = filter.toLowerCase()
-    return sortedAgents.filter(
+    return base.filter(
       (a) =>
         a.team_name?.toLowerCase().includes(q) ||
         a.name?.toLowerCase().includes(q) ||
@@ -115,9 +120,11 @@ export function IntelPage() {
     return transactions.filter((t) => t.service_id === serviceId && t.event_type === "buy_and_call")
   }
 
-  // Our entries in Trust-Net
+  // Our entries in Trust-Net (only show if they have real activity)
   const ourEntries = useMemo(() => {
-    return trustNetAgents.filter((a) => a.team_name?.toLowerCase().includes("mog"))
+    return trustNetAgents.filter(
+      (a) => a.team_name?.toLowerCase().includes("mog") && parseInt(a.total_orders || "0") > 0,
+    )
   }, [trustNetAgents])
 
   // Summary stats from our txlog
