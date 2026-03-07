@@ -129,41 +129,39 @@ You're at tick {{tick}}. Build things only WE can build."""
 SUPERVISOR_SYSTEM = """You are mog-supervisor, COO of Mog Protocol — an autonomous API marketplace at a hackathon.
 
 YOUR JOB:
-1. Monitor marketplace health — check_marketplace for service stats, revenue, issues
-2. Evaluate services — use evaluate_service to greenlight, review, or kill services
-3. Report status — send summary to mog-scout about portfolio performance
-4. Flag issues — tell mog-worker about services with high failure rates
-5. Intelligence — call scout_trustnet EVERY tick to scan competitor trust scores and purchasing signals
+1. BUDGET MANAGEMENT — call get_agent_budgets EVERY tick. Review P&L for all 17 agents.
+2. Reallocate — use set_agent_budget to reward high-ROI agents and cut low performers.
+3. Evaluate services — greenlight, review, or kill based on revenue vs cost.
+4. Transactions — self_buy and explore_seller for leaderboard volume.
+
+BUDGET MANAGEMENT (your #1 differentiator — do this FIRST every tick):
+- Call get_agent_budgets to see: cost_usd, revenue_credits, roi, budget_utilization
+- Agents with ROI > 100 and budget_utilization > 0.8: INCREASE budget (they're productive but constrained)
+- Agents with ROI = 0 after 3+ ticks: DECREASE budget to 15000 (they're burning money)
+- Agents with times_exhausted > 0: consider increasing (they had more to do but ran out of budget)
+- Workers using power tools (browser/email) get higher budgets — they do harder, higher-value work
+- Transaction-focused agents (scout-nvm, worker-nvm, worker-tester) keep medium budgets
+
+BUDGET RANGES:
+- Scout (cheap ant): 15,000 - 50,000 tokens/tick
+- Worker (power tools): 30,000 - 150,000 tokens/tick
+- Default for all: 50,000
 
 EVALUATION CRITERIA:
-- greenlit: success rate > 80%%, generating revenue — keep live
-- under_review: mediocre performance or no revenue yet — needs attention
-- killed: persistent failures (< 30%% success rate after 3+ calls) — REMOVE from catalog
+- greenlit: success rate > 80%%, generating revenue
+- killed: persistent failures OR negative ROI after cost analysis — REMOVE from catalog
 
-TRUSTNET INTELLIGENCE (do this every tick):
-- Call scout_trustnet to get all hackathon participants and their trust scores
-- Look for: which teams are active buyers, which services get most reviews
-- Cross-reference against our catalog — if a competitor has a popular service we don't, tell scout
-- If a competitor's trust score is rising fast, explore_seller them to understand why
-
-NEVERMINED TRANSACTIONS (critical for leaderboard):
-- Use self_buy to verify services through the payment flow — each is a REAL leaderboard transaction
-- Use explore_seller to audit competitor services — generates buy-side transactions
-- TRANSACTION VOLUME IS THE #1 PRIORITY
-
-OUR SERVICES (for self_buy): exa_search, claude_summarize, open_meteo_weather, hackathon_guide, image_gen, crypto_prices, zeroclick_search
-
-RULES:
-- Start each tick: scout_trustnet for intelligence, then transactions
-- Do 4-6 tool calls per tick: trustnet + self_buy + explore_seller
-- self_buy different services each tick (rotate through the list)
+NEVERMINED TRANSACTIONS:
+- self_buy different services each tick
 - explore_seller different teams each tick
-- Only evaluate services if you already did 2+ transactions this tick
-- Don't send_message unless critical — messages don't generate transactions
-- Killing a service REMOVES it from the catalog — use very sparingly
-- Be a transaction machine. Every tick should produce 3+ Nevermined transactions.
 
-You're at tick {{tick}} of an autonomous loop. MAXIMIZE TRANSACTIONS."""
+EVERY TICK PATTERN:
+1. get_agent_budgets → analyze P&L
+2. set_agent_budget for 1-3 agents (the most impactful changes)
+3. 2+ self_buy or explore_seller for leaderboard
+4. evaluate_service only if needed
+
+You're at tick {{tick}}. Manage the colony's budget like a real COO."""
 
 DEBUGGER_SYSTEM = """You are mog-debugger, the Debug Drone for Mog Protocol — an autonomous API marketplace at a hackathon.
 
@@ -330,20 +328,34 @@ class AgentColony:
         # Service creation events (the wow moments)
         creations = [e for e in activities if e.get("is_creation")]
 
+        # Budget management events (supervisor adjusting budgets)
+        budget_events = [
+            e for e in activities
+            if e.get("tool") in ("set_agent_budget", "get_agent_budgets")
+        ]
+
+        total_cost = round(
+            total_input * 0.80 / 1_000_000
+            + total_output * 4.00 / 1_000_000, 4
+        )
+        total_revenue = sum(a.revenue_credits for a in self._agents)
+
         return {
             "agents": [a.get_state() for a in self._agents],
             "messages": bus.get_recent(20),
             "activity_feed": activities[:50],
             "service_creations": creations[:10],
+            "budget_decisions": budget_events[:10],
             "running": self._running,
             "tick_interval": TICK_INTERVAL,
-            "token_usage": {
+            "economics": {
                 "total_input_tokens": total_input,
                 "total_output_tokens": total_output,
-                "estimated_cost_usd": round(
-                    total_input * 0.80 / 1_000_000
-                    + total_output * 4.00 / 1_000_000, 4
-                ),
+                "total_cost_usd": total_cost,
+                "total_revenue_credits": total_revenue,
+                "colony_roi": round(total_revenue / max(total_cost, 0.001), 1),
+                "agents_at_budget_limit": sum(1 for a in self._agents if a.budget_exhausted_count > 0),
+                "budget_adjustments_made": len(budget_events),
             },
         }
 

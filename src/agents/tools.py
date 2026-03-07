@@ -800,6 +800,59 @@ def _add_to_graveyard(service_id: str, name: str, provider: str, reason: str) ->
             json.dump(existing[-50:], f, indent=2)  # Keep last 50
 
 
+def _get_agent_budgets(**kwargs) -> str:
+    """Return P&L for all colony agents."""
+    try:
+        from src.agents.loop import colony
+        rows = []
+        for a in colony._agents:
+            cost = round(
+                a.total_input_tokens * 0.80 / 1_000_000
+                + a.total_output_tokens * 4.00 / 1_000_000, 4
+            )
+            rows.append({
+                "agent": a.name,
+                "role": a.role,
+                "ticks": a.tick_count,
+                "token_budget": a.token_budget,
+                "last_tick_used": a.last_tick_tokens["input"] + a.last_tick_tokens["output"],
+                "budget_utilization": round(
+                    (a.last_tick_tokens["input"] + a.last_tick_tokens["output"])
+                    / max(a.token_budget, 1), 2
+                ),
+                "times_exhausted": a.budget_exhausted_count,
+                "total_tokens": a.total_input_tokens + a.total_output_tokens,
+                "cost_usd": cost,
+                "revenue_credits": a.revenue_credits,
+                "roi": round(a.revenue_credits / max(cost, 0.001), 1),
+            })
+        rows.sort(key=lambda r: r["roi"], reverse=True)
+        return json.dumps({"agents": rows, "total_cost_usd": round(sum(r["cost_usd"] for r in rows), 4)}, indent=2)
+    except Exception as e:
+        return json.dumps({"error": str(e)[:200]})
+
+
+def _set_agent_budget(agent_name: str, token_budget: int, reason: str = "", **kwargs) -> str:
+    """Set per-tick token budget for an agent."""
+    token_budget = max(10_000, min(200_000, token_budget))
+    try:
+        from src.agents.loop import colony
+        for a in colony._agents:
+            if a.name == agent_name:
+                old = a.token_budget
+                a.token_budget = token_budget
+                return json.dumps({
+                    "agent": agent_name,
+                    "old_budget": old,
+                    "new_budget": token_budget,
+                    "reason": reason,
+                    "budget_change": "increased" if token_budget > old else "decreased",
+                })
+        return json.dumps({"error": f"Agent '{agent_name}' not found"})
+    except Exception as e:
+        return json.dumps({"error": str(e)[:200]})
+
+
 def _evaluate_service(service_id: str, verdict: str, reason: str = "", **kwargs) -> str:
     """Supervisor evaluates a service: greenlit, under_review, or killed.
     Killed services are removed from search results."""
@@ -1081,8 +1134,26 @@ SUPERVISOR_TOOLS = COMMON_TOOLS + NVM_TOOLS + [
     },
     {
         "name": "scout_trustnet",
-        "description": "FIRE EVERY TICK: Scan Trust-Net for hackathon participant trust scores and purchasing signals. Cross-references against our catalog to find gaps and arbitrage opportunities. Use this data to inform evaluation decisions.",
+        "description": "FIRE EVERY TICK: Scan Trust-Net for hackathon participant trust scores and purchasing signals.",
         "input_schema": {"type": "object", "properties": {}, "required": []},
+    },
+    {
+        "name": "get_agent_budgets",
+        "description": "Get token budgets, spend, revenue, and ROI for all colony agents. Use this to make budget allocation decisions. Agents hitting budget limits need more tokens; agents with zero revenue might need less.",
+        "input_schema": {"type": "object", "properties": {}, "required": []},
+    },
+    {
+        "name": "set_agent_budget",
+        "description": "Change an agent's per-tick token budget. Increase budget for high-ROI agents, decrease for low performers. Default is 50k tokens/tick. Range: 10k-200k.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "agent_name": {"type": "string", "description": "Agent to adjust (e.g. mog-worker-browser, mog-scout-nvm)"},
+                "token_budget": {"type": "integer", "description": "New per-tick token budget (10000-200000)"},
+                "reason": {"type": "string", "description": "Why this budget change"},
+            },
+            "required": ["agent_name", "token_budget", "reason"],
+        },
     },
 ]
 
@@ -1105,6 +1176,8 @@ def execute_tool(agent_name: str, tool_name: str, tool_input: dict) -> str:
         "register_service": lambda **kw: _register_service(**kw),
         "test_service": lambda **kw: _test_service(**kw),
         "evaluate_service": lambda **kw: _evaluate_service(**kw),
+        "get_agent_budgets": lambda **kw: _get_agent_budgets(**kw),
+        "set_agent_budget": lambda **kw: _set_agent_budget(**kw),
         "check_errors": lambda **kw: _check_errors(**kw),
         "inspect_service": lambda **kw: _inspect_service(**kw),
         "patch_service": lambda **kw: _patch_service(**kw),

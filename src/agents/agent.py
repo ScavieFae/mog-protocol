@@ -41,6 +41,9 @@ class Agent:
         self.total_input_tokens = 0
         self.total_output_tokens = 0
         self.last_tick_tokens = {"input": 0, "output": 0}
+        self.token_budget = 50_000  # per-tick token budget (input+output)
+        self.budget_exhausted_count = 0  # how many ticks hit the budget wall
+        self.revenue_credits = 0  # credits earned from services this agent created
         self._client = anthropic.Anthropic()
 
     @property
@@ -96,12 +99,23 @@ class Agent:
                 self.recent_actions.append(f"[error] {error_msg}")
                 return error_msg
 
-            # Track token usage
+            # Track token usage + enforce budget
             usage = response.usage
             tick_input += usage.input_tokens
             tick_output += usage.output_tokens
             self.total_input_tokens += usage.input_tokens
             self.total_output_tokens += usage.output_tokens
+
+            if (tick_input + tick_output) > self.token_budget:
+                self.budget_exhausted_count += 1
+                summary_parts.append(f"[BUDGET] Hit token limit ({self.token_budget} tokens). Stopping early.")
+                # Still process this response but don't loop again
+                assistant_content = response.content
+                self.messages.append({"role": "assistant", "content": _serialize_content(assistant_content)})
+                for b in assistant_content:
+                    if b.type == "text" and b.text.strip():
+                        summary_parts.append(b.text)
+                break
 
             # Process the response
             assistant_content = response.content
@@ -223,15 +237,27 @@ class Agent:
             "tools": [t["name"] for t in self.tools],
             "last_tick": self.last_tick,
             "tick_count": self.tick_count,
-            "tokens": {
-                "total_input": self.total_input_tokens,
-                "total_output": self.total_output_tokens,
-                "last_tick_input": self.last_tick_tokens["input"],
-                "last_tick_output": self.last_tick_tokens["output"],
-                "estimated_cost_usd": round(
+            "budget": {
+                "token_budget_per_tick": self.token_budget,
+                "last_tick_used": self.last_tick_tokens["input"] + self.last_tick_tokens["output"],
+                "budget_utilization": round(
+                    (self.last_tick_tokens["input"] + self.last_tick_tokens["output"])
+                    / max(self.token_budget, 1), 3
+                ),
+                "times_budget_exhausted": self.budget_exhausted_count,
+                "total_input_tokens": self.total_input_tokens,
+                "total_output_tokens": self.total_output_tokens,
+                "total_cost_usd": round(
                     self.total_input_tokens * 0.80 / 1_000_000
                     + self.total_output_tokens * 4.00 / 1_000_000, 4
                 ),
+                "revenue_credits": self.revenue_credits,
+                "roi": round(
+                    self.revenue_credits / max(
+                        self.total_input_tokens * 0.80 / 1_000_000
+                        + self.total_output_tokens * 4.00 / 1_000_000, 0.001
+                    ), 1
+                ) if self.tick_count > 0 else None,
             },
             "conversation_length": len(self.messages),
             "has_memory": bool(self._memory),
