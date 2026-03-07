@@ -1,10 +1,9 @@
 import { useState, useEffect, useMemo } from "react"
 import { Link } from "react-router-dom"
 import { motion } from "motion/react"
-import { getServiceIcon } from "@/components/HivePanel"
 
 const GATEWAY_URL = "/gateway"
-const TRUSTNET_URL = "https://trust-net-mcp.rikenshah-02.workers.dev/api/agents"
+const TRUSTNET_URL = "/trustnet/api/agents"
 
 interface TrustNetAgent {
   agent_id: string

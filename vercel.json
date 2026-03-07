@@ -8,6 +8,10 @@
       "destination": "https://beneficial-essence-production-99c7.up.railway.app/:path*"
     },
     {
+      "source": "/trustnet/:path*",
+      "destination": "https://trust-net-mcp.rikenshah-02.workers.dev/:path*"
+    },
+    {
       "source": "/((?!assets|vite\\.svg).*)",
       "destination": "/index.html"
     }
