@@ -1,41 +1,12 @@
 import { useState, useMemo } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "motion/react"
 import { useHealth, type SupervisorEvaluation } from "@/hooks/useHealth"
 import { ServiceCard } from "@/components/ServiceCard"
 import { HivePanel } from "@/components/HivePanel"
-import { Ticker } from "@/components/Ticker"
-
-function PortfolioBar({ data }: { data: ReturnType<typeof useHealth>["data"] }) {
-  if (!data) return null
-  const p = data.portfolio
-  return (
-    <div className="border-b border-sage/15 bg-white/40 px-6 py-2.5 flex items-center gap-6 text-sm">
-      <span className="font-sans text-stone/60">
-        <span className={`inline-block w-2 h-2 rounded-full mr-2 align-middle ${data.colony?.running ? "bg-sage animate-pulse-sage" : "bg-stone/30"}`} />
-        {data.colony?.running ? "colony live" : data.status}
-      </span>
-      <span className="font-mono text-copper">{data.services_count} services</span>
-      <span className="font-mono text-gold">{p?.total_earned ?? 0}cr earned</span>
-      <span className="font-mono text-stone/50">{p?.balance ?? 0}cr balance</span>
-      {data.supervisor && (
-        <span className="font-mono text-xs text-stone/40">
-          {data.supervisor.counts?.greenlit ?? 0} greenlit
-          {(data.supervisor.counts?.under_review ?? 0) > 0 && ` · ${data.supervisor.counts.under_review} reviewing`}
-          {(data.supervisor.counts?.killed ?? 0) > 0 && ` · ${data.supervisor.counts.killed} killed`}
-        </span>
-      )}
-      <div className="ml-auto flex gap-4">
-        <Link to="/colony" className="font-mono text-xs text-sage/60 hover:text-sage transition-colors">
-          colony &rarr;
-        </Link>
-        <Link to="/connect" className="font-mono text-xs text-stone/40 hover:text-stone transition-colors">
-          connect &rarr;
-        </Link>
-      </div>
-    </div>
-  )
-}
+import { EventTicker } from "@/components/EventTicker"
+import { HeroSection } from "@/components/HeroSection"
+import { Timeline } from "@/components/Timeline"
 
 function TransactionStream({ transactions }: { transactions: ReturnType<typeof useHealth>["data"] extends infer T ? T extends { recent_transactions: infer R } ? R : never : never }) {
   if (!transactions || transactions.length === 0) return null
@@ -62,7 +33,7 @@ function TransactionStream({ transactions }: { transactions: ReturnType<typeof u
 
 export function BoardPage() {
   const { data, error, loading } = useHealth(5000)
-  const [hiveExpanded, setHiveExpanded] = useState(true)
+  const [hiveExpanded, setHiveExpanded] = useState(false)
   const navigate = useNavigate()
 
   // Build evaluation lookup from supervisor data
@@ -83,7 +54,7 @@ export function BoardPage() {
       const ra = a.stats?.revenue_credits ?? 0
       const rb = b.stats?.revenue_credits ?? 0
       if (ra !== rb) return rb - ra
-      return (a.stats?.total_calls ?? 0) - (b.stats?.total_calls ?? 0)
+      return (b.stats?.total_calls ?? 0) - (a.stats?.total_calls ?? 0)
     })
   }, [data])
 
@@ -107,12 +78,23 @@ export function BoardPage() {
 
   return (
     <div className="min-h-screen bg-linen flex flex-col">
-      <Ticker services={data.services} />
-      <PortfolioBar data={data} />
+      {/* Event ticker — notable happenings */}
+      <EventTicker
+        services={data.services}
+        transactions={data.recent_transactions}
+        graveyard={data.graveyard}
+      />
 
+      {/* Hero — tagline, stats, how it works */}
+      <HeroSection data={data} />
+
+      {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Service cards grid */}
-        <div className="flex-1 p-6 overflow-y-auto">
+        <div className="flex-1 px-8 pb-6 overflow-y-auto">
+          <h3 className="font-sans text-xs uppercase tracking-wider text-stone/40 mb-3">
+            Services — {data.services_count} live
+          </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 stagger-children">
             {sortedServices.map((service) => (
               <ServiceCard
@@ -172,7 +154,6 @@ export function BoardPage() {
               </div>
             </div>
           )}
-
         </div>
 
         {/* Hive panel */}
@@ -183,6 +164,10 @@ export function BoardPage() {
         />
       </div>
 
+      {/* Timeline — the story */}
+      <Timeline data={data} />
+
+      {/* Live transaction stream */}
       <TransactionStream transactions={data.recent_transactions} />
     </div>
   )
