@@ -16,13 +16,22 @@ from src.agents.bus import bus
 
 EXA_API_KEY = os.getenv("EXA_API_KEY")
 
-# Per-agent Nevermined keys (main wallet 0xca67..., leaderboard accrues to us)
-_NVM_KEYS = {
-    "mog-scout": os.getenv("NVM_SCOUT_API_KEY"),
-    "mog-worker": os.getenv("NVM_WORKER_API_KEY"),
-    "mog-supervisor": os.getenv("NVM_SUPERVISOR_API_KEY"),
-    "mog-debugger": os.getenv("NVM_DEBUGGER_API_KEY"),
+# Per-role Nevermined keys (main wallet 0xca67..., leaderboard accrues to us)
+# Agents are named mog-scout-signup, mog-worker-browser, etc. — map by role prefix.
+_NVM_ROLE_KEYS = {
+    "scout": os.getenv("NVM_SCOUT_API_KEY"),
+    "worker": os.getenv("NVM_WORKER_API_KEY"),
+    "supervisor": os.getenv("NVM_SUPERVISOR_API_KEY"),
+    "debugger": os.getenv("NVM_DEBUGGER_API_KEY"),
 }
+
+
+def _get_nvm_key(agent_name: str) -> str | None:
+    """Get NVM API key for an agent by matching its role prefix."""
+    for role, key in _NVM_ROLE_KEYS.items():
+        if role in agent_name:
+            return key
+    return None
 
 # Our own plans (for self-buy testing)
 OUR_PLAN_IDS = [
@@ -132,10 +141,12 @@ def _search_web(query: str, max_results: int = 5, **kwargs) -> str:
 
 
 def _send_message(from_agent: str, to_agent: str, message: str, **kwargs) -> str:
-    """Send a message to another agent (scout, worker, supervisor)."""
-    VALID = {"mog-scout", "mog-worker", "mog-supervisor", "mog-debugger"}
-    if to_agent not in VALID:
-        return json.dumps({"error": f"Unknown agent: {to_agent}. Valid: {VALID}"})
+    """Send a message to another agent or role group.
+    Accepts exact names (mog-scout-signup) or role names (mog-worker → all workers)."""
+    ROLES = {"mog-scout", "mog-worker", "mog-supervisor", "mog-debugger"}
+    # Accept either exact agent names or role prefixes
+    if to_agent not in ROLES and not any(to_agent.startswith(r) for r in ROLES):
+        return json.dumps({"error": f"Unknown agent: {to_agent}. Use role names: {ROLES}"})
     msg = bus.send(from_agent, to_agent, message)
     return json.dumps({"sent": True, "to": to_agent, "id": msg["id"]})
 
@@ -313,7 +324,7 @@ def _test_service(service_id: str, params: dict = None, **kwargs) -> str:
 
 def _get_nvm_payments(agent_name: str):
     """Get a Payments instance for the given agent, or None if key not set."""
-    key = _NVM_KEYS.get(agent_name)
+    key = _get_nvm_key(agent_name)
     if not key:
         return None
     from payments_py import Payments, PaymentOptions
@@ -380,7 +391,7 @@ def _explore_seller(agent_name: str, team_name: str = "", plan_id: str = "", **k
             resp = httpx.get(
                 "https://nevermined.ai/hackathon/register/api/discover",
                 params={"side": "sell"},
-                headers={"x-nvm-api-key": _NVM_KEYS[agent_name]},
+                headers={"x-nvm-api-key": _get_nvm_key(agent_name)},
                 timeout=15,
             )
             sellers = resp.json().get("sellers", [])
@@ -479,7 +490,7 @@ def _explore_seller(agent_name: str, team_name: str = "", plan_id: str = "", **k
 
 def _discover_sellers(agent_name: str, **kwargs) -> str:
     """List all sellers on the Nevermined hackathon marketplace."""
-    key = _NVM_KEYS.get(agent_name)
+    key = _get_nvm_key(agent_name)
     if not key:
         return json.dumps({"error": f"No NVM key for {agent_name}"})
     try:

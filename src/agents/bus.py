@@ -49,10 +49,15 @@ class MessageBus:
         return msg
 
     def get_unread(self, agent_name: str) -> list[dict]:
+        """Get unread messages for an agent. Supports role-prefix matching:
+        mog-worker-browser picks up messages sent to 'mog-worker' or 'mog-worker-browser'."""
         with self._lock:
             unread = [
                 m for m in self._messages
-                if m["to"] == agent_name and not m.get("read")
+                if not m.get("read") and (
+                    m["to"] == agent_name  # exact match
+                    or agent_name.startswith(m["to"])  # role-prefix match
+                )
             ]
             for m in unread:
                 m["read"] = True

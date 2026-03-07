@@ -210,55 +210,98 @@ RULES:
 You're at tick {{tick}} of an autonomous loop. Only activate when there are errors to fix."""
 
 
+# ---------------------------------------------------------------------------
+# Specializations — injected into base prompts to give each agent a focus
+# ---------------------------------------------------------------------------
+
+SCOUT_SPECS = [
+    ("scout-signup", "SPECIALIZATION: signup_bypass — SaaS behind signup walls (Notion, Airtable, Zapier, Trello, Slack). Use browser+email to create accounts and get API keys. This is our #1 moat."),
+    ("scout-apikey", "SPECIALIZATION: api_bypass — APIs that need keys agents can't get (Google Maps, Twilio, SendGrid, Clearbit, Hunter.io, Mapbox). We hold keys, resell per-call."),
+    ("scout-paid", "SPECIALIZATION: micro_paid — paid APIs where per-call doesn't exist (LinkedIn, Crunchbase, ZoomInfo). We buy subscriptions, resell per-call. Find the best margin opportunities."),
+    ("scout-scraper", "SPECIALIZATION: scraper — Apify actors and web scraping. Find popular free actors (Twitter scraper, Google SERP, Amazon prices). These are zero-code wraps with 100% margin."),
+    ("scout-compete", "SPECIALIZATION: competitor intelligence — monitor what other hackathon teams build. Use discover_sellers and scout_trustnet EVERY tick. Report gaps to workers. explore_seller aggressively."),
+    ("scout-devtools", "SPECIALIZATION: developer tools — GitHub APIs, CI/CD, code analysis, package registries, DNS lookup, SSL checker. Devs always need these."),
+    ("scout-data", "SPECIALIZATION: data APIs — financial data, crypto, commodities, geolocation, IP lookup, exchange rates. High-frequency use cases."),
+    ("scout-comms", "SPECIALIZATION: communication — email verification, SMS, phone lookup, social media APIs. Use AgentMail to sign up for services like Mailgun, Twilio."),
+    ("scout-ai", "SPECIALIZATION: AI/ML — vision APIs, speech-to-text, NLP, translation, OCR. Find APIs we can resell per-call with our keys."),
+    ("scout-nvm", "SPECIALIZATION: Nevermined transaction machine — your ONLY job is explore_seller and self_buy. Hit every team. Buy from every plan. Maximize raw transaction volume for leaderboard."),
+]
+
+WORKER_SPECS = [
+    ("worker-proxy", "SPECIALIZATION: proxy wrapper — take scout proposals and register_service for simple REST API proxies. Fast execution, test immediately with self_buy."),
+    ("worker-browser", "SPECIALIZATION: browser builder — use use_browser for EVERY build. Navigate signup pages, scrape data sources, test endpoints. Build scrape-and-serve services."),
+    ("worker-email", "SPECIALIZATION: signup flow builder — use use_email + use_browser together. Create accounts on services, get API keys, wrap them. This is our hardest-to-replicate capability."),
+    ("worker-tester", "SPECIALIZATION: QA + transactions — self_buy EVERY service in our catalog each tick. Especially: browser_navigate, agent_email_inbox, social_search, exa_search, claude_summarize. Generate usage data."),
+    ("worker-nvm", "SPECIALIZATION: Nevermined transaction machine — self_buy our services AND explore_seller other teams. Alternate between premium and commodity services. Maximize volume."),
+]
+
+N_SCOUTS = int(os.getenv("MOG_N_SCOUTS", "10"))
+N_WORKERS = int(os.getenv("MOG_N_WORKERS", "5"))
+
+
 class AgentColony:
     def __init__(self):
-        self.scout = Agent("mog-scout", "discovery", SCOUT_SYSTEM, SCOUT_TOOLS)
-        self.worker = Agent("mog-worker", "builder", WORKER_SYSTEM, WORKER_TOOLS)
-        self.supervisor = Agent("mog-supervisor", "review", SUPERVISOR_SYSTEM, SUPERVISOR_TOOLS)
-        self.debugger = Agent("mog-debugger", "debug", DEBUGGER_SYSTEM, DEBUGGER_TOOLS)
-        self._agents = [self.scout, self.worker, self.supervisor, self.debugger]
+        self._agents: list[Agent] = []
+
+        for i in range(min(N_SCOUTS, len(SCOUT_SPECS))):
+            suffix, spec = SCOUT_SPECS[i]
+            prompt = SCOUT_SYSTEM + f"\n\n{spec}"
+            self._agents.append(Agent(f"mog-{suffix}", "discovery", prompt, SCOUT_TOOLS))
+
+        for i in range(min(N_WORKERS, len(WORKER_SPECS))):
+            suffix, spec = WORKER_SPECS[i]
+            prompt = WORKER_SYSTEM + f"\n\n{spec}"
+            self._agents.append(Agent(f"mog-{suffix}", "builder", prompt, WORKER_TOOLS))
+
+        self._agents.append(Agent("mog-supervisor", "review", SUPERVISOR_SYSTEM, SUPERVISOR_TOOLS))
+        self._agents.append(Agent("mog-debugger", "debug", DEBUGGER_SYSTEM, DEBUGGER_TOOLS))
+
         self._running = False
         self._thread: threading.Thread | None = None
         self._state_path = "data/colony_state.json"
 
+        print(f"[colony] Initialized: {len(self._agents)} agents ({N_SCOUTS} scouts, {N_WORKERS} workers, 1 supervisor, 1 debugger)")
+
     def tick(self) -> dict:
-        """Run one full colony tick: scout → worker → supervisor."""
+        """Run one colony tick — all agents in parallel."""
         tick_start = time.monotonic()
         results = {}
 
-        # Get marketplace context directly (no HTTP self-call)
         context = _check_marketplace()
-
         agent_timeout = int(os.getenv("MOG_AGENT_TIMEOUT", "60"))
+        max_parallel = int(os.getenv("MOG_MAX_PARALLEL_AGENTS", "6"))
 
-        for agent in self._agents:
-            # Reset per-tick counters (proposal limits etc)
-            reset_tick_counters()
+        reset_tick_counters()
 
-            # Deliver pending messages
+        def _run_agent(agent: Agent) -> tuple[str, dict]:
             incoming = bus.get_unread(agent.name)
-
             try:
-                # Run each agent with a timeout so one hanging agent can't block the colony
-                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-                    future = executor.submit(agent.tick, context, incoming)
-                    summary = future.result(timeout=agent_timeout)
-                results[agent.name] = {"status": "ok", "summary": summary[:500]}
-            except concurrent.futures.TimeoutError:
-                results[agent.name] = {"status": "timeout", "error": f"Agent timed out after {agent_timeout}s"}
-                print(f"[colony] {agent.name} timed out after {agent_timeout}s")
+                summary = agent.tick(context, incoming)
+                return agent.name, {"status": "ok", "summary": summary[:500]}
             except Exception as e:
-                results[agent.name] = {"status": "error", "error": str(e)}
+                return agent.name, {"status": "error", "error": str(e)[:300]}
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_parallel) as pool:
+            futures = {pool.submit(_run_agent, a): a for a in self._agents}
+            for future in concurrent.futures.as_completed(futures, timeout=agent_timeout * 3):
+                agent = futures[future]
+                try:
+                    name, result = future.result(timeout=agent_timeout)
+                    results[name] = result
+                except concurrent.futures.TimeoutError:
+                    results[agent.name] = {"status": "timeout", "error": f"Timed out after {agent_timeout}s"}
+                    print(f"[colony] {agent.name} timed out")
+                except Exception as e:
+                    results[agent.name] = {"status": "error", "error": str(e)[:300]}
 
         elapsed = round(time.monotonic() - tick_start, 1)
         results["_meta"] = {
+            "agent_count": len(self._agents),
             "elapsed_seconds": elapsed,
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
-        # Persist state
         self._save_state()
-
         return results
 
     def get_state(self) -> dict:
@@ -295,7 +338,7 @@ class AgentColony:
         self._running = True
         self._thread = threading.Thread(target=self._loop, daemon=True, name="agent-colony")
         self._thread.start()
-        print(f"[colony] Agent colony started — tick every {TICK_INTERVAL}s, model={os.getenv('MOG_AGENT_MODEL', 'claude-haiku-4-5-20251001')}")
+        print(f"[colony] Colony started — {len(self._agents)} agents, tick every {TICK_INTERVAL}s, model={os.getenv('MOG_AGENT_MODEL', 'claude-haiku-4-5-20251001')}")
 
     def stop(self) -> None:
         self._running = False
@@ -308,15 +351,16 @@ class AgentColony:
         time.sleep(5)
         while self._running:
             try:
-                print(f"[colony] Tick starting...")
+                print(f"[colony] Tick starting ({len(self._agents)} agents)...")
                 results = self.tick()
+                ok = sum(1 for k, v in results.items() if not k.startswith("_") and v.get("status") == "ok")
+                err = sum(1 for k, v in results.items() if not k.startswith("_") and v.get("status") != "ok")
+                print(f"[colony] Tick complete: {ok} ok, {err} failed, {results['_meta']['elapsed_seconds']}s")
                 for name, r in results.items():
                     if name.startswith("_"):
                         continue
-                    status = r.get("status", "?")
-                    summary = r.get("summary", r.get("error", ""))[:100]
-                    print(f"[colony]   {name}: {status} — {summary}")
-                print(f"[colony] Tick complete in {results['_meta']['elapsed_seconds']}s")
+                    if r.get("status") != "ok":
+                        print(f"[colony]   {name}: {r.get('status')} — {r.get('error', '')[:80]}")
             except Exception as e:
                 print(f"[colony] Tick error: {e}")
             # Wait for next tick (check every second so stop is responsive)
