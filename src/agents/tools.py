@@ -44,7 +44,7 @@ GATEWAY_URL = os.getenv("MCP_SERVER_URL", "https://api.mog.markets")
 
 # Guardrails
 MAX_AGENT_SERVICES = int(os.getenv("MOG_MAX_AGENT_SERVICES", "10"))
-MAX_PROPOSALS_PER_TICK = int(os.getenv("MOG_MAX_PROPOSALS_PER_TICK", "1"))
+MAX_PROPOSALS_PER_TICK = int(os.getenv("MOG_MAX_PROPOSALS_PER_TICK", "5"))
 PROXY_TIMEOUT = int(os.getenv("MOG_PROXY_TIMEOUT", "8"))
 
 # Track proposals this tick (reset by loop before each scout tick)
