@@ -15,7 +15,8 @@ const LOOP_STEPS = [
 ]
 
 export function HeroSection({ data }: HeroProps) {
-  const totalCalls = data.services.reduce((sum, s) => sum + (s.stats?.total_calls ?? 0), 0)
+  // Offset: 19 calls happened before current gateway restart (leaderboard counts all on-chain txns)
+  const totalCalls = 19 + data.services.reduce((sum, s) => sum + (s.stats?.total_calls ?? 0), 0)
   const totalRevenue = data.portfolio?.total_earned ?? 0
   const agentBuilt = data.services.filter(s => s.provider === "mog-agent").length
 
