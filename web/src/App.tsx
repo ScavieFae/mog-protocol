@@ -4,6 +4,7 @@ import { GardenPage } from "@/pages/GardenPage"
 import { TrinityPage } from "@/pages/TrinityPage"
 import { ServiceDetailPage } from "@/pages/ServiceDetailPage"
 import { ConnectPage } from "@/pages/ConnectPage"
+import { IntelPage } from "@/pages/IntelPage"
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/service/:id" element={<ServiceDetailPage />} />
         <Route path="/connect" element={<ConnectPage />} />
         <Route path="/colony" element={<TrinityPage />} />
+        <Route path="/intel" element={<IntelPage />} />
       </Routes>
     </BrowserRouter>
   )

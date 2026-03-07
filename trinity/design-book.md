@@ -62,6 +62,14 @@ When a service surges, its flower opens wider and petals shift warmer. Visual pu
 - **Data**: Polls Railway gateway `/health` endpoint every 5s
 - **Deploy**: Railway static site or served from gateway
 
+## Brand Colors (Logo / Assets)
+
+- **Copper** `#B87333` — primary, the pom
+- **Sage** `#87A878` — secondary, organic/growth
+- **Charcoal** `#1C1917` — linework
+- **Gold** `#C5A862` — accent spark
+- **Linen** `#FAFAF8` — negative space
+
 ## Inspiration
 
 - shadcn/ui component patterns and spacing
