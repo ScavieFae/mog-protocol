@@ -339,6 +339,27 @@ async def main():
         app.add_api_route("/health", _health, methods=["GET"])
         print("Custom /health endpoint registered")
 
+        async def _txlog_endpoint(request):
+            """Full transaction log + colony activity for intel page."""
+            from src.txlog import txlog as _txlog
+            entries = _txlog.get_recent(10000)
+            # Also include colony activity if available
+            colony_activity = []
+            try:
+                from src.agents.loop import colony as _colony
+                for a in _colony._agents:
+                    colony_activity.extend(a.activity_log[-50:])
+                colony_activity.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+            except (ImportError, Exception):
+                pass
+            return _JSONResponse({
+                "transactions": entries,
+                "colony_activity": colony_activity[:200],
+                "count": len(entries),
+            })
+
+        app.add_api_route("/txlog", _txlog_endpoint, methods=["GET"])
+
     # Start the agent colony if enabled
     if os.getenv("MOG_COLONY_ENABLED", "").lower() in ("1", "true", "yes"):
         try:
