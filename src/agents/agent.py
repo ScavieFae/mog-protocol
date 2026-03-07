@@ -109,12 +109,18 @@ class Agent:
             if (tick_input + tick_output) > self.token_budget:
                 self.budget_exhausted_count += 1
                 summary_parts.append(f"[BUDGET] Hit token limit ({self.token_budget} tokens). Stopping early.")
-                # Still process this response but don't loop again
                 assistant_content = response.content
                 self.messages.append({"role": "assistant", "content": _serialize_content(assistant_content)})
                 for b in assistant_content:
                     if b.type == "text" and b.text.strip():
                         summary_parts.append(b.text)
+                # Must close any pending tool_use blocks or the API rejects next call
+                tool_uses = [b for b in assistant_content if b.type == "tool_use"]
+                if tool_uses:
+                    self.messages.append({"role": "user", "content": [
+                        {"type": "tool_result", "tool_use_id": tu.id, "content": "[budget exceeded]"}
+                        for tu in tool_uses
+                    ]})
                 break
 
             # Process the response
