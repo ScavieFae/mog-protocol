@@ -638,35 +638,16 @@ def _scout_trustnet(**kwargs) -> str:
     try:
         import httpx
 
-        # Get all agents from trust-net
-        resp = httpx.post(
-            "https://trust-net-mcp.rikenshah-02.workers.dev/mcp",
-            json={
-                "jsonrpc": "2.0",
-                "method": "tools/call",
-                "params": {"name": "list_agents", "arguments": {}},
-                "id": 1,
-            },
-            headers={"Content-Type": "application/json"},
+        # Get all agents from trust-net REST API (public, no auth needed)
+        resp = httpx.get(
+            "https://trust-net-mcp.rikenshah-02.workers.dev/api/agents",
             timeout=15,
         )
 
         if resp.status_code != 200:
             return json.dumps({"error": f"Trust-Net returned {resp.status_code}"})
 
-        result = resp.json()
-        # Parse the MCP response
-        content = result.get("result", {}).get("content", [])
-        agents_text = ""
-        for c in content:
-            if c.get("type") == "text":
-                agents_text = c["text"]
-                break
-
-        try:
-            agents_data = json.loads(agents_text)
-        except (json.JSONDecodeError, TypeError):
-            agents_data = agents_text
+        agents_data = resp.json().get("items", resp.json())
 
         # Also check our own catalog to find gaps
         from src.services import catalog
