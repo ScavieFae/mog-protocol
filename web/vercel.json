@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/gateway/:path*",
+      "destination": "https://beneficial-essence-production-99c7.up.railway.app/:path*"
+    }
+  ]
+}
