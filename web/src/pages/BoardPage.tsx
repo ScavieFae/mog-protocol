@@ -91,10 +91,8 @@ export function BoardPage() {
       {/* Nav */}
       <div className="px-8 pb-2 flex items-center gap-4 border-b border-charcoal/5">
         <span className="font-sans text-sm font-medium text-charcoal border-b-2 border-copper pb-1">Board</span>
-        <Link to="/garden" className="font-sans text-sm text-stone/50 hover:text-charcoal transition-colors pb-1">Garden</Link>
-        <Link to="/colony" className="font-sans text-sm text-stone/50 hover:text-charcoal transition-colors pb-1">Colony</Link>
-        <Link to="/connect" className="font-sans text-sm text-stone/50 hover:text-charcoal transition-colors pb-1">Connect</Link>
         <Link to="/intel" className="font-sans text-sm text-stone/50 hover:text-charcoal transition-colors pb-1">Intel</Link>
+        <Link to="/connect" className="font-sans text-sm text-stone/50 hover:text-charcoal transition-colors pb-1">Connect</Link>
       </div>
 
       {/* Main content */}
