@@ -28,7 +28,7 @@ export function HeroSection({ data }: HeroProps) {
         <motion.img
           src="/mog-mascot.svg"
           alt="Mog"
-          className="w-28 h-28 flex-shrink-0 -mt-1"
+          className="w-40 h-40 flex-shrink-0"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
