@@ -38,6 +38,9 @@ class Agent:
         self.activity_log: list[dict] = []  # Structured: {tool, args, result, timestamp, is_nvm}
         self.last_tick: str | None = None
         self.tick_count = 0
+        self.total_input_tokens = 0
+        self.total_output_tokens = 0
+        self.last_tick_tokens = {"input": 0, "output": 0}
         self._client = anthropic.Anthropic()
 
     @property
@@ -74,6 +77,8 @@ class Agent:
         # Run the agent with tool use loop
         summary_parts = []
         rounds = 0
+        tick_input = 0
+        tick_output = 0
 
         while rounds < MAX_TOOL_ROUNDS:
             rounds += 1
@@ -90,6 +95,13 @@ class Agent:
                 self.status = "error"
                 self.recent_actions.append(f"[error] {error_msg}")
                 return error_msg
+
+            # Track token usage
+            usage = response.usage
+            tick_input += usage.input_tokens
+            tick_output += usage.output_tokens
+            self.total_input_tokens += usage.input_tokens
+            self.total_output_tokens += usage.output_tokens
 
             # Process the response
             assistant_content = response.content
@@ -113,6 +125,7 @@ class Agent:
                 result = execute_tool(self.name, tu.name, tu.input)
                 action = f"{tu.name}: {result[:120]}"
                 self.recent_actions.append(action)
+                is_creation = tu.name == "register_service" and "registered" in result.lower()
                 self.activity_log.append({
                     "agent": self.name,
                     "tool": tu.name,
@@ -121,6 +134,8 @@ class Agent:
                     "timestamp": datetime.now(timezone.utc).isoformat(),
                     "is_nvm": tu.name in ("self_buy", "explore_seller", "discover_sellers"),
                     "is_scout": tu.name in ("scout_exa", "scout_apify", "scout_trustnet"),
+                    "is_creation": is_creation,
+                    "is_power_tool": tu.name in ("use_browser", "use_email", "use_search"),
                 })
                 tool_results.append({
                     "type": "tool_result",
@@ -133,6 +148,7 @@ class Agent:
         # Done
         self.status = "idle"
         self.current_task = None
+        self.last_tick_tokens = {"input": tick_input, "output": tick_output}
         summary = "\n".join(summary_parts) if summary_parts else "(no text output)"
 
         # Keep recent_actions and activity_log bounded
@@ -207,6 +223,16 @@ class Agent:
             "tools": [t["name"] for t in self.tools],
             "last_tick": self.last_tick,
             "tick_count": self.tick_count,
+            "tokens": {
+                "total_input": self.total_input_tokens,
+                "total_output": self.total_output_tokens,
+                "last_tick_input": self.last_tick_tokens["input"],
+                "last_tick_output": self.last_tick_tokens["output"],
+                "estimated_cost_usd": round(
+                    self.total_input_tokens * 0.80 / 1_000_000
+                    + self.total_output_tokens * 4.00 / 1_000_000, 4
+                ),
+            },
             "conversation_length": len(self.messages),
             "has_memory": bool(self._memory),
             "activity_log": self.activity_log[-20:],

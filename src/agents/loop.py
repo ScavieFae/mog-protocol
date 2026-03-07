@@ -323,12 +323,28 @@ class AgentColony:
         # Sort by timestamp, newest first
         activities.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
 
+        # Colony-wide token summary
+        total_input = sum(a.total_input_tokens for a in self._agents)
+        total_output = sum(a.total_output_tokens for a in self._agents)
+
+        # Service creation events (the wow moments)
+        creations = [e for e in activities if e.get("is_creation")]
+
         return {
             "agents": [a.get_state() for a in self._agents],
             "messages": bus.get_recent(20),
             "activity_feed": activities[:50],
+            "service_creations": creations[:10],
             "running": self._running,
             "tick_interval": TICK_INTERVAL,
+            "token_usage": {
+                "total_input_tokens": total_input,
+                "total_output_tokens": total_output,
+                "estimated_cost_usd": round(
+                    total_input * 0.80 / 1_000_000
+                    + total_output * 4.00 / 1_000_000, 4
+                ),
+            },
         }
 
     def start(self) -> None:
