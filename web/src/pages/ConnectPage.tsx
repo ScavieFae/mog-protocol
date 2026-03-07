@@ -197,6 +197,50 @@ export function ConnectPage() {
           </div>
         </div>
 
+        {/* Quickstart */}
+        <div className="mb-8">
+          <h2 className="font-sans text-lg text-charcoal mb-2">Quickstart: Generate an Image</h2>
+          <p className="font-sans text-stone mb-4">
+            End-to-end walkthrough — connect, call a service, get a result, leave a review. Takes about 2 minutes.
+          </p>
+          <div className="space-y-4">
+            <div className="bg-white/50 rounded-lg border border-sage/10 px-4 py-3">
+              <div className="font-mono text-sm font-semibold text-copper mb-1">1. Find the service</div>
+              <p className="font-sans text-sm text-stone/70 mb-2">
+                Once connected via MCP, ask your agent to search the marketplace:
+              </p>
+              <CopyBlock code={`→ find_service("image generation")\n\n# Returns:\n# nano_banana_pro — 10cr\n# "Generate images from text prompts using Gemini 3 Pro Image"`} />
+            </div>
+
+            <div className="bg-white/50 rounded-lg border border-sage/10 px-4 py-3">
+              <div className="font-mono text-sm font-semibold text-copper mb-1">2. Call it</div>
+              <p className="font-sans text-sm text-stone/70 mb-2">
+                Use <code className="font-mono text-xs bg-white/60 px-1 py-0.5 rounded">buy_and_call</code> with your prompt. Costs 10 credits.
+              </p>
+              <CopyBlock code={`→ buy_and_call("nano_banana_pro", {\n    "prompt": "A cyberpunk cat riding a skateboard",\n    "aspect_ratio": "16:9"\n  })\n\n# Returns: base64 data URI of the generated image`} />
+            </div>
+
+            <div className="bg-white/50 rounded-lg border border-sage/10 px-4 py-3">
+              <div className="font-mono text-sm font-semibold text-copper mb-1">3. Get your result</div>
+              <p className="font-sans text-sm text-stone/70">
+                The response includes the image as a <code className="font-mono text-xs bg-white/60 px-1 py-0.5 rounded">data:image/png;base64,...</code> URI.
+                Your agent can render it inline, save it to disk, or pass it to another service. You also get a credit receipt showing what you paid.
+              </p>
+            </div>
+
+            <div className="bg-white/50 rounded-lg border border-sage/10 px-4 py-3">
+              <div className="font-mono text-sm font-semibold text-copper mb-1">4. Leave a review</div>
+              <p className="font-sans text-sm text-stone/70 mb-2">
+                Every response includes a <code className="font-mono text-xs bg-white/60 px-1 py-0.5 rounded">_review</code> block with a TrustNet endpoint. Score 1–10, no auth required.
+              </p>
+              <CopyBlock code={`POST https://trust-net-mcp.rikenshah-02.workers.dev/api/reviews\n{\n  "agent_id": "mog-protocol-agent",\n  "score": 9,\n  "review": "Fast image gen, good quality",\n  "score_speed": 8,\n  "score_value": 9,\n  "score_reliability": 9\n}`} />
+              <p className="font-sans text-xs text-stone/40 mt-2">
+                Reviews build on-chain reputation via TrustNet — another hackathon team's service.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Pricing cards */}
         <div className="mb-8">
           <h2 className="font-sans text-lg text-charcoal mb-3">Pricing</h2>
