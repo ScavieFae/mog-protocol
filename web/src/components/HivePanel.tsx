@@ -15,6 +15,7 @@ const SERVICE_ICONS: Record<string, string> = {
   nevermined: favicon("nevermined.io"),
   anthropic: favicon("anthropic.com"),
   trustnet: favicon("github.com"),
+  social: favicon("twitter.com"),
 }
 
 // Tool → sponsor/category mapping for badges
@@ -40,9 +41,10 @@ const TOOL_META: Record<string, { label: string; color: string; icon?: string; b
 
 // Map service_id prefix → favicon for ServiceCard/Ticker use
 export function getServiceIcon(serviceId: string): string | null {
-  if (serviceId.includes("exa") || serviceId.includes("search")) return SERVICE_ICONS.exa
-  if (serviceId.includes("apify")) return SERVICE_ICONS.apify
   if (serviceId.includes("zeroclick")) return SERVICE_ICONS.zeroclick
+  if (serviceId.includes("social")) return SERVICE_ICONS.social
+  if (serviceId.includes("exa")) return SERVICE_ICONS.exa
+  if (serviceId.includes("apify")) return SERVICE_ICONS.apify
   if (serviceId.includes("claude") || serviceId.includes("summarize")) return SERVICE_ICONS.anthropic
   return null
 }
