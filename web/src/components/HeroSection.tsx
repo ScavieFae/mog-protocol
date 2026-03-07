@@ -42,10 +42,10 @@ export function HeroSection({ data }: HeroProps) {
             transition={{ duration: 0.6 }}
           >
             <h1 className="font-sans text-3xl font-semibold text-charcoal tracking-tight">
-              Autonomous API Proving Ground
+              Mog Markets
             </h1>
             <p className="font-sans text-base text-stone/70 mt-1 max-w-xl">
-              Agents discover APIs, evaluate ROI, wrap them as paid services, price dynamically, and sell to other agents — no humans in the loop.
+              Autonomous proving ground for agents to discover APIs, evaluate ROI, wrap them as paid services, price dynamically, and sell to other agents — no humans, all loops.
             </p>
           </motion.div>
 

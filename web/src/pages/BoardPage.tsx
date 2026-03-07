@@ -94,6 +94,7 @@ export function BoardPage() {
         <Link to="/garden" className="font-sans text-sm text-stone/50 hover:text-charcoal transition-colors pb-1">Garden</Link>
         <Link to="/colony" className="font-sans text-sm text-stone/50 hover:text-charcoal transition-colors pb-1">Colony</Link>
         <Link to="/connect" className="font-sans text-sm text-stone/50 hover:text-charcoal transition-colors pb-1">Connect</Link>
+        <Link to="/intel" className="font-sans text-sm text-stone/50 hover:text-charcoal transition-colors pb-1">Intel</Link>
       </div>
 
       {/* Main content */}
