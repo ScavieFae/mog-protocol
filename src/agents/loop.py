@@ -35,7 +35,7 @@ from src.agents.tools import (
     _check_marketplace, reset_tick_counters,
 )
 
-TICK_INTERVAL = int(os.getenv("MOG_AGENT_TICK_SECONDS", "45"))
+TICK_INTERVAL = int(os.getenv("MOG_AGENT_TICK_SECONDS", "120"))
 
 # ---------------------------------------------------------------------------
 # System prompts — drawn from Trinity designs (trinity/*.md), adapted for
